@@ -183,6 +183,27 @@ footer.foot .inner{border-top:1px solid var(--rule);padding-top:12px;display:fle
 .vchips button[aria-current=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .vimg{flex:1;overflow:auto;display:flex;justify-content:center;padding:12px}
 .vimg img{max-width:min(1000px,100%);height:auto;background:#fff;align-self:flex-start}
+/* case register */
+.regbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.regbar input{width:260px;max-width:100%}
+.regsum{display:flex;flex-wrap:wrap;gap:6px}
+.regsum span{font-size:12.5px;border:1px solid var(--rule);border-radius:999px;padding:2px 10px;color:var(--muted);background:var(--surface)}
+.regsum b{font-family:var(--f-mono);font-weight:500;color:var(--ink);margin-left:6px}
+.tablewrap{overflow-x:auto;border:1px solid var(--rule);border-radius:var(--r)}
+table.reg{border-collapse:collapse;width:100%;min-width:960px;font-size:13.5px}
+table.reg th{font-weight:500;font-size:12.5px;color:var(--muted);text-align:left;padding:8px 10px;background:var(--sunk);border-bottom:1px solid var(--rule);white-space:nowrap}
+table.reg td{padding:9px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+table.reg tbody tr:last-child td{border-bottom:0}
+table.reg td small{display:block;color:var(--muted);font-size:12.5px}
+table.reg td.mono{white-space:nowrap}
+.cl{display:flex;flex-direction:column;gap:4px}
+.cl div{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+select.st{font:inherit;font-size:13px;color:var(--ink);background:var(--surface);border:1px solid var(--rule-strong);border-radius:6px;padding:4px 6px;max-width:200px}
+input.rm{font-size:13px;padding:5px 8px;min-width:150px}
+.acts{display:flex;gap:4px;flex-wrap:wrap}
+.acts button{padding:3px 9px;font-size:12.5px}
+.acts button.danger{color:var(--bad);border-color:var(--bad)}
+.saved{font-size:13px;background:var(--accent-soft);border-radius:6px;padding:8px 12px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
@@ -274,10 +295,12 @@ footer.foot .inner{border-top:1px solid var(--rule);padding-top:12px;display:fle
       <div class="tabs" role="tablist">
         <button class="tab" role="tab" aria-selected="true" data-tab="res" id="tab-res">અહેવાલ</button>
         <button class="tab" role="tab" aria-selected="false" data-tab="pages" id="tab-pages">બધા પાન<span class="count" id="pgcount"></span></button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="reg" id="tab-reg">રજીસ્ટર<span class="count" id="regcount"></span></button>
         <button class="tab" role="tab" aria-selected="false" data-tab="log" id="tab-log">પ્રવૃત્તિ</button>
       </div>
       <div class="view" id="v-res"></div>
       <div class="view" id="v-pages" hidden><div class="empty">PDF અપલોડ કર્યા પછી અહીં બધા પાન દેખાશે. કોઈ પણ પાન પર ક્લિક કરી મોટું જુઓ.</div></div>
+      <div class="view" id="v-reg" hidden></div>
       <div class="view" id="v-log" hidden><div class="log" id="log"><span class="muted">હજુ કોઈ પ્રવૃત્તિ નથી.</span></div></div>
     </section>
   </div>
@@ -1318,7 +1341,7 @@ document.addEventListener("keydown", (e) => {
 function refButtons(text, raw) {
   const gs = BUILD.refGroups(text || "", S.n || 999, raw);
   if (!gs.length) return "";
-  return '<span class="refs">' + gs.map((g) => `<button class="ref" data-a="${g[0]}" data-b="${g[1]}" ${S.n ? "" : "disabled"}>પાન ${g[0] === g[1] ? g[0] : g[0] + "-" + g[1]}</button>`).join("") + "</span>";
+  return '<span class="refs">' + gs.map((g) => `<button class="ref" data-a="${g[0]}" data-b="${g[1]}" ${S.n && !S.viewSaved ? "" : "disabled"}>પાન ${g[0] === g[1] ? g[0] : g[0] + "-" + g[1]}</button>`).join("") + "</span>";
 }
 document.addEventListener("click", (e) => {
   const b = e.target.closest(".ref"); if (!b || b.disabled) return;
@@ -1634,17 +1657,19 @@ function finish() {
   setStage("xls", "done", "તૈયાર"); setBar("pbar", 1);
   $("run").textContent = "ફરીથી ચકાસો"; stepState();
   renderResults(S.R);
+  saveCase(S.R);
   $("dlzip").disabled = !downloads; $("dlxlsx").disabled = !downloads;
   log("ચકાસણી પૂરી. એક્સેલ ડાઉનલોડ કરી શકાય છે.");
 }
-function renderResults(R) {
+function renderResults(R, savedName) {
+  S.viewSaved = !!savedName;
   const F = R.file || {}, box = $("v-res"), vac = F.vac || {};
   const cands = (R.cands || []).filter(Boolean);
   const verdicts = cands.map((c) => verdictOf((c.criteria || []).map((x) => x.met)));
   const cnt = (v) => verdicts.filter((x) => x === v).length;
   const obs = [...(F.observations || []), ...cands.flatMap((c) => (c.obs || []).map((o) => ({ ...o, text: `${c.short}: ${o.text}` })))];
   const meta = [F.district, R.n ? `${R.n} પાન` : "", F.dpc_date ? `સમિતિ તા. ${F.dpc_date}` : ""].filter(Boolean).map(esc).join(" · ");
-  let h = `<div class="rep"><header class="rhead"><div class="eyebrow">ચકાસણી અહેવાલ</div>
+  let h = `<div class="rep">${savedName ? `<div class="saved">રજીસ્ટરમાંથી ખોલેલ સાચવેલ અહેવાલ – ${esc(savedName)}. પાન લિંક જોવા માટે મૂળ PDF ફરી અપલોડ કરી ચકાસણી ચલાવો.</div>` : ""}<header class="rhead"><div class="eyebrow">ચકાસણી અહેવાલ</div>
     <h2>${esc(F.feeder || "—")} <span class="arrow">→</span> ${esc(F.promotion || "—")}</h2><p class="meta">${meta}</p></header>`;
   h += `<div class="kpis" role="list">
     <div role="listitem"><span>ઉમેદવાર</span><b>${cands.length}</b></div>
@@ -1703,7 +1728,7 @@ $("dlzip").onclick = async () => {
   if (!S.R || !downloads) return;
   const b = $("dlzip"); b.disabled = true; $("dlziplab").textContent = "ZIP તૈયાર થાય છે…";
   try {
-    const R = collectR(); S.R = R;
+    const R = collectR(); S.R = R; saveCase(R);
     const { blob, viewers } = await makeXlsx(R);
     const z = new JSZip(), root = z.folder(`${R.base}_Scrutiny`);
     root.file(`${R.base}_Scrutiny_Gujarati.xlsx`, blob);
@@ -1717,9 +1742,139 @@ $("dlzip").onclick = async () => {
 };
 $("dlxlsx").onclick = async () => {
   if (!S.R || !downloads) return;
-  try { const R = collectR(); S.R = R; const { blob } = await makeXlsx(R); await save(`${R.base}_Scrutiny_Gujarati.xlsx`, blob); }
+  try { const R = collectR(); S.R = R; saveCase(R); const { blob } = await makeXlsx(R); await save(`${R.base}_Scrutiny_Gujarati.xlsx`, blob); }
   catch (e) { log("એક્સેલ બનાવવામાં ભૂલ: " + (e?.message || e), "err"); }
 };
+
+// ---------------------------------------------------------------- case register (kept in this page's database)
+let db = null;
+const REG = { rows: [], loaded: false, filter: "", confirm: null };
+const STATUSES = ["ચકાસણી હેઠળ", "જિ.વિ.અ.ને પૃચ્છા મોકલી", "જવાબ બાકી", "મંડળ સમક્ષ રજૂ કરવા તૈયાર", "મંડળ સંમત", "મંડળ અસંમત", "બઢતી હુકમ થયો", "જિ.વિ.અ.ને પરત", "બંધ"];
+function caseId(key) {
+  let a = 7, b = 11;
+  for (const ch of key) { a = (Math.imul(a, 31) + ch.charCodeAt(0)) >>> 0; b = (Math.imul(b, 37) + ch.charCodeAt(0)) >>> 0; }
+  return "c-" + a.toString(36) + b.toString(36);
+}
+const dmy = (d) => d ? `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}` : "";
+function caseSummary(R) {
+  const F = R.file || {}, cands = (R.cands || []).filter(Boolean), X = R.extra || {};
+  const qs = [...(F.observations || []), ...cands.flatMap((c) => c.obs || [])].filter((o) => o.ask_ddo === true || /કાર્યવાહી/.test(o.type || ""));
+  return {
+    file_name: S.file?.name || `${R.base}.pdf`, pages: R.n || 0, file_no: R.file_no || F.file_no_text || "", inward_no: R.inward_no || "", inward_date: R.inward_date || "",
+    district: F.district || "", feeder: F.feeder_short || F.feeder || "", promotion: F.promotion_short || F.promotion || "", dpc_date: F.dpc_date || "", letter: F.letter || "",
+    action: X.action || "", queries: qs.length, issues: String(X.issues || qs.map((o, i) => `${i + 1}) ${o.text}`).join(" ")).slice(0, 3000),
+    cands: cands.map((c) => { const m = (c.criteria || []).map((x) => x.met); return { name: c.name || c.short || "", seniority: c.seniority ?? "", category: c.category || "", verdict: verdictOf(m), met: `${m.filter((x) => x === Y).length} / ${12 - m.filter((x) => x === NA).length}` }; }),
+  };
+}
+let saving = Promise.resolve();
+function saveCase(R) { saving = saving.then(() => saveCaseNow(R)); return saving; } // one write at a time
+async function saveCaseNow(R) {
+  if (!db || !S.key || !R) return;
+  const id = caseId(S.key), ref = db.doc("cases/" + id), now = new Date().toISOString();
+  try {
+    const old = await ref.get();
+    const prev = old.exists ? old.data() : { created: now, status: STATUSES[0], remarks: "" };
+    await ref.set({ ...prev, ...caseSummary(R), updated: now });
+    const body = JSON.stringify(R);
+    if (bytes(body) < 240000) await db.doc("results/" + id).set({ json: body, saved: now });
+    log("આ ફાઈલ રજીસ્ટરમાં સચવાઈ.");
+  } catch (e) {
+    log(e?.code === "quota_exceeded" ? "રજીસ્ટર ભરાઈ ગયું છે; જૂની ફાઈલો કાઢી નાખ્યા પછી ફરી ડાઉનલોડ દબાવો." : "આ ફાઈલ રજીસ્ટરમાં સાચવી શકાઈ નહીં. પાનું ફરી ખોલી ડાઉનલોડ દબાવો.", "err");
+  }
+}
+function startRegister() {
+  if (!db) { $("v-reg").innerHTML = '<div class="empty">રજીસ્ટર ફક્ત claude.ai પરના આ પાનામાં ઉપલબ્ધ છે.</div>'; return; }
+  $("v-reg").innerHTML = '<div class="empty">રજીસ્ટર લોડ થાય છે…</div>';
+  const t = setTimeout(() => { if (!REG.loaded) $("v-reg").innerHTML = '<div class="empty">રજીસ્ટર હજુ લોડ થયું નથી. ઇન્ટરનેટ જોડાણ તપાસો.</div>'; }, 10000);
+  db.collection("cases").onSnapshot((snap) => {
+    if (!snap.metadata?.fromCache) clearTimeout(t);
+    REG.loaded = true;
+    REG.rows = snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => String(b.updated || "").localeCompare(String(a.updated || "")));
+    renderRegister();
+  }, (e) => { clearTimeout(t); $("v-reg").innerHTML = `<div class="empty">રજીસ્ટર ખોલી શકાયું નહીં (${esc(e?.code || "ભૂલ")}). પાનું ફરી ખોલો.</div>`; });
+}
+function renderRegister() {
+  const box = $("v-reg"); $("regcount").textContent = REG.rows.length || "";
+  if (!REG.rows.length) {
+    box.innerHTML = '<div class="empty"><h3 style="font-size:17px;margin:0 0 4px;color:var(--ink)">રજીસ્ટરમાં હજુ કોઈ ફાઈલ નથી</h3><p>દરેક ફાઈલની ચકાસણી પૂરી થતાં તે અહીં આપોઆપ નોંધાશે. અહીંથી મંડળમાં સ્થિતિ અને નોંધ અપડેટ કરી શકાશે.</p></div>';
+    return;
+  }
+  const f = REG.filter.trim().toLowerCase();
+  const rows = REG.rows.filter((r) => !f || JSON.stringify([r.file_no, r.inward_no, r.district, r.feeder, r.promotion, r.file_name, (r.cands || []).map((c) => c.name), r.status, r.remarks]).toLowerCase().includes(f));
+  const counts = STATUSES.map((st) => [st, REG.rows.filter((r) => (r.status || STATUSES[0]) === st).length]).filter(([, k]) => k);
+  let h = `<div class="rep"><div class="regbar"><div class="regsum"><span>કુલ ફાઈલ<b>${REG.rows.length}</b></span>${counts.map(([st, k]) => `<span>${esc(st)}<b>${k}</b></span>`).join("")}</div>
+    <div class="row"><input type="text" id="regq" placeholder="શોધો: ફાઈલ નં., જિલ્લો, નામ" value="${esc(REG.filter)}" aria-label="રજીસ્ટરમાં શોધો"><button id="regxls">રજીસ્ટર એક્સેલ</button></div></div>
+    <div class="tablewrap"><table class="reg"><thead><tr><th>ચકાસણી</th><th>ફાઈલ</th><th>સંવર્ગ</th><th>ઉમેદવાર અને પરિણામ</th><th>સૂચિત કાર્યવાહી</th><th>મંડળમાં સ્થિતિ</th><th>નોંધ</th><th></th></tr></thead><tbody>`;
+  for (const r of rows) {
+    h += `<tr data-id="${esc(r.id)}">
+      <td class="mono">${dmy(r.updated ? new Date(r.updated) : null)}</td>
+      <td><b>${esc(r.file_no || "—")}</b><small>${esc(r.district || "")}</small><small>${esc(r.file_name || "")}${r.pages ? ` · ${r.pages} પાન` : ""}</small>${r.inward_no || r.inward_date ? `<small>ઇનવર્ડ ${esc(r.inward_no || "")} ${esc(r.inward_date || "")}</small>` : ""}</td>
+      <td>${esc(r.feeder || "")} → ${esc(r.promotion || "")}<small>સમિતિ ${esc(r.dpc_date || "—")}</small></td>
+      <td><div class="cl">${(r.cands || []).map((c) => `<div><span class="chip ${c.verdict === "લાયક" ? "c-ok" : c.verdict === "લાયક નથી" ? "c-bad" : "c-warn"}">${esc(c.verdict)}</span>${esc(c.name)} <span class="muted">(ક્રમ ${esc(c.seniority)})</span></div>`).join("")}</div></td>
+      <td>${esc(r.action || "—")}${r.queries ? `<small>${r.queries} પૃચ્છા</small>` : ""}</td>
+      <td><select class="st" data-act="status" aria-label="મંડળમાં સ્થિતિ">${STATUSES.map((st) => `<option${st === (r.status || STATUSES[0]) ? " selected" : ""}>${esc(st)}</option>`).join("")}</select></td>
+      <td><input type="text" class="rm" data-act="remarks" value="${esc(r.remarks || "")}" aria-label="નોંધ" placeholder="મંડળનો પત્ર, તારીખ…"></td>
+      <td><div class="acts">${REG.confirm === r.id ? `<button class="danger" data-act="del-yes">હા, કાઢો</button><button data-act="del-no">રદ</button>` : `<button data-act="open">અહેવાલ</button><button data-act="xls">એક્સેલ</button><button data-act="del">કાઢો</button>`}</div></td></tr>`;
+  }
+  h += `</tbody></table></div>${rows.length ? "" : '<div class="empty">શોધ મુજબ કોઈ ફાઈલ નથી.</div>'}</div>`;
+  const q0 = document.activeElement?.id === "regq" ? document.activeElement.selectionStart : null;
+  box.innerHTML = h;
+  if (q0 !== null) { const q = $("regq"); q.focus(); q.setSelectionRange(q0, q0); }
+}
+async function exportRegister() {
+  if (!REG.rows.length) return;
+  if (!downloads) { log("ડાઉનલોડ અહીં ઉપલબ્ધ નથી.", "err"); return; }
+  const wb = new XW.Workbook("Nirmala UI"), ws = wb.add("રજીસ્ટર"), today = new Date();
+  ws.set("A1", "બઢતી દરખાસ્ત રજીસ્ટર", { bold: true, size: 14, color: "FF1F3864", wrap: false });
+  ws.set("A2", `તા. ${dmy(today)} સુધી · ${REG.rows.length} ફાઈલ`, { size: 9, color: "FF595959", wrap: false });
+  const HD = ["ક્રમ", "ચકાસણી તારીખ", "ફાઈલ નં.", "ઇનવર્ડ નં.", "ઇનવર્ડ તારીખ", "જિલ્લા પંચાયત", "ઉમેદવાર", "પ્રવરતા ક્રમ", "જાતિ", "ફીડર → બઢતીનો સંવર્ગ", "સમિતિની તારીખ", "દરખાસ્ત પત્ર", "પૂર્ણ માપદંડ", "પરિણામ", "સૂચિત કાર્યવાહી", "નિકાલ કરવાના મુદ્દા", "મંડળમાં સ્થિતિ", "નોંધ", "PDF ફાઈલ"];
+  const WD = [6, 12, 12, 12, 12, 16, 30, 10, 12, 30, 12, 24, 10, 14, 24, 70, 22, 30, 28];
+  HD.forEach((t, i) => { ws.set({ r: 4, c: i + 1 }, t, { bold: true, color: "FFFFFFFF", fill: "FF1F3864", align: "center", valign: "center", border: true }); ws.width(i + 1, WD[i]); });
+  const nn = (v) => v === "" || v == null || isNaN(+v) ? (v ?? "") : +v;
+  let r = 5, k = 1;
+  for (const row of REG.rows) for (const c of (row.cands && row.cands.length ? row.cands : [{}])) {
+    const d = row.updated ? new Date(row.updated) : null;
+    [k++, d ? new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())) : "", row.file_no, row.inward_no, BUILD.toDate(row.inward_date) || row.inward_date, row.district, c.name, nn(c.seniority), c.category,
+      `${row.feeder || ""} → ${row.promotion || ""}`, BUILD.toDate(row.dpc_date) || row.dpc_date, row.letter, c.met, c.verdict, row.action, row.issues, row.status || STATUSES[0], row.remarks, row.file_name]
+      .forEach((v, j) => ws.set({ r, c: j + 1 }, v ?? "", { size: 9, border: true, align: [0, 1, 4, 7, 10, 12, 13].includes(j) ? "center" : "left" }));
+    r++;
+  }
+  ws.cf(`N5:N${r - 1}`, [{ eq: "લાયક", style: { fill: "FFC6EFCE", color: "FF006100", bold: true } }, { eq: "લાયક નથી", style: { fill: "FFFFC7CE", color: "FF9C0006", bold: true } }, { eq: "ચકાસણી જરૂરી", style: { fill: "FFFFEB9C", color: "FF7F5500", bold: true } }]);
+  ws.dropdown(`Q5:Q${r - 1}`, STATUSES); ws.freeze = "D5";
+  await save(`Promotion_Register_Gujarati_${dmy(today)}.xlsx`, await wb.toBlob(JSZip, "blob"));
+}
+$("v-reg").addEventListener("input", (e) => { if (e.target.id === "regq") { REG.filter = e.target.value; renderRegister(); } });
+$("v-reg").addEventListener("change", async (e) => {
+  const tr = e.target.closest("tr[data-id]"), act = e.target.dataset?.act;
+  if (!tr || !db || (act !== "status" && act !== "remarks")) return;
+  const row = REG.rows.find((x) => x.id === tr.dataset.id); const v = e.target.value.trim();
+  if (!row || (row[act] || "") === v) return;
+  try { await db.doc("cases/" + tr.dataset.id).update({ [act]: v, [act + "_date"]: new Date().toISOString() }); }
+  catch { log("ફેરફાર સાચવી શકાયો નહીં. ફરી પ્રયત્ન કરો.", "err"); }
+});
+$("v-reg").addEventListener("click", async (e) => {
+  if (e.target.id === "regxls") { exportRegister(); return; }
+  const b = e.target.closest("button[data-act]"), tr = e.target.closest("tr[data-id]");
+  if (!b || !tr || !db) return;
+  const id = tr.dataset.id, act = b.dataset.act, row = REG.rows.find((x) => x.id === id);
+  if (act === "del") { REG.confirm = id; renderRegister(); return; }
+  if (act === "del-no") { REG.confirm = null; renderRegister(); return; }
+  if (act === "del-yes") {
+    REG.confirm = null;
+    try { await db.doc("cases/" + id).delete(); await db.doc("results/" + id).delete(); log("ફાઈલ રજીસ્ટરમાંથી કાઢી."); }
+    catch { log("ફાઈલ કાઢી શકાઈ નહીં.", "err"); renderRegister(); }
+    return;
+  }
+  b.disabled = true;
+  try {
+    const snap = await db.doc("results/" + id).get();
+    if (!snap.exists) { log("આ ફાઈલનો સાચવેલ અહેવાલ નથી.", "err"); return; }
+    const R = JSON.parse(snap.data().json);
+    if (act === "open") { renderResults(R, row?.file_name || `${R.base}.pdf`); selectTab("res"); }
+    else if (act === "xls") { const { blob } = await makeXlsx(R); await save(`${R.base}_Scrutiny_Gujarati.xlsx`, blob); }
+  } catch { log("સાચવેલ અહેવાલ ખોલી શકાયો નહીં.", "err"); }
+  finally { b.disabled = false; }
+});
 
 // ---------------------------------------------------------------- wiring
 const drop = $("drop"), inp = $("pdfin");
@@ -1729,9 +1884,12 @@ inp.onchange = () => { if (inp.files[0]) loadPdf(inp.files[0]); };
 drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("over"); });
 drop.addEventListener("dragleave", () => drop.classList.remove("over"));
 drop.addEventListener("drop", (e) => { e.preventDefault(); drop.classList.remove("over"); const f = [...e.dataTransfer.files].find((x) => /pdf$/i.test(x.name) || x.type === "application/pdf"); if (f) loadPdf(f); });
+function selectTab(k) {
+  document.querySelectorAll(".tab").forEach((x) => x.setAttribute("aria-selected", x.dataset.tab === k));
+  ["res", "pages", "reg", "log"].forEach((v) => $("v-" + v).hidden = v !== k);
+}
 document.querySelectorAll(".tab").forEach((t) => t.onclick = () => {
-  document.querySelectorAll(".tab").forEach((x) => x.setAttribute("aria-selected", x === t));
-  ["res", "pages", "log"].forEach((k) => $("v-" + k).hidden = k !== t.dataset.tab);
+  selectTab(t.dataset.tab);
 });
 function updateRunState() {
   stepState();
@@ -1831,7 +1989,7 @@ limits = { maxPromptBytes: 262144, images: { maxCount: 5, maxInputBytes: 8e6, me
 $("code").addEventListener("change", checkCode);
 $("code").addEventListener("keydown", (e) => { if (e.key === "Enter") checkCode(); });
 try { $("code").value = localStorage.getItem("badhti-code") || ""; } catch { /* ignore */ }
-checkCode(); estimate();
+checkCode(); estimate(); startRegister();
 </script>
 
 </body>
