@@ -5,174 +5,291 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>બઢતી ફાઈલ ચકાસણી</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&family=Noto+Sans+Gujarati:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@500;600;700&family=Noto+Sans+Gujarati:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: docket-style two-pane desk – steps on the left, file result and pages on the right; one column on phones. */
+/* Layout: office file desk — navy file-cover band on top; left column is the 4-step process, right column the scrutiny report with its pages; one column on phones. */
 :root{
-  --bg:#F2F4F8; --surface:#FFFFFF; --ink:#17202E; --muted:#596476; --line:#D8DEE8; --accent:#2B47A6; --accent-ink:#FFFFFF; --accent-soft:#E5EAF9;
-  --ok:#1D7443; --ok-bg:#DCF1E3; --bad:#AE2A21; --bad-bg:#FAE2DF; --warn:#835600; --warn-bg:#FAEDCF; --na:#5E6878; --na-bg:#EDEFF3;
-  --f-display:"Hind Vadodara","Noto Sans Gujarati","Nirmala UI",system-ui,sans-serif; --f-body:"Noto Sans Gujarati","Hind Vadodara","Nirmala UI",system-ui,sans-serif;
-  --r:10px;
+  --paper:#F1F3F7; --surface:#FFFFFF; --sunk:#F6F8FB; --ink:#16202E; --muted:#576274; --rule:#D5DBE5; --rule-strong:#B9C2D0;
+  --cover:#1B2D52; --cover-ink:#F3F5FA; --cover-muted:#B8C3D9; --accent:#24438F; --accent-ink:#FFFFFF; --accent-soft:#E7ECF8; --tag:#946510;
+  --ok:#1C7142; --ok-bg:#DFF2E6; --bad:#AC2A20; --bad-bg:#FBE4E1; --warn:#865900; --warn-bg:#FBEFD2; --na:#5D6779; --na-bg:#ECEFF3;
+  --f-display:"Hind Vadodara","Noto Sans Gujarati","Nirmala UI",system-ui,sans-serif;
+  --f-body:"Noto Sans Gujarati","Hind Vadodara","Nirmala UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  --r:8px;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0F131A; --surface:#171D27; --ink:#E6EAF1; --muted:#9AA5B6; --line:#2A3341; --accent:#8EA7F4; --accent-ink:#0F131A; --accent-soft:#1E2947;
-  --ok:#72D39D; --ok-bg:#12301F; --bad:#FF8F84; --bad-bg:#3A1714; --warn:#F1C46A; --warn-bg:#382A0D; --na:#A6B0BF; --na-bg:#232B37; color-scheme:dark}}
+  --paper:#0D121A; --surface:#151C27; --sunk:#111821; --ink:#E4E8EF; --muted:#9AA4B4; --rule:#273141; --rule-strong:#3A4658;
+  --cover:#0A1222; --cover-ink:#E9EDF5; --cover-muted:#97A3BA; --accent:#90A9F2; --accent-ink:#0D121A; --accent-soft:#1B2644; --tag:#DDA94B;
+  --ok:#74D29E; --ok-bg:#12301F; --bad:#FF8F84; --bad-bg:#3A1714; --warn:#F0C46B; --warn-bg:#382A0D; --na:#A5AFBE; --na-bg:#222A36; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0F131A; --surface:#171D27; --ink:#E6EAF1; --muted:#9AA5B6; --line:#2A3341; --accent:#8EA7F4; --accent-ink:#0F131A; --accent-soft:#1E2947;
-  --ok:#72D39D; --ok-bg:#12301F; --bad:#FF8F84; --bad-bg:#3A1714; --warn:#F1C46A; --warn-bg:#382A0D; --na:#A6B0BF; --na-bg:#232B37; color-scheme:dark}
+  --paper:#0D121A; --surface:#151C27; --sunk:#111821; --ink:#E4E8EF; --muted:#9AA4B4; --rule:#273141; --rule-strong:#3A4658;
+  --cover:#0A1222; --cover-ink:#E9EDF5; --cover-muted:#97A3BA; --accent:#90A9F2; --accent-ink:#0D121A; --accent-soft:#1B2644; --tag:#DDA94B;
+  --ok:#74D29E; --ok-bg:#12301F; --bad:#FF8F84; --bad-bg:#3A1714; --warn:#F0C46B; --warn-bg:#382A0D; --na:#A5AFBE; --na-bg:#222A36; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-html,body{background:var(--bg)}
-body{color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
-h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.25}
-.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
-header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:2px solid var(--ink);padding-bottom:12px}
-header.top h1{font-size:28px;font-weight:700}
-header.top p{margin:4px 0 0;color:var(--muted);max-width:62ch}
-.docket{font-family:var(--f-display);font-size:12px;letter-spacing:.06em;color:var(--muted);text-align:right}
-.docket b{display:block;color:var(--ink);font-size:14px;letter-spacing:0}
-.desk{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:18px;align-items:start}
-@media (max-width:860px){.desk{grid-template-columns:minmax(0,1fr)}}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:14px;min-width:0}
-.step{display:flex;flex-direction:column;gap:10px;padding-bottom:14px;border-bottom:1px dashed var(--line)}
-.step:last-child{border-bottom:0;padding-bottom:0}
-.step h2{font-size:17px;display:flex;gap:10px;align-items:center}
-.num{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);font-size:13px;font-weight:700;flex:none}
-.step.done .num{background:var(--accent);color:var(--accent-ink)}
+html,body{background:var(--paper)}
+body{color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;margin:0}
+h1,h2,h3,h4{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.25;font-weight:600}
+p{margin:0}
+.gutter{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.inner{max-width:1280px;margin:0 auto}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 .muted{color:var(--muted);font-size:13px}
-.drop{border:1.5px dashed var(--accent);border-radius:var(--r);background:var(--accent-soft);padding:18px;text-align:center;cursor:pointer;display:flex;flex-direction:column;gap:6px;align-items:center}
-.drop.over{outline:3px solid var(--accent)}
-.drop strong{font-family:var(--f-display);font-size:16px}
-.filecard{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:14px;background:var(--bg);border-radius:8px;padding:8px 10px}
-.filecard span{min-width:0;overflow-wrap:anywhere}
-label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
-input[type=text],input[type=date]{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+
+/* file-cover band */
+.cover{background:var(--cover);color:var(--cover-ink);padding-block:22px 20px;border-bottom:3px solid var(--tag)}
+.cover .inner{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:flex-end;justify-content:space-between}
+.eyebrow{font-family:var(--f-display);font-size:12.5px;letter-spacing:.08em;color:var(--cover-muted)}
+.cover h1{font-size:clamp(24px,3.2vw,32px);font-weight:700;margin-top:4px}
+.cover p.lead{color:var(--cover-muted);max-width:64ch;margin-top:6px;font-size:14.5px}
+.cover-side{display:flex;flex-direction:column;align-items:flex-end;gap:8px;font-size:12.5px;color:var(--cover-muted)}
+.svc{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:4px 12px;color:var(--cover-ink);font-size:13px}
+.svc i{width:8px;height:8px;border-radius:50%;background:var(--cover-muted)}
+.svc.on i{background:#5BD38F} .svc.off i{background:#F0C46B}
+
+/* desk */
+main.desk{padding-block:22px 28px}
+.desk .inner{display:grid;grid-template-columns:minmax(0,370px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:920px){.desk .inner{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);min-width:0}
+
+/* process steps */
+.steps{list-style:none;margin:0;padding:6px 0}
+.step{position:relative;display:grid;grid-template-columns:30px minmax(0,1fr);gap:4px 14px;padding:16px 18px 18px}
+.step + .step{border-top:1px solid var(--rule)}
+.num{grid-row:1/span 2;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-mono);font-size:13px;font-weight:500;border:1.5px solid var(--rule-strong);color:var(--muted);background:var(--surface)}
+.step.active .num{border-color:var(--accent);color:var(--accent)}
+.step.done .num{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.step-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;min-height:30px}
+.step-h h2{font-size:16.5px}
+.state{font-size:12px;color:var(--muted);white-space:nowrap}
+.step.done .state{color:var(--ok)} .step.active .state{color:var(--accent)}
+.step-b{grid-column:2;display:flex;flex-direction:column;gap:10px;min-width:0}
+
+.drop{border:1.5px dashed var(--accent);border-radius:var(--r);background:var(--accent-soft);padding:18px 14px;text-align:center;cursor:pointer;display:flex;flex-direction:column;gap:4px;align-items:center;color:var(--ink)}
+.drop svg{width:34px;height:34px;color:var(--accent);margin-bottom:2px}
+.drop strong{font-family:var(--f-display);font-size:15.5px;font-weight:600}
+.drop.compact{padding:10px 14px}.drop.compact svg,.drop.compact .muted{display:none}.drop.compact strong{font-size:14px}
+.drop.over{outline:3px solid var(--accent);outline-offset:2px}
+.filecard{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;align-items:center;background:var(--sunk);border:1px solid var(--rule);border-radius:var(--r);padding:10px 12px}
+.filecard svg{grid-row:1/span 2;width:22px;height:22px;color:var(--muted)}
+.filecard b{font-weight:500;font-size:14px;overflow-wrap:anywhere}
+.filecard span{font-size:12.5px;color:var(--muted)}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted)}
+input[type=text],input[type=date],input[type=password]{font:inherit;font-size:14.5px;color:var(--ink);background:var(--surface);border:1px solid var(--rule-strong);border-radius:6px;padding:8px 10px;width:100%}
+input:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 14px}
+button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--rule-strong);background:var(--surface);color:var(--ink);padding:9px 14px}
 button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
-button:disabled{opacity:.5;cursor:not-allowed}
-button:focus-visible,.drop:focus-visible,a:focus-visible,.tab:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,.drop:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .row{display:flex;gap:8px;flex-wrap:wrap}
-.bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden}
+.row .primary{flex:1}
+.bar{height:6px;background:var(--rule);border-radius:4px;overflow:hidden}
 .bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
-.stages{display:flex;flex-direction:column;gap:6px;font-size:13px}
-.stages div{display:flex;justify-content:space-between;gap:8px}
-.stages .st-done{color:var(--ok)} .stages .st-run{color:var(--accent);font-weight:600} .stages .st-wait{color:var(--muted)} .stages .st-err{color:var(--bad)}
-.note{font-size:13px;border-radius:8px;padding:10px 12px;background:var(--warn-bg);color:var(--warn)}
-.note.info{background:var(--accent-soft);color:var(--ink)}
-.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.tab{border:0;border-bottom:3px solid transparent;border-radius:0;background:none;padding:8px 12px;color:var(--muted);font-family:var(--f-display);font-size:15px}
-.tab[aria-selected=true]{color:var(--ink);border-color:var(--accent);font-weight:600}
-.sumgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 18px;font-size:14px}
-.sumgrid div{min-width:0} .sumgrid b{display:block;font-size:12px;color:var(--muted);font-weight:500}
-.example{display:inline-block;font-size:12px;letter-spacing:.04em;border:1px solid var(--warn);color:var(--warn);border-radius:4px;padding:1px 8px;margin-left:8px;vertical-align:middle}
-.cands{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
-.cand{border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
-.cand-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-.cand-head h3{font-size:17px}
-.stamp{flex:none;font-family:var(--f-display);font-weight:700;font-size:14px;letter-spacing:.04em;border:2px solid currentColor;border-radius:6px;padding:3px 10px;transform:rotate(-3deg)}
+.prog{display:flex;flex-direction:column;gap:6px}
+.prog-h{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted)}
+.stages{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px;font-size:13px}
+.stages li{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:8px;align-items:center;color:var(--muted)}
+.stages i{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--rule-strong)}
+.stages em{font-style:normal;font-family:var(--f-mono);font-size:12px}
+.stages .st-done{color:var(--ink)} .stages .st-done i{background:var(--ok);border-color:var(--ok)}
+.stages .st-run{color:var(--accent);font-weight:500} .stages .st-run i{border-color:var(--accent);background:var(--accent-soft);animation:pulse 1.2s infinite}
+.stages .st-err{color:var(--bad)} .stages .st-err i{background:var(--bad);border-color:var(--bad)}
+@keyframes pulse{50%{transform:scale(1.35)}}
+.note{font-size:13px;border-radius:6px;padding:9px 12px;background:var(--warn-bg);color:var(--warn)}
+.dl{display:flex;flex-direction:column;gap:8px}
+.dl .primary{display:flex;flex-direction:column;align-items:flex-start;gap:0;text-align:left;padding:10px 14px}
+.dl .primary small{font-weight:400;opacity:.85;font-size:12.5px}
+
+/* report workspace */
+.work{display:flex;flex-direction:column}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--rule);padding:0 14px;flex-wrap:wrap}
+.tab{border:0;border-bottom:3px solid transparent;border-radius:0;background:none;padding:12px 12px 9px;color:var(--muted);font-family:var(--f-display);font-size:15px;font-weight:500}
+.tab[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+.tab .count{font-family:var(--f-mono);font-size:12px;margin-left:4px;color:var(--muted)}
+.view{padding:20px 22px 24px;min-width:0}
+@media (max-width:560px){.view{padding:16px 14px 20px}}
+.rep{display:flex;flex-direction:column;gap:22px}
+.rhead .eyebrow{color:var(--muted);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rhead h2{font-size:clamp(20px,2.4vw,25px);margin-top:4px}
+.rhead h2 .arrow{color:var(--muted);font-weight:500}
+.rhead .meta{color:var(--muted);font-size:14px;margin-top:4px}
+.example{font-size:11.5px;letter-spacing:.04em;border:1px solid var(--tag);color:var(--tag);border-radius:4px;padding:0 8px}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border:1px solid var(--rule);border-radius:var(--r);background:var(--sunk)}
+.kpis div{padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.kpis div + div{border-left:1px solid var(--rule)}
+.kpis span{font-size:12.5px;color:var(--muted)}
+.kpis b{font-family:var(--f-mono);font-size:26px;font-weight:500;line-height:1.1}
+.kpis .k-ok b{color:var(--ok)} .kpis .k-warn b{color:var(--warn)} .kpis .k-bad b{color:var(--bad)}
+@media (max-width:640px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.kpis div:nth-child(4){border-left:0}.kpis div:nth-child(n+4){border-top:1px solid var(--rule)}}
+.sect{display:flex;flex-direction:column;gap:10px}
+.sect > h3{font-size:16.5px;display:flex;align-items:center;gap:8px;padding-bottom:6px;border-bottom:1px solid var(--rule)}
+.sect > h3 .count{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-weight:400}
+.parts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:0 28px;margin:0}
+.parts div{display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr);gap:10px;padding:7px 0;border-bottom:1px dashed var(--rule)}
+.parts dt{color:var(--muted);font-size:13px}
+.parts dd{margin:0;font-size:14px;min-width:0}
+.cands{display:flex;flex-direction:column;gap:16px}
+.cand{border:1px solid var(--rule);border-radius:var(--r);overflow:hidden}
+.cand-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:14px 16px;background:var(--sunk);border-bottom:1px solid var(--rule)}
+.cand-head h4{font-size:17px}
+.tags{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--muted);margin-top:3px}
+.tags b{color:var(--ink);font-weight:500}
+.cand-v{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:none}
+.cand-v small{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.stamp{font-family:var(--f-display);font-weight:700;font-size:14px;letter-spacing:.04em;border:2px solid currentColor;border-radius:5px;padding:2px 10px;transform:rotate(-2.5deg);background:var(--surface)}
 .stamp.ok{color:var(--ok)} .stamp.bad{color:var(--bad)} .stamp.warn{color:var(--warn)}
 .crit{display:flex;flex-direction:column}
-.crit div{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:start;padding:6px 0;border-top:1px solid var(--line);font-size:13.5px}
-.crit small{display:block;color:var(--muted);font-size:12.5px}
-.chip{font-size:12px;font-weight:600;border-radius:999px;padding:1px 9px;white-space:nowrap}
+.crit-h,.crit-r{display:grid;grid-template-columns:34px minmax(0,1fr) 92px;gap:10px;padding:8px 16px;align-items:start}
+.crit-h{font-size:12px;color:var(--muted);border-bottom:1px solid var(--rule)}
+.crit-r + .crit-r{border-top:1px solid var(--rule)}
+.crit-r .n{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);padding-top:2px}
+.crit-r .c b{font-weight:500;font-size:14px;display:block}
+.crit-r .c small{display:block;color:var(--muted);font-size:13px;line-height:1.5;margin-top:1px}
+.crit-r > span:last-child{text-align:right}
+@media (max-width:560px){.crit-h{display:none}.crit-h,.crit-r{grid-template-columns:24px minmax(0,1fr);padding:8px 12px}.crit-r > span:last-child{grid-column:2;text-align:left}}
+.chip{display:inline-block;font-size:12px;font-weight:600;border-radius:999px;padding:1px 10px;white-space:nowrap}
 .c-ok{background:var(--ok-bg);color:var(--ok)} .c-bad{background:var(--bad-bg);color:var(--bad)} .c-warn{background:var(--warn-bg);color:var(--warn)} .c-na{background:var(--na-bg);color:var(--na)}
-.refs{display:inline-flex;flex-wrap:wrap;gap:4px;margin-top:3px}
-.ref{font-size:12px;padding:0 7px;border-radius:5px;border:1px solid var(--line);background:var(--bg);color:var(--accent);cursor:pointer}
-.ref:disabled{color:var(--muted)}
-.obs{display:flex;flex-direction:column;gap:8px}
-.obs div{border-left:3px solid var(--line);padding:4px 10px;font-size:14px}
-.obs .t-act{border-color:var(--warn)} .obs .t-key{border-color:var(--bad)} .obs .t-dis{border-color:var(--warn)}
-.obs b{font-family:var(--f-display);font-size:13px;margin-right:6px}
-.pages{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px}
-.pg{border:1px solid var(--line);border-radius:6px;background:var(--surface);padding:4px;cursor:pointer;display:flex;flex-direction:column;gap:3px;font-size:11.5px;text-align:left;color:var(--ink)}
-.pg img{width:100%;aspect-ratio:1/1.41;object-fit:cover;object-position:top;background:#fff;border-radius:3px}
+.refs{display:inline-flex;flex-wrap:wrap;gap:4px;margin-top:4px;vertical-align:middle}
+.ref{font-family:var(--f-mono);font-size:11.5px;padding:0 7px;border-radius:4px;border:1px solid var(--rule-strong);background:var(--surface);color:var(--accent);cursor:pointer;line-height:1.7}
+.ref:hover:not(:disabled){background:var(--accent-soft)}
+.ref:disabled{color:var(--muted);cursor:default}
+.obs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;counter-reset:o}
+.obs li{counter-increment:o;display:grid;grid-template-columns:28px minmax(0,1fr);gap:2px 10px;padding:9px 0;border-bottom:1px dashed var(--rule)}
+.obs li::before{content:counter(o) ".";grid-row:1/span 3;font-family:var(--f-mono);font-size:12.5px;color:var(--muted);padding-top:2px}
+.otype{justify-self:start;font-size:11.5px;font-weight:600;border-radius:4px;padding:0 8px;background:var(--na-bg);color:var(--na)}
+.t-act .otype{background:var(--warn-bg);color:var(--warn)} .t-key .otype{background:var(--bad-bg);color:var(--bad)} .t-dis .otype{background:var(--accent-soft);color:var(--accent)}
+.obs p{font-size:14px}
+.action{display:inline-flex;gap:8px;align-items:center;font-size:13.5px}
+.action b{font-weight:600}
+.notesheet{white-space:pre-wrap;font-size:14.5px;line-height:1.9;background:var(--surface);border:1px solid var(--rule);border-left:4px double var(--tag);border-radius:4px;padding:14px 18px 14px 22px;max-width:78ch}
+.pages{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
+.pg{border:1px solid var(--rule);border-radius:6px;background:var(--surface);padding:4px;cursor:pointer;display:flex;flex-direction:column;gap:3px;font-size:11.5px;text-align:left;color:var(--ink)}
+.pg:hover{border-color:var(--accent)}
+.pg img{width:100%;max-width:100%;aspect-ratio:1/1.41;object-fit:cover;object-position:top;background:#fff;border-radius:3px}
+.pg b{font-family:var(--f-mono);font-weight:500}
 .pg span{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.log{font-size:12.5px;max-height:420px;overflow:auto;background:var(--bg);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:3px;font-variant-numeric:tabular-nums}
-.empty{padding:28px;text-align:center;color:var(--muted)}
-.viewer{position:fixed;inset:0;z-index:50;background:rgba(10,14,20,.86);display:flex;flex-direction:column;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
-.vbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 16px;background:var(--surface);color:var(--ink)}
-.vbar strong{font-family:var(--f-display);margin-right:auto}
-.vchips{display:flex;flex-wrap:wrap;gap:4px;padding:6px 16px;background:var(--surface);border-top:1px solid var(--line)}
-.vchips button{padding:1px 8px;font-size:12px}
+.log{font-family:var(--f-mono);font-size:12.5px;max-height:460px;overflow:auto;background:var(--sunk);border:1px solid var(--rule);border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:3px}
+.empty{padding:36px 16px;text-align:center;color:var(--muted)}
+footer.foot{padding-block:4px 30px;color:var(--muted);font-size:12.5px}
+footer.foot .inner{border-top:1px solid var(--rule);padding-top:12px;display:flex;flex-wrap:wrap;gap:6px 24px;justify-content:space-between}
+
+/* page viewer */
+.viewer{position:fixed;inset:0;z-index:50;background:rgba(8,12,20,.88);display:flex;flex-direction:column;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.vbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 16px;background:var(--surface);color:var(--ink);border-bottom:1px solid var(--rule)}
+.vbar strong{font-family:var(--f-display);font-weight:600;margin-right:auto}
+.vchips{display:flex;flex-wrap:wrap;gap:4px;padding:6px 16px;background:var(--surface)}
+.vchips button{padding:1px 8px;font-size:12px;font-family:var(--f-mono)}
 .vchips button[aria-current=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .vimg{flex:1;overflow:auto;display:flex;justify-content:center;padding:12px}
 .vimg img{max-width:min(1000px,100%);height:auto;background:#fff;align-self:flex-start}
-.tablewrap{overflow-x:auto}
-table.mini{border-collapse:collapse;font-size:13px;width:100%}
-table.mini th,table.mini td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left;vertical-align:top}
-table.mini th{color:var(--muted);font-weight:500}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
 </head>
 <body>
-<div class="wrap">
-  <header class="top">
+<header class="cover gutter">
+  <div class="inner">
     <div>
+      <div class="eyebrow">પંચાયત સેવા વર્ગ-3 · ખાતાકીય બઢતી દરખાસ્ત</div>
       <h1>બઢતી ફાઈલ ચકાસણી</h1>
-      <p>જિલ્લા પંચાયતની બઢતી દરખાસ્તની સ્કેન PDF અપલોડ કરો. Claude દરેક પાન વાંચી ઉમેદવારવાર લાયકાત તપાસશે અને ગુજરાતી એક્સેલ તૈયાર કરશે, જેમાં દરેક આધાર પાન પર ક્લિક કરી તે પાન જોઈ શકાય.</p>
+      <p class="lead">જિલ્લા પંચાયતની સ્કેન કરેલ બઢતી દરખાસ્ત અપલોડ કરો. Claude દરેક પાન વાંચી ઉમેદવારવાર 12 માપદંડ તપાસે છે અને ગુજરાતી એક્સેલ તૈયાર કરે છે, જેમાં દરેક આધાર પાન ક્લિકથી ખૂલે છે.</p>
     </div>
-    <div class="docket">ગુજરાત પંચાયત સેવા પસંદગી મંડળ<b>વર્ગ-3 બઢતી દરખાસ્ત</b></div>
-  </header>
+    <div class="cover-side">
+      <span class="svc" id="svc"><i></i><span id="svctext">Claude સાથે જોડાણ ચકાસાય છે…</span></span>
+      <span>આંતરિક કાર્યકારી સાધન</span>
+    </div>
+  </div>
+</header>
 
-  <div class="desk">
+<main class="desk gutter">
+  <div class="inner">
     <aside class="panel" aria-label="પગલાં">
-      <section class="step" id="s1">
-        <h2><span class="num">1</span>PDF અપલોડ</h2>
-        <div class="drop" id="drop" tabindex="0" role="button" aria-label="PDF પસંદ કરો">
-          <strong>અહીં PDF મૂકો અથવા ક્લિક કરી પસંદ કરો</strong>
-          <span class="muted">સ્કેન કરેલ દરખાસ્ત ફાઈલ (300 પાન સુધી)</span>
-        </div>
-        <input type="file" id="pdfin" accept="application/pdf,.pdf" hidden>
-        <div class="filecard" id="filecard" hidden><span id="fname"></span><span id="fpages" class="muted"></span></div>
-        <div class="bar" id="rbar" hidden><i></i></div>
-        <div class="muted" id="rmsg"></div>
-      </section>
+      <ol class="steps">
+        <li class="step active" id="s1">
+          <span class="num">1</span>
+          <div class="step-h"><h2>દરખાસ્ત PDF</h2><span class="state" id="s1st">શરૂ કરો</span></div>
+          <div class="step-b">
+            <div class="drop" id="drop" tabindex="0" role="button" aria-label="PDF પસંદ કરો">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 17v-6"/><path d="M9.5 13.5 12 11l2.5 2.5"/></svg>
+              <strong>PDF અહીં મૂકો અથવા ક્લિક કરી પસંદ કરો</strong>
+              <span class="muted">સ્કેન કરેલ દરખાસ્ત ફાઈલ · 300 પાન સુધી</span>
+            </div>
+            <input type="file" id="pdfin" accept="application/pdf,.pdf" hidden>
+            <div class="filecard" id="filecard" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>
+              <b id="fname"></b>
+              <span><span id="fpages" class="mono"></span> · <span id="fsize" class="mono"></span></span>
+            </div>
+            <div class="bar" id="rbar" hidden><i></i></div>
+            <div class="muted" id="rmsg"></div>
+          </div>
+        </li>
 
-      <section class="step" id="s2">
-        <h2><span class="num">2</span>ફાઈલની વિગત <span class="muted">(મરજિયાત)</span></h2>
-        <label class="f">મંડળનો ફાઈલ નં. / દફતર<input type="text" id="fileno" placeholder="દા.ત. B-21"></label>
-        <div class="grid2">
-          <label class="f">ઇનવર્ડ નં.<input type="text" id="inwardno"></label>
-          <label class="f">ઇનવર્ડ તારીખ<input type="date" id="inwarddate"></label>
-        </div>
-      </section>
+        <li class="step" id="s2">
+          <span class="num">2</span>
+          <div class="step-h"><h2>ફાઈલની વિગત</h2><span class="state">મરજિયાત</span></div>
+          <div class="step-b">
+            <label class="f">મંડળનો ફાઈલ નં. / દફતર<input type="text" id="fileno" placeholder="દા.ત. B-21"></label>
+            <div class="grid2">
+              <label class="f">ઇનવર્ડ નં.<input type="text" id="inwardno"></label>
+              <label class="f">ઇનવર્ડ તારીખ<input type="date" id="inwarddate"></label>
+            </div>
+          </div>
+        </li>
 
-      <section class="step" id="s3">
-        <h2><span class="num">3</span>ચકાસણી</h2>
-        <label class="f">પ્રવેશ કોડ (ઍડમિન પાસેથી મેળવો)<input type="password" id="code" autocomplete="off" spellcheck="false"></label>
-        <div class="muted" id="codemsg"></div>
-        <div class="row">
-          <button class="primary" id="run" disabled>ચકાસણી શરૂ કરો</button>
-          <button id="stop" hidden>અટકાવો</button>
-        </div>
-        <div class="bar" id="pbar"><i></i></div>
-        <div class="stages" id="stages"></div>
-        <div class="note" id="runnote" hidden></div>
-        <div class="muted" id="estimate"></div>
-      </section>
+        <li class="step" id="s3">
+          <span class="num">3</span>
+          <div class="step-h"><h2>ચકાસણી</h2><span class="state" id="s3st"></span></div>
+          <div class="step-b">
+            <label class="f">પ્રવેશ કોડ (ઍડમિન પાસેથી મેળવો)<input type="password" id="code" autocomplete="off" spellcheck="false"></label>
+            <div class="muted" id="codemsg"></div>
+            <div class="row">
+              <button class="primary" id="run" disabled>ચકાસણી શરૂ કરો</button>
+              <button id="stop" hidden>અટકાવો</button>
+            </div>
+            <div class="prog">
+              <div class="prog-h"><span>પ્રગતિ</span><span class="mono" id="pct">0%</span></div>
+              <div class="bar" id="pbar"><i></i></div>
+            </div>
+            <ol class="stages" id="stages"></ol>
+            <div class="note" id="runnote" hidden></div>
+            <div class="muted" id="estimate"></div>
+          </div>
+        </li>
 
-      <section class="step" id="s4">
-        <h2><span class="num">4</span>એક્સેલ ડાઉનલોડ</h2>
-        <button class="primary" id="dlzip" disabled>ZIP: એક્સેલ + બધા પાન + લિંક</button>
-        <button id="dlxlsx" disabled>ફક્ત એક્સેલ</button>
-        <div class="muted" id="dlmsg">ZIP આખી કાઢ્યા (Extract) પછી એક્સેલ ખોલો; પાન નંબર પર ક્લિક કરતાં સ્કેન પાન ખુલશે.</div>
-      </section>
+        <li class="step" id="s4">
+          <span class="num">4</span>
+          <div class="step-h"><h2>એક્સેલ ડાઉનલોડ</h2><span class="state" id="s4st"></span></div>
+          <div class="step-b dl">
+            <button class="primary" id="dlzip" disabled><span id="dlziplab">ZIP ડાઉનલોડ કરો</span><small>એક્સેલ + બધા સ્કેન પાન + પાન લિંક</small></button>
+            <button id="dlxlsx" disabled>ફક્ત એક્સેલ ફાઈલ</button>
+            <div class="muted" id="dlmsg">ZIP આખી કાઢ્યા (Extract All) પછી એક્સેલ ખોલો; પાન નંબર પર ક્લિક કરતાં તે સ્કેન પાન ખૂલશે.</div>
+          </div>
+        </li>
+      </ol>
     </aside>
 
-    <main class="panel" aria-label="પરિણામ">
+    <section class="panel work" aria-label="ચકાસણી અહેવાલ">
       <div class="tabs" role="tablist">
-        <button class="tab" role="tab" aria-selected="true" data-tab="res" id="tab-res">પરિણામ</button>
-        <button class="tab" role="tab" aria-selected="false" data-tab="pages" id="tab-pages">બધા પાન</button>
+        <button class="tab" role="tab" aria-selected="true" data-tab="res" id="tab-res">અહેવાલ</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="pages" id="tab-pages">બધા પાન<span class="count" id="pgcount"></span></button>
         <button class="tab" role="tab" aria-selected="false" data-tab="log" id="tab-log">પ્રવૃત્તિ</button>
       </div>
-      <section id="v-res"></section>
-      <section id="v-pages" hidden><div class="empty">PDF અપલોડ કર્યા પછી અહીં બધા પાન દેખાશે; પાન પર ક્લિક કરી મોટું જુઓ.</div></section>
-      <section id="v-log" hidden><div class="log" id="log"><span class="muted">હજુ કોઈ પ્રવૃત્તિ નથી.</span></div></section>
-    </main>
+      <div class="view" id="v-res"></div>
+      <div class="view" id="v-pages" hidden><div class="empty">PDF અપલોડ કર્યા પછી અહીં બધા પાન દેખાશે. કોઈ પણ પાન પર ક્લિક કરી મોટું જુઓ.</div></div>
+      <div class="view" id="v-log" hidden><div class="log" id="log"><span class="muted">હજુ કોઈ પ્રવૃત્તિ નથી.</span></div></div>
+    </section>
   </div>
-</div>
+</main>
+
+<footer class="foot gutter">
+  <div class="inner">
+    <span>પરિણામ Claude દ્વારા તૈયાર થાય છે અને તેમાં ભૂલ હોઈ શકે. ભલામણ કરતાં પહેલાં દરેક મુદ્દો પાન લિંકથી ચકાસી લેવો.</span>
+    <span>PDF આ બ્રાઉઝરમાં ખૂલે છે; ચકાસણી વખતે મહત્ત્વના પાનની છબી Claudeને વાંચવા મોકલાય છે.</span>
+  </div>
+</footer>
 
 <div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-label="પાન જુઓ">
   <div class="vbar">
@@ -201,7 +318,7 @@ const XW = (() => {
     constructor(wb, name) {
       this.wb = wb; this.name = name; this.cells = new Map(); this.rowsH = {}; this.colsW = {};
       this.merges = []; this.cfs = []; this.dvs = []; this.links = []; this.freeze = null; this.landscape = true; this.grid = false;
-      this.maxR = 0; this.maxC = 0; this.breaks = [];
+      this.maxR = 0; this.maxC = 0; this.breaks = []; this.fitH = 0; this.printCols = 0;
     }
     set(ref, value, style = {}) {
       const { r, c } = typeof ref === "string" ? parseRef(ref) : ref;
@@ -218,6 +335,13 @@ const XW = (() => {
     link(ref, target, tip) { this.links.push({ ref, target, tip }); }
     xml() {
       const wb = this.wb; const rows = {};
+      // give every cell of a merged range the top-left cell's style, so borders and fills cover the whole range
+      for (const m of this.merges) {
+        const [a, z] = m.split(":").map(parseRef); const tl = this.cells.get(a.r * 10000 + a.c); if (!tl || !z) continue;
+        for (let r = a.r; r <= z.r; r++) for (let c = a.c; c <= z.c; c++) {
+          if ((r !== a.r || c !== a.c) && !this.cells.has(r * 10000 + c)) this.cells.set(r * 10000 + c, { r, c, value: "", style: tl.style });
+        }
+      }
       for (const cell of this.cells.values()) (rows[cell.r] = rows[cell.r] || []).push(cell);
       let sd = "";
       const rnums = Object.keys(rows).map(Number).sort((a, b) => a - b);
@@ -227,11 +351,11 @@ const XW = (() => {
         sd += `<row r="${r}"${ht}>`;
         for (const cell of (rows[r] || []).sort((a, b) => a.c - b.c)) {
           const ref = colName(cell.c) + r; let v = cell.value; let st = { ...cell.style };
-          if (v instanceof Date) { st.date = true; }
+          if (v instanceof Date || (v && v.v instanceof Date)) { st.date = true; }
           const s = wb.styleId(st);
           if (v === null || v === undefined || v === "") { sd += `<c r="${ref}" s="${s}"/>`; continue; }
           if (typeof v === "object" && !(v instanceof Date) && v.f) {
-            const res = v.v;
+            const res = v.v instanceof Date ? dateSerial(v.v) : v.v;
             if (typeof res === "number") sd += `<c r="${ref}" s="${s}"><f>${esc(v.f.replace(/^=/, ""))}</f><v>${res}</v></c>`;
             else sd += `<c r="${ref}" s="${s}" t="str"><f>${esc(v.f.replace(/^=/, ""))}</f><v>${esc(res ?? "")}</v></c>`;
           } else if (v instanceof Date) sd += `<c r="${ref}" s="${s}"><v>${dateSerial(v)}</v></c>`;
@@ -274,7 +398,7 @@ const XW = (() => {
         x += `<hyperlinks>` + this.links.map((l, i) => `<hyperlink ref="${l.ref}" r:id="rIdL${i + 1}"${l.tip ? ` tooltip="${esc(l.tip.slice(0, 250))}"` : ""}/>`).join("") + `</hyperlinks>`;
       }
       x += `<pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/>`;
-      x += `<pageSetup paperSize="9" orientation="${this.landscape ? "landscape" : "portrait"}" fitToWidth="1" fitToHeight="0"/>`;
+      x += `<pageSetup paperSize="9" orientation="${this.landscape ? "landscape" : "portrait"}" fitToWidth="1" fitToHeight="${this.fitH ? 1 : 0}"/>`;
       if (this.breaks.length) x += `<rowBreaks count="${this.breaks.length}" manualBreakCount="${this.breaks.length}">${this.breaks.map((b) => `<brk id="${b}" max="16383" man="1"/>`).join("")}</rowBreaks>`;
       x += `</worksheet>`;
       return x;
@@ -339,7 +463,7 @@ const XW = (() => {
       const sheetXml = this.sheets.map((s) => s.xml());   // builds styles as a side effect
       z.file("[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${this.sheets.map((s, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")}</Types>`);
       z.file("_rels/.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`);
-      z.file("xl/workbook.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><bookViews><workbookView activeTab="0"/></bookViews><sheets>${this.sheets.map((s, i) => `<sheet name="${esc(s.name)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join("")}</sheets><calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>`);
+      z.file("xl/workbook.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><bookViews><workbookView activeTab="0"/></bookViews><sheets>${this.sheets.map((s, i) => `<sheet name="${esc(s.name)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join("")}</sheets>${(() => { const d = this.sheets.map((s, i) => s.printCols && s.maxR ? `<definedName name="_xlnm.Print_Area" localSheetId="${i}">'${esc(s.name.replace(/'/g, "''"))}'!$A$1:$${colName(s.printCols)}$${s.maxR}</definedName>` : "").join(""); return d ? `<definedNames>${d}</definedNames>` : ""; })()}<calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>`);
       z.file("xl/_rels/workbook.xml.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${this.sheets.map((s, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join("")}<Relationship Id="rId${this.sheets.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`);
       z.file("xl/styles.xml", this.stylesXml());
       this.sheets.forEach((s, i) => {
@@ -355,18 +479,22 @@ const XW = (() => {
 
 </script>
 <script>
-/* Builds the Gujarati scrutiny workbook + page-viewer files from an analysis result R. Needs XW (xlsxw.js). */
+/* Builds the Gujarati scrutiny workbook + page-viewer files from an analysis result R. Needs XW (xlsxw.js).
+   Layout follows the final hand-checked Morbi workbook (Promotion_Eligibility_Morbi_Dy_Accountant_Gujarati.xlsx). */
 const BUILD = (() => {
   const Y = "હા", N = "ના", C = "ચકાસો", NA = "લાગુ નથી", AFTER = "બઢતી પછી", PART = "અંશતઃ";
   const EL = "લાયક", NEL = "લાયક નથી", NRV = "ચકાસણી જરૂરી";
   const CERT = "પ્રમાણપત્ર", APARW = "ખાનગી અહેવાલ";
-  const NAVY = "FF1F3864", SUB = "FFD9E1F2", GREEN = "FFC6EFCE", RED = "FFFFC7CE", AMBER = "FFFFEB9C", GREY = "FFF2F2F2", LBLUE = "FFDDEBF7", YEL = "FFFFF8DC";
-  const BLUE = "FF0000FF", MUTED = "FF595959", LINK = "FF0563C1", WHITE = "FFFFFFFF";
+  const NAVY = "FF1F3864", SUB = "FFD9E1F2", GREEN = "FFC6EFCE", RED = "FFFFC7CE", AMBER = "FFFFEB9C", GREY = "FFF2F2F2", LBLUE = "FFDDEBF7";
+  const BLUE = "FF0000FF", MUTED = "FF595959", LINK = "FF0563C1", WHITE = "FFFFFFFF", BLACK = "FF000000";
+  const FPG = "FF17402F", FPH = "FFDDEBE4", FPIN = "FFFFF8E1", FPCALC = "FFF1F3F2", FPMUTED = "FF5F6B66";
   const CRIT = ["ફીડર જગ્યા અને શાખા", "ફીડર સંવર્ગમાં લઘુત્તમ અનુભવ", "ખાતાકીય પરીક્ષા", "તાલીમ / તાલીમાંત પરીક્ષા", "કમ્પ્યુટર પરીક્ષા (સીસીસી / સીસીસી+)",
     "હિન્દી / ગુજરાતી પરીક્ષા", "સિદ્ધ ગુણવત્તા અને કાર્યક્ષમતા (ખાનગી અહેવાલ)", "ખાતાકીય તપાસ / આરોપનામું / ફોજદારી કેસ નથી", "શિક્ષા અમલમાં નથી",
     "વિચારણા ક્ષેત્રમાં", "ખાલી જગ્યા ઉપલબ્ધ", "ઉંમર / વયનિવૃત્તિ પહેલાં"];
-  const DOCS = ["જિ.વિ.અ.નો દરખાસ્ત પત્ર", "અનુક્રમણિકા", "ચેકલીસ્ટ", "પત્રક-અ", "પત્રક-બ", "પત્રક-ક", "આખરી પ્રવરતા યાદી", "ભરતી નિયમોની નકલ",
-    "ખાતાકીય બઢતી સમિતિની કાર્યવાહી નોંધ", "છેલ્લા પાંચ વર્ષના ખાનગી અહેવાલ", "રોસ્ટર રજીસ્ટર", "સૂચિત પસંદગી યાદી", "ખાલી જગ્યાઓનું પત્રક",
+  const FP_CRIT = ["ફીડર જગ્યા", "લઘુત્તમ અનુભવ", "ખાતાકીય પરીક્ષા", "તાલીમ / તાલીમાંત પરીક્ષા", "સીસીસી / સીસીસી+", "હિન્દી / ગુજરાતી પરીક્ષા કે મુક્તિ",
+    "ખાનગી અહેવાલ (5 વર્ષ, વિરુદ્ધ નોંધ નહિ)", "ખાતાકીય તપાસ / ફોજદારી કેસ નથી", "શિક્ષા અમલમાં નથી", "વિચારણા ક્ષેત્રમાં", "ખાલી જગ્યા ઉપલબ્ધ", "વયનિવૃત્તિ પહેલાં"];
+  const DOCS = ["જિ.વિ.અ.નો દરખાસ્ત પત્ર", "અનુક્રમણિકા", "ચેકલીસ્ટ", "પત્રક-અ", "પત્રક-બ", "પત્રક-ક", "આખરી પ્રવરતા યાદી (પ્રમાણિત)", "ભરતી નિયમોની નકલ",
+    "ખાતાકીય બઢતી સમિતિની કાર્યવાહી નોંધ", "છેલ્લા પાંચ વર્ષના ખાનગી અહેવાલ", "રોસ્ટર રજીસ્ટર (પ્રમાણિત)", "સૂચિત પસંદગી યાદી", "ખાલી જગ્યાઓનું પત્રક",
     "પરીક્ષા પરિણામ / સેવાપોથી નોંધ", "તપાસ / લેણું ન હોવાનું પ્રમાણપત્ર", "બંધ કવર / એડહોક બઢતીની વિગત"];
   const TYPE_GU = {
     forwarding_letter: "જિ.વિ.અ.નો દરખાસ્ત પત્ર", index: "અનુક્રમણિકા", checklist: "ચેકલીસ્ટ", patrak_a: "પત્રક-અ", patrak_b: "પત્રક-બ", patrak_k: "પત્રક-ક",
@@ -374,7 +502,9 @@ const BUILD = (() => {
     apar_certificate: "ખાનગી અહેવાલ – પ્રમાણપત્ર", roster: "રોસ્ટર", select_list: "સૂચિત પસંદગી યાદી", vacancy_statement: "ખાલી જગ્યાનું પત્રક",
     exam_result: "પરીક્ષા પરિણામ", service_book: "સેવાપોથી", order: "હુકમ", certificate: "પ્રમાણપત્ર", marksheet: "ગુણપત્રક", board_letter: "મંડળનો પત્ર", other: "અન્ય",
   };
+  const ACTS = ["સંમત – બઢતીની ભલામણ", "શરતોને આધીન સંમત", "જિ.વિ.અ. પાસેથી ખુલાસો મંગાવવો", "દરખાસ્ત પરત કરવી"];
   const MET = new Set([Y, N, C, NA, AFTER, PART]);
+  const VKEYS = ["sanctioned", "direct", "promotion", "filled_direct", "filled_promotion", "vacant_direct", "vacant_promotion", "statement_total", "roster_points", "considered"];
 
   // ---------- helpers
   const toDate = (s) => {
@@ -393,7 +523,9 @@ const BUILD = (() => {
   }
   const days = (a, b) => Math.round((b - a) / 86400000);
   const num = (v) => (v === null || v === undefined || v === "" || isNaN(+v)) ? null : +v;
-  const met = (v) => MET.has(v) ? v : (v ? C : C);
+  const met = (v) => MET.has(v) ? v : C;
+  const qt = (s) => String(s ?? "").replace(/"/g, '""');
+  const DT = (d) => `DATE(${d.getUTCFullYear()},${d.getUTCMonth() + 1},${d.getUTCDate()})`;
   const LIST = "(\\d{1,3}(?:\\s*[-–]\\s*\\d{1,3})?(?:\\s*,\\s*\\d{1,3}(?:\\s*[-–]\\s*\\d{1,3})?)*)";
   const PREF = new RegExp("(?:\\bp\\.|પાન)\\s*" + LIST, "g"), RAW = new RegExp("^\\s*" + LIST);
   function refGroups(text, n, raw) {
@@ -411,6 +543,7 @@ const BUILD = (() => {
   }
   const glabel = (g) => g[0] === g[1] ? `${g[0]}` : `${g[0]}-${g[1]}`;
   const p3 = (p) => String(p).padStart(3, "0");
+  const lines = (t, w) => String(t || "").split("\n").reduce((k, l) => k + Math.max(1, Math.ceil(l.length / w)), 0);
 
   function viewerHtml(pages, key, title) {
     const chips = pages.map((p) => `<a class="chip" href="#p${p}">${p}</a>`).join("");
@@ -428,27 +561,43 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
   }
 
   function build(R, XW) {
-    const n = R.n, F = R.file || {}, cands = R.cands || [], X = R.extra || {};
+    const n = R.n, F = R.file || {}, cands = (R.cands || []).filter(Boolean), X = R.extra || {};
     const wb = new XW.Workbook("Nirmala UI");
     const viewers = new Map();
-    const dpc = toDate(F.dpc_date);
+    const dpc = toDate(F.dpc_date), D = (s) => toDate(s);
+    const feederS = F.feeder_short || String(F.feeder || "").replace(/,?\s*વર્ગ-3.*$/, "").trim();
+    const promoS = F.promotion_short || String(F.promotion || "").replace(/,?\s*વર્ગ-3.*$/, "").trim();
+    const dist = F.district || "", distS = dist.replace(/^જિલ્લા પંચાયત\s*/, "");
+    const pdfName = `${R.base || "PDF"}.pdf`;
+    const promoT = String(F.promotion || "").replace(/\s*[(;].*$/, "").trim() || promoS;
+    const nm = (c) => c.name_short || c.fp_name || c.name || c.short;
+    const miny = num(F.min_years) ?? 5, retAge = num(F.retire_age) ?? 58, zf = num(F.zone_from), zt = num(F.zone_to);
     const st = (o) => ({ border: true, ...o });
     const H = (ws, row, heads, widths) => {
       heads.forEach((h, i) => ws.set({ r: row, c: i + 1 }, h, st({ bold: true, color: WHITE, fill: NAVY, align: "center", valign: "center" })));
       (widths || []).forEach((w, i) => ws.width(i + 1, w));
     };
-    const title = (ws, t, sub) => {
-      ws.set("A1", t, { bold: true, size: 14, color: NAVY, wrap: false, border: false });
-      if (sub) ws.set("A2", sub, { italic: true, size: 9, color: MUTED, wrap: false, border: false });
+    const title = (ws, t, sub, o = {}) => {
+      ws.set("A1", t, { bold: true, size: o.size || 14, color: NAVY, wrap: false, border: false });
+      if (sub) ws.set("A2", sub, { size: 9, color: MUTED, wrap: !!o.merge, border: false });
+      if (sub && o.merge) { ws.merge(`A2:${o.merge}2`); ws.height(2, o.h2 || 30); }
     };
     const statusCF = (ws, rng) => ws.cf(rng, [
       { eq: Y, style: { fill: GREEN, color: "FF006100", bold: true } }, { eq: N, style: { fill: RED, color: "FF9C0006", bold: true } },
       { eq: C, style: { fill: AMBER, color: "FF7F5500", bold: true } }, { eq: NA, style: { fill: GREY } },
       { eq: AFTER, style: { fill: LBLUE } }, { eq: PART, style: { fill: AMBER } }]);
     const verdictCF = (ws, rng, vals = [EL, NEL, NRV]) => ws.cf(rng, vals.map((v, i) => ({ eq: v, style: { fill: [GREEN, RED, AMBER][i], color: ["FF006100", "FF9C0006", "FF7F5500"][i], bold: true } })));
-    const D = (s) => toDate(s);
     const used = new Set();
     const sheetName = (base) => { let s = base.slice(0, 31).replace(/[\[\]:*?\/\\]/g, "-"); let i = 2; while (used.has(s)) s = base.slice(0, 28) + "-" + i++; used.add(s); return s; };
+    // union of the pages cited in several texts, as "7-9, 15"
+    const pagesOf = (...texts) => {
+      const set = new Set();
+      texts.flat().forEach((t) => { const s = String(t ?? ""); refGroups(s, n, /^\s*\d/.test(s)).forEach(([a, b]) => { for (let p = a; p <= b; p++) set.add(p); }); });
+      const ps = [...set].sort((a, b) => a - b), out = [];
+      for (const p of ps) { const g = out[out.length - 1]; if (g && g[1] === p - 1) g[1] = p; else out.push([p, p]); }
+      return out.map(glabel).join(", ");
+    };
+    const pp = (s) => s ? "પાન " + s : "";
 
     // ---------- link machinery
     function target(groups) {
@@ -460,17 +609,19 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
       if (!viewers.has(f)) viewers.set(f, viewerHtml(pages, key, R.base || "PDF"));
       return f;
     }
-    function linkify(ws, specs, lastCol) {
+    function linkify(ws, specs, lastCol, keepColor) {
       const start = lastCol + 2, done = {};
+      ws.printCols = lastCol; // print the table itself, not the link columns
       for (const [col, raw] of specs) {
         const c = XW.colNum(col);
         for (const cell of [...ws.cells.values()].filter((x) => x.c === c)) {
           const v = cell.value; if (typeof v !== "string") continue;
-          if (raw && !/^\s*\d/.test(v)) continue;
-          const g = refGroups(v, n, raw); if (!g.length) continue;
+          const rw = raw === "auto" ? /^\s*\d/.test(v) : raw;
+          if (rw && !/^\s*\d/.test(v)) continue;
+          const g = refGroups(v, n, rw); if (!g.length) continue;
           const ref = XW.colName(c) + cell.r;
           ws.link(ref, target(g), "ઉલ્લેખિત પાન ખોલો: " + g.map(glabel).join(", "));
-          cell.style = { ...cell.style, underline: true, color: LINK };
+          if (!keepColor) cell.style = { ...cell.style, underline: true, color: LINK };
           const k0 = done[cell.r] || 0;
           g.forEach((gg, j) => {
             ws.set({ r: cell.r, c: start + k0 + j }, "પાન " + glabel(gg), st({ size: 9, align: "center", underline: true, color: LINK }));
@@ -485,17 +636,13 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
       for (const r0 of rows) {
         if (done[r0 - 1] || r0 < 2) continue;
         const hr = r0 - 1; if (ws.get(XW.colName(start) + hr)) continue;
-        ws.set({ r: hr, c: start }, "આધાર પાનની લિંક (દરેક પર ક્લિક કરો)", st({ bold: true, size: 9, color: WHITE, fill: NAVY, align: "center" }));
+        ws.set({ r: hr, c: start }, "આધાર પાનની લિંક (દરેક પર ક્લિક કરો)", st({ bold: true, size: 9, color: WHITE, fill: NAVY, align: "center", valign: "center" }));
         if (nc > 1) ws.merge(`${XW.colName(start)}${hr}:${XW.colName(start + nc - 1)}${hr}`);
       }
     }
 
     const shorts = cands.map((c) => c.short || c.name || "ઉમેદવાર");
-    const SN = {
-      fp: sheetName("આગળનું પાનું"), map: sheetName("ફાઈલ નકશો"), res: sheetName("પરિણામ"),
-      el: shorts.map((s) => sheetName("લાયકાત-" + s)), rules: null, ap: [], zone: null, vac: null, obs: null, reg: null,
-    };
-    // order of creation = order of tabs
+    const SN = { fp: sheetName("આગળનું પાનું"), map: sheetName("ફાઈલ નકશો"), res: sheetName("પરિણામ"), el: shorts.map((s) => sheetName("લાયકાત-" + s)) };
     const wsFP = wb.add(SN.fp), wsMap = wb.add(SN.map), wsRes = wb.add(SN.res);
     const wsEl = SN.el.map((s) => wb.add(s));
     SN.rules = sheetName("લાગુ નિયમો"); const wsRules = wb.add(SN.rules);
@@ -505,56 +652,82 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     SN.obs = sheetName("અવલોકનો"); const wsObs = wb.add(SN.obs);
     SN.reg = sheetName("રજીસ્ટરની હાર"); const wsReg = wb.add(SN.reg);
     const q = (s) => `'${s}'!`;
+    const OBS = [...(F.observations || []), ...cands.flatMap((c) => (c.obs || []).map((o) => ({ ...o, text: `${c.short || c.name}: ${o.text}` })))];
+    const isQ = (o) => o.ask_ddo === true || /કાર્યવાહી/.test(o.type || "");
+    const acts = OBS.filter(isQ);
 
-    // ---------- Vacancies
+    // ---------- Vacancies ('ખાલી જગ્યા'): C12 = vacant in promotion quota, C15 = posts considered
     const V = F.vac || {};
-    title(wsVac, "જગ્યાઓ, ખાલી જગ્યા અને રોસ્ટર", "આધાર: " + (V.pages || "રોસ્ટર રજીસ્ટર, ખાલી જગ્યાનું પત્રક, કાર્યવાહી નોંધ"));
+    const vget = (k) => {
+      const o = V[k];
+      if (o && typeof o === "object") return { n: num(o.n), check: num(o.check), src: o.src || "", label: o.label || "" };
+      return { n: num(o), check: null, src: "", label: "" };
+    };
+    const VL = {
+      sanctioned: `${promoS ? promoS + "ની " : ""}મંજૂર જગ્યા`, direct: "સીધી પસંદગીનો હિસ્સો" + (V.ratio_text ? " " + V.ratio_text : ""), promotion: "બઢતીનો હિસ્સો",
+      filled_direct: "સીધી પસંદગીથી ભરેલ", filled_promotion: "બઢતીથી ભરેલ", vacant_direct: "ખાલી – સીધી પસંદગી ક્વોટા", vacant_promotion: "ખાલી – બઢતી ક્વોટા",
+      statement_total: "ખાલી જગ્યાના પત્રક મુજબ ખાલી", roster_points: "રોસ્ટર તારીજમાં વપરાયેલ રોસ્ટર ક્રમ", considered: "સમિતિએ વિચારણામાં લીધેલ જગ્યા",
+    };
+    title(wsVac, `${promoS ? promoS + "ની " : ""}જગ્યાઓ, ખાલી જગ્યા અને રોસ્ટર${dist ? " – " + dist : ""}`, V.pages ? "આધાર: " + String(V.pages).replace(/^આધાર:\s*/, "") : "");
     [6, 54, 14, 14, 12, 46].forEach((w, i) => wsVac.width(i + 1, w));
-    wsVac.set("B3", "સમિતિની તારીખ", st({ bold: true })); wsVac.set("C3", dpc, st({ color: BLUE, align: "center" }));
+    wsVac.set("B3", "સમિતિની તારીખ", st({ bold: true })); wsVac.set("C3", dpc || "", st({ color: BLUE, align: "center" }));
     H(wsVac, 5, ["ક્રમ", "વિગત", "સંખ્યા", "ચકાસણી", "મેળ?", "આધાર"]);
-    const vv = (k) => num(V[k]);
-    const vr = [
-      ["મંજૂર જગ્યા", vv("sanctioned"), null], ["સીધી પસંદગીનો હિસ્સો", vv("direct"), null], ["બઢતીનો હિસ્સો", vv("promotion"), "=C6-C7"],
-      ["સીધી પસંદગીથી ભરેલ", vv("filled_direct"), null], ["બઢતીથી ભરેલ", vv("filled_promotion"), null],
-      ["ખાલી – સીધી પસંદગી ક્વોટા", "=C7-C9", vv("vacant_direct")], ["ખાલી – બઢતી ક્વોટા", "=C8-C10", vv("vacant_promotion")],
-      ["સમિતિએ વિચારણામાં લીધેલ જગ્યા", vv("considered"), null]];
-    const vval = {}; // cached numbers
-    vr.forEach((row, i) => {
-      const r = 6 + i; wsVac.set({ r, c: 1 }, i + 1, st({ align: "center" })); wsVac.set({ r, c: 2 }, row[0], st({}));
-      let v = row[1];
-      if (typeof v === "string") {
-        const [a, b] = v === "=C7-C9" ? [vval[7], vval[9]] : v === "=C8-C10" ? [vval[8], vval[10]] : v === "=C6-C7" ? [vval[6], vval[7]] : [null, null];
-        const res = a !== null && a !== undefined && b !== null && b !== undefined ? a - b : "";
-        vval[r] = res === "" ? null : res;
-        wsVac.set({ r, c: 3 }, { f: `=IF(OR(${v.slice(1, 3)}="",${v.slice(4)}=""),"",${v.slice(1)})`, v: res }, st({ align: "center" }));
-      } else { vval[r] = v; wsVac.set({ r, c: 3 }, v, st({ align: "center", color: BLUE })); }
-      let chk = row[2];
-      if (typeof chk === "string") { const a = vval[6], b = vval[7]; wsVac.set({ r, c: 4 }, { f: "=IF(OR(C6=\"\",C7=\"\"),\"\",C6-C7)", v: a != null && b != null ? a - b : "" }, st({ align: "center" })); chk = a != null && b != null ? a - b : null; }
-      else wsVac.set({ r, c: 4 }, chk, st({ align: "center", color: BLUE }));
-      const ok = chk === null || chk === undefined || vval[r] === null ? "" : (vval[r] === chk ? Y : N);
-      wsVac.set({ r, c: 5 }, { f: `=IF(OR(C${r}="",D${r}=""),"",IF(C${r}=D${r},"${Y}","${N}"))`, v: ok }, st({ align: "center" }));
+    const vv = {}; // row -> number shown in C
+    VKEYS.forEach((k, i) => {
+      const r = 6 + i, g = vget(k);
+      wsVac.set({ r, c: 1 }, i + 1, st({ align: "center" })); wsVac.set({ r, c: 2 }, g.label || VL[k], st({}));
+      let cv = g.n;
+      if (k === "vacant_direct" && vv[7] != null && vv[9] != null) { cv = vv[7] - vv[9]; wsVac.set({ r, c: 3 }, { f: "=C7-C9", v: cv }, st({ align: "center" })); }
+      else if (k === "vacant_promotion" && vv[8] != null && vv[10] != null) { cv = vv[8] - vv[10]; wsVac.set({ r, c: 3 }, { f: "=C8-C10", v: cv }, st({ align: "center" })); }
+      else wsVac.set({ r, c: 3 }, cv ?? "", st({ align: "center", color: BLUE }));
+      vv[r] = cv;
+      let ck = g.check;
+      if (k === "promotion" && vv[6] != null && vv[7] != null) { ck = vv[6] - vv[7]; wsVac.set({ r, c: 4 }, { f: "=C6-C7", v: ck }, st({ align: "center" })); }
+      else if (k === "statement_total" && vv[12] != null) { ck = vv[12]; wsVac.set({ r, c: 4 }, { f: "=C12", v: ck }, st({ align: "center" })); }
+      else if (k === "roster_points" && vv[10] != null) { ck = vv[10]; wsVac.set({ r, c: 4 }, { f: "=C10", v: ck }, st({ align: "center" })); }
+      else wsVac.set({ r, c: 4 }, ck ?? "", st({ align: "center", color: BLUE }));
+      wsVac.set({ r, c: 5 }, { f: `=IF(D${r}="","",IF(C${r}=D${r},"${Y}","${N}"))`, v: ck == null ? "" : (cv === ck ? Y : N) }, st({ align: "center" }));
+      wsVac.set({ r, c: 6 }, g.src, st({ size: 9 }));
     });
-    statusCF(wsVac, "E6:E13");
-    wsVac.set("B15", "બઢતી ક્વોટાની ખાલી જગ્યા વિચારણા હેઠળની જગ્યા જેટલી છે?", st({ bold: true, fill: SUB }));
-    wsVac.set("C15", { f: `=IF(OR(C12="",C13=""),"${C}",IF(C12>=C13,"${Y}","${N}"))`, v: vval[12] == null || vval[13] == null ? C : (vval[12] >= vval[13] ? Y : N) }, st({ bold: true, align: "center" }));
-    statusCF(wsVac, "C15");
-    wsVac.set("B17", "ખાલી જગ્યાના પત્રક / રોસ્ટર અંગે નોંધ", st({ bold: true, fill: SUB })); wsVac.merge("B17:F17");
-    wsVac.set("B18", [V.statement, V.notes].filter(Boolean).join("\n") || "—", st({ size: 9 })); wsVac.merge("B18:F18"); wsVac.height(18, 90);
-    linkify(wsVac, [["F", false], ["B", false]], 6);
-    const VAC = q(SN.vac) + "$C$12";
+    statusCF(wsVac, "E6:E15");
+    wsVac.set("B17", "બઢતી ક્વોટાની ખાલી જગ્યા વિચારણા હેઠળની જગ્યા જેટલી છે?", st({ bold: true, fill: SUB }));
+    wsVac.set("C17", { f: `=IF(OR(C12="",C15=""),"${C}",IF(C12>=C15,"${Y}","${N}"))`, v: vv[12] == null || vv[15] == null ? C : (vv[12] >= vv[15] ? Y : N) }, st({ bold: true, align: "center" }));
+    statusCF(wsVac, "C17");
+    wsVac.set("B19", `ખાલી જગ્યાનું પત્રક${V.statement_pages ? ` (${V.statement_pages})` : ""}`, st({ bold: true, fill: SUB })); wsVac.merge("B19:F19");
+    ["કારણ", "જગ્યા", "ખાલી તારીખ", "ખાલી વર્ષ", "નોંધ"].forEach((h, i) => wsVac.set({ r: 20, c: 2 + i }, h, st({ bold: true, color: WHITE, fill: NAVY, align: "center", valign: "center" })));
+    let srows = Array.isArray(V.statement_rows) ? V.statement_rows.filter((x) => x && (x.reason || x.posts || x.date || x.note)) : [];
+    if (!srows.length) srows = [{ reason: "", posts: null, date: "", note: V.statement || "ખાલી જગ્યાનું પત્રક ચકાસો" }];
+    let vr = 21; const terms = []; let tot = 0, old = 0;
+    for (const s of srows) {
+      const dd = D(s.date), posts = num(s.posts);
+      wsVac.set({ r: vr, c: 2 }, s.reason || "", st({})); wsVac.set({ r: vr, c: 3 }, posts ?? "", st({ align: "center", color: BLUE }));
+      wsVac.set({ r: vr, c: 4 }, dd || s.date || "", st({ align: "center", color: BLUE }));
+      if (dd && dpc) { const y = datedif(dd, dpc)?.y ?? 0; wsVac.set({ r: vr, c: 5 }, { f: `=DATEDIF(D${vr},$C$3,"y")`, v: y }, st({ align: "center" })); terms.push(`IF(E${vr}>3,C${vr},0)`); if (y > 3) old += posts || 0; }
+      else { const yt = s.years || (s.date ? "3થી વધુ" : ""); wsVac.set({ r: vr, c: 5 }, yt, st({ align: "center" })); if (/વધુ|>\s*3/.test(yt)) { terms.push(`C${vr}`); old += posts || 0; } else terms.push("0"); }
+      wsVac.set({ r: vr, c: 6 }, s.note || "", st({ size: 9 }));
+      tot += posts || 0; vr++;
+    }
+    wsVac.set({ r: vr, c: 2 }, "કુલ / 3 વર્ષથી વધુ ખાલી", st({ bold: true, fill: SUB }));
+    wsVac.set({ r: vr, c: 3 }, { f: `=SUM(C21:C${vr - 1})`, v: tot }, st({ bold: true, fill: SUB, align: "center" }));
+    wsVac.set({ r: vr, c: 4 }, { f: "=" + terms.join("+"), v: old }, st({ bold: true, fill: SUB, align: "center" }));
+    wsVac.set({ r: vr, c: 5 }, "", st({ fill: SUB }));
+    wsVac.set({ r: vr, c: 6 }, { f: `=IF(C${vr}=C12,"રોસ્ટર સાથે મળે છે ("&C12&")","રોસ્ટરથી જુદું")`, v: tot === vv[12] ? `રોસ્ટર સાથે મળે છે (${vv[12]})` : "રોસ્ટરથી જુદું" }, st({ fill: SUB }));
+    if (V.notes) { wsVac.set({ r: vr + 2, c: 2 }, V.notes, st({ size: 9 })); wsVac.merge(`B${vr + 2}:F${vr + 2}`); wsVac.height(vr + 2, Math.max(30, 13 * lines(V.notes, 150))); }
+    linkify(wsVac, [["F", false]], 6, true);
+    const VAC = q(SN.vac) + "$C$12", VCON = q(SN.vac) + "$C$15";
 
     // ---------- APAR sheets
     const aparRef = [];
     cands.forEach((c, ci) => {
       const ws = wsAp[ci];
-      title(ws, `ખાનગી અહેવાલની વિગત – ${c.short || c.name} (પ્રવરતા ક્રમ ${c.seniority ?? "?"})`, c.apar_source || "આધાર: પત્રક-અ મુદ્દો 12 અને ખાનગી અહેવાલની નકલો");
+      title(ws, `ખાનગી અહેવાલની વિગત – ${nm(c)} (પ્રવરતા ક્રમ ${c.seniority ?? "?"})`, c.apar_source ? "આધાર: " + String(c.apar_source).replace(/^આધાર:\s*/, "") : "આધાર: પત્રક-અ મુદ્દો 12 અને ખાનગી અહેવાલની નકલો");
       H(ws, 4, ["વર્ષ", "તારીખથી", "તારીખ સુધી", "દિવસ", "અહેવાલ લખનાર", "સમીક્ષક", "પ્રકાર", "આખરી ગુણ", "આગલા સમયગાળા સાથે સળંગ?", "પ્રમાણપત્ર માન્ય?", "નોંધ / પાન"],
         [9, 12, 12, 7, 11, 11, 15, 10, 17, 12, 54]);
       let endD = D(c.apar_end), startD = D(c.apar_start);
       if (!endD && dpc) endD = new Date(Date.UTC(dpc.getUTCMonth() >= 3 ? dpc.getUTCFullYear() : dpc.getUTCFullYear() - 1, 2, 31));
       if (!startD && endD) startD = new Date(Date.UTC(endD.getUTCFullYear() - 5, 3, 1));
       const rows = (c.apar || []).map((a) => ({ ...a, f: D(a.from), t: D(a.to) })).filter((a) => a.f && a.t).sort((a, b) => a.f - b.f);
-      let r = 5, prev = null, gaps = 0, ovl = 0, bad = 0, certDays = 0, certN = 0, marks = [], total = 0;
+      let r = 5, prev = null, gaps = 0, ovl = 0, bad = 0, certDays = 0, certN = 0, total = 0; const marks = [];
       for (const a of rows) {
         const isCert = /પ્રમાણ|cert/i.test(a.type || "");
         const dd = days(a.f, a.t) + 1; total += dd;
@@ -564,11 +737,11 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
         ws.set({ r, c: 5 }, a.rep ?? "", st({ align: "center" })); ws.set({ r, c: 6 }, a.rev ?? "", st({ align: "center" }));
         ws.set({ r, c: 7 }, isCert ? CERT : APARW, st({ align: "center", fill: isCert ? GREY : undefined }));
         const mk = num(a.marks); if (mk !== null && !isCert) marks.push(mk);
-        ws.set({ r, c: 8 }, isCert ? "" : mk, st({ align: "center", color: BLUE }));
+        ws.set({ r, c: 8 }, isCert ? "" : (mk ?? ""), st({ align: "center", color: BLUE }));
         let cont;
         if (!prev) {
           cont = startD && a.f.getTime() === startD.getTime() ? "શરૂઆત બરાબર" : "શરૂઆત ચકાસો";
-          ws.set({ r, c: 9 }, { f: startD ? `=IF(B${r}=DATE(${startD.getUTCFullYear()},${startD.getUTCMonth() + 1},${startD.getUTCDate()}),"શરૂઆત બરાબર","શરૂઆત ચકાસો")` : `="શરૂઆત ચકાસો"`, v: cont }, st({ align: "center" }));
+          ws.set({ r, c: 9 }, { f: startD ? `=IF(B${r}=${DT(startD)},"શરૂઆત બરાબર","શરૂઆત ચકાસો")` : `="શરૂઆત ચકાસો"`, v: cont }, st({ align: "center" }));
         } else {
           const diff = days(prev.t, a.f);
           cont = diff === 1 ? "સળંગ" : diff <= 0 ? "બેવડો દિવસ" : "ખૂટતો ગાળો";
@@ -577,28 +750,28 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
         }
         if (isCert) { certN++; certDays += dd; if (dd > 90) bad++; }
         ws.set({ r, c: 10 }, { f: `=IF(G${r}="${CERT}",IF(D${r}<=90,"${Y}","${N}"),"–")`, v: isCert ? (dd <= 90 ? Y : N) : "–" }, st({ align: "center" }));
-        ws.set({ r, c: 11 }, a.remark || "", st({ size: 9, color: MUTED }));
+        ws.set({ r, c: 11 }, a.remark || "", st({ size: 9 }));
         prev = a; r++;
       }
-      const a1 = 5, a2 = Math.max(5, r - 1);
-      ws.cf(`I${a1}:I${a2}`, [{ eq: "ખૂટતો ગાળો", style: { fill: RED } }, { eq: "બેવડો દિવસ", style: { fill: AMBER } }]);
-      statusCF(ws, `J${a1}:J${a2}`);
+      const a1 = 5, a2 = Math.max(5, r - 1), RG = (col) => `${col}${a1}:${col}${a2}`;
+      ws.cf(RG("I"), [{ eq: "ખૂટતો ગાળો", style: { fill: RED } }, { eq: "બેવડો દિવસ", style: { fill: AMBER } }]);
+      statusCF(ws, RG("J"));
       r += 1;
-      const S = startD ? `DATE(${startD.getUTCFullYear()},${startD.getUTCMonth() + 1},${startD.getUTCDate()})` : `""`;
-      const E = endD ? `DATE(${endD.getUTCFullYear()},${endD.getUTCMonth() + 1},${endD.getUTCDate()})` : `""`;
       const covOk = rows.length && startD && endD && rows[0].f.getTime() === startD.getTime() && rows[rows.length - 1].t.getTime() >= endD.getTime() && gaps === 0;
       const avg = marks.length ? Math.round(marks.reduce((x, y) => x + y, 0) / marks.length * 10) / 10 : "";
+      const lohi = marks.length ? `${Math.min(...marks)} / ${Math.max(...marks)}` : "";
+      const adverse = c.apar_adverse || "નથી";
       const sum = [
-        ["req", "જરૂરી સમયગાળો", startD && endD ? { f: `=TEXT(${S},"dd-mm-yyyy")&" – "&TEXT(${E},"dd-mm-yyyy")`, v: `${fmt(startD)} – ${fmt(endD)}` } : "—"],
-        ["days", "આવરી લીધેલ દિવસ (કુલ)", rows.length ? { f: `=SUM(D${a1}:D${a2})`, v: total } : 0],
-        ["cov", "સંપૂર્ણ સમયગાળો આવરી લીધો (સમયસર શરૂ-અંત, ખૂટતો ગાળો નહિ)?", rows.length && startD && endD ? { f: `=IF(AND(B${a1}=${S},C${a2}>=${E},COUNTIF(I${a1}:I${a2},"ખૂટતો ગાળો")=0),"${Y}","${N}")`, v: covOk ? Y : N } : C],
-        ["gap", "ખૂટતા ગાળા", rows.length ? { f: `=COUNTIF(I${a1}:I${a2},"ખૂટતો ગાળો")`, v: gaps } : 0],
-        ["ovl", "બેવડા દિવસવાળી હાર", rows.length ? { f: `=COUNTIF(I${a1}:I${a2},"બેવડો દિવસ")`, v: ovl } : 0],
-        ["cert", "પ્રમાણપત્રથી આવરી લીધેલ સમયગાળા", `${certN} / ${rows.length}, ${certDays} દિવસ`],
-        ["bad", "3 માસથી વધુના પ્રમાણપત્ર", rows.length ? { f: `=COUNTIF(J${a1}:J${a2},"${N}")`, v: bad } : 0],
-        ["avg", "સરેરાશ આખરી ગુણ", marks.length ? { f: `=ROUND(AVERAGE(H${a1}:H${a2}),1)`, v: avg } : "—"],
-        ["lohi", "ઓછામાં ઓછા / વધુમાં વધુ ગુણ", marks.length ? `${Math.min(...marks)} / ${Math.max(...marks)}` : "—"],
-        ["adv", "પ્રતિકૂળ નોંધ", c.apar_adverse || "—"]];
+        ["req", "જરૂરી સમયગાળો", startD && endD ? { f: `=TEXT(${DT(startD)},"dd-mm-yyyy")&" – ${fmt(endD)} ("&(${DT(endD)}-${DT(startD)}+1)&" દિવસ)"`, v: `${fmt(startD)} – ${fmt(endD)} (${days(startD, endD) + 1} દિવસ)` } : "—"],
+        ["days", "આવરી લીધેલ દિવસ (કુલ)", rows.length ? { f: `=SUM(${RG("D")})`, v: total } : 0],
+        ["cov", "સંપૂર્ણ સમયગાળો આવરી લીધો (સમયસર શરૂ-અંત, ખૂટતો ગાળો નહિ)?", rows.length && startD && endD ? { f: `=IF(AND(B${a1}=${DT(startD)},C${a2}>=${DT(endD)},COUNTIF(${RG("I")},"ખૂટતો ગાળો")=0),"${Y}","${N}")`, v: covOk ? Y : N } : C],
+        ["gap", "ખૂટતા ગાળા", rows.length ? { f: `=COUNTIF(${RG("I")},"ખૂટતો ગાળો")`, v: gaps } : 0],
+        ["ovl", "બેવડા દિવસવાળી હાર", rows.length ? { f: `=COUNTIF(${RG("I")},"બેવડો દિવસ")`, v: ovl } : 0],
+        ["cert", "પ્રમાણપત્રથી આવરી લીધેલ સમયગાળા", rows.length ? { f: `=COUNTIF(${RG("G")},"${CERT}")&" / "&COUNTA(${RG("G")})&", "&SUMIF(${RG("G")},"${CERT}",${RG("D")})&" દિવસ"`, v: `${certN} / ${rows.length}, ${certDays} દિવસ` } : "—"],
+        ["bad", "3 માસથી વધુના પ્રમાણપત્ર", rows.length ? { f: `=COUNTIF(${RG("J")},"${N}")`, v: bad } : 0],
+        ["avg", "સરેરાશ આખરી ગુણ", marks.length ? { f: `=ROUND(AVERAGE(${RG("H")}),1)`, v: avg } : "—"],
+        ["lohi", "ઓછામાં ઓછા / વધુમાં વધુ ગુણ", marks.length ? { f: `=MIN(${RG("H")})&" / "&MAX(${RG("H")})`, v: lohi } : "—"],
+        ["adv", "પ્રતિકૂળ નોંધ", adverse]];
       const R0 = {};
       for (const [k, lab, val] of sum) {
         ws.set({ r, c: 1 }, lab, st({ bold: true, fill: SUB })); ws.merge(`A${r}:D${r}`);
@@ -607,160 +780,215 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
       }
       statusCF(ws, `E${R0.cov}`);
       r++;
+      // years covered, as in "5માંથી 5 વર્ષ પૂર્ણ (2021-22 થી 2025-26)"
+      const fy = []; if (startD && endD) for (let y = startD.getUTCFullYear(); y < endD.getUTCFullYear() + (endD.getUTCMonth() >= 3 ? 1 : 0); y++) fy.push(`${y}-${String(y + 1).slice(2)}`);
+      const have = new Set(rows.map((a) => a.year));
+      const yrs = fy.length ? `${fy.length}માંથી ${fy.filter((y) => have.has(y)).length} વર્ષ પૂર્ણ (${fy[0]} થી ${fy[fy.length - 1]})` : `${rows.length} હાર`;
+      const adv = /^\s*(નથી|—|-)?\s*(\(|$)/.test(adverse) ? "પ્રતિકૂળ નોંધ નથી" : "પ્રતિકૂળ નોંધ: " + String(adverse).slice(0, 80);
       const sr = r, okr = r + 1;
       const okv = rows.length ? (covOk && bad === 0 ? Y : N) : C;
+      const summ = rows.length ? `${yrs}; સરેરાશ ${avg || "—"}, ગુણ ${lohi || "—"}; ${adv}` : "ખાનગી અહેવાલની વિગત મળી નથી – ચકાસો";
       ws.set({ r: sr, c: 1 }, "સારાંશ", st({ bold: true, fill: SUB })); ws.merge(`A${sr}:B${sr}`);
-      const summ = rows.length ? `${rows.length} હાર; સરેરાશ ${avg || "—"}; ગુણ ${marks.length ? Math.min(...marks) + " / " + Math.max(...marks) : "—"}; ખૂટતા ગાળા ${gaps}` : "ખાનગી અહેવાલની વિગત મળી નથી – ચકાસો";
-      ws.set({ r: sr, c: 3 }, summ, st({ align: "center" })); ws.merge(`C${sr}:H${sr}`);
+      ws.set({ r: sr, c: 3 }, rows.length && marks.length ? { f: `="${qt(yrs)}; સરેરાશ "&E${R0.avg}&", ગુણ "&E${R0.lohi}&"; ${qt(adv)}"`, v: summ } : summ, st({ align: "center" })); ws.merge(`C${sr}:H${sr}`);
       ws.set({ r: okr, c: 1 }, "ખાનગી અહેવાલ 'સિદ્ધ ગુણવત્તા અને કાર્યક્ષમતા' દર્શાવે છે?", st({ bold: true, fill: SUB })); ws.merge(`A${okr}:B${okr}`);
       ws.set({ r: okr, c: 3 }, rows.length ? { f: `=IF(AND(E${R0.cov}="${Y}",E${R0.gap}=0,E${R0.bad}=0),"${Y}","${N}")`, v: okv } : C, st({ bold: true, align: "center" }));
       ws.merge(`C${okr}:H${okr}`); statusCF(ws, `C${okr}`);
-      ws.set({ r: okr + 1, c: 1 }, c.apar_note || "", st({ size: 9, color: MUTED })); ws.merge(`A${okr + 1}:K${okr + 1}`); ws.height(okr + 1, 54);
+      if (c.apar_note) { ws.set({ r: okr + 1, c: 1 }, c.apar_note, st({ size: 9 })); ws.merge(`A${okr + 1}:K${okr + 1}`); ws.height(okr + 1, Math.max(30, 13 * lines(c.apar_note, 150))); }
       ws.freeze = "A5";
-      linkify(ws, [["K", false]], 11);
-      aparRef.push({ sum: q(ws.name) + `C${sr}`, ok: q(ws.name) + `C${okr}`, okv, summ, avg });
+      linkify(ws, [["K", false]], 11, true);
+      aparRef.push({ sum: q(ws.name) + `C${sr}`, ok: q(ws.name) + `C${okr}`, avgCell: q(ws.name) + `E${R0.avg}`, okv, summ, avg });
     });
 
-    // ---------- Eligibility sheets
+    // ---------- Eligibility sheets ('લાયકાત-…'): key dates C5:C13, criteria rows 18-29, met F31, verdict F32
+    var critName = (i) => (F.crit_names && F.crit_names[i]) || (i === 1 && feederS ? `${feederS} તરીકે લઘુત્તમ અનુભવ` : CRIT[i]);
     const EL_ = [];
     cands.forEach((c, ci) => {
       const ws = wsEl[ci];
       title(ws, `માપદંડવાર લાયકાતની ચકાસણી: ${c.name || c.short} (પ્રવરતા ક્રમ ${c.seniority ?? "?"})`,
-        `${F.feeder || ""} → ${F.promotion || ""}. પાન નંબર ${R.base || "PDF"} (${n} પાન)ના છે; પાન નંબર પર ક્લિક કરવાથી તે પાન ખુલશે.`);
+        `બઢતી: ${feederS ? feederS + "માંથી " : ""}${promoT}${dist ? ", " + dist : ""}. પાન નંબર ${pdfName} (${n} પાન)ના છે; પાન નંબર પર ક્લિક કરવાથી તે પાન ખુલશે.`);
       ws.set("B4", "ગણતરીમાં લીધેલ મુખ્ય તારીખો", st({ bold: true, fill: SUB })); ws.merge("B4:D4");
       const inputs = [
-        ["ફીડર સંવર્ગમાં તારીખ", D(c.join), c.join_source], ["જન્મ તારીખ", D(c.dob), c.dob_source], ["ખાતાકીય બઢતી સમિતિની તારીખ", dpc, F.dpc_source],
-        ["પ્રથમ નિમણૂક", D(c.first_appt), c.first_appt_source], ["ફીડર સંવર્ગમાં લઘુત્તમ અનુભવ (વર્ષ)", num(F.min_years) ?? 5, F.rules_text],
-        ["વયનિવૃત્તિની ઉંમર (વર્ષ)", num(F.retire_age) ?? 58, c.retirement ? "નિવૃત્તિ તારીખ " + c.retirement : ""], ["પ્રવરતા ક્રમ", num(c.seniority), F.seniority_list],
-        ["વિચારણા ક્ષેત્ર – ક્રમથી", num(F.zone_from), ""], ["વિચારણા ક્ષેત્ર – ક્રમ સુધી", num(F.zone_to), ""]];
+        [`${feederS || "ફીડર"} સંવર્ગમાં તારીખ`, D(c.join), c.join_source],
+        ["જન્મ તારીખ", D(c.dob), c.dob_source],
+        ["ખાતાકીય બઢતી સમિતિની તારીખ (ગણતરીની તારીખ)", dpc, F.dpc_source],
+        [c.first_appt_post ? `${c.first_appt_post} તરીકે પ્રથમ નિમણૂક` : "પ્રથમ નિમણૂક", D(c.first_appt), c.first_appt_source],
+        [`${critName(1)} (વર્ષ)`, miny, F.min_years_source || F.rules_text],
+        ["વયનિવૃત્તિની ઉંમર (વર્ષ)", retAge, c.retirement_source || (c.retirement ? "નિવૃત્તિ તારીખ " + c.retirement : "")],
+        ["પ્રવરતા ક્રમ", num(c.seniority), F.seniority_source || F.seniority_list],
+        ["વિચારણા ક્ષેત્ર – ક્રમથી", zf, F.zone_source], ["વિચારણા ક્ષેત્ર – ક્રમ સુધી", zt, F.zone_source]];
       inputs.forEach(([lab, v, src], i) => {
-        const r = 5 + i; ws.set({ r, c: 2 }, lab, st({})); ws.set({ r, c: 3 }, v ?? "", st({ color: BLUE, align: "center" })); ws.set({ r, c: 4 }, src || "", st({ size: 9, color: MUTED }));
+        const r = 5 + i; ws.set({ r, c: 2 }, lab, st({})); ws.set({ r, c: 3 }, v ?? "", st({ color: BLUE, align: "center" })); ws.set({ r, c: 4 }, src || "", st({ size: 9 }));
       });
-      const jd = D(c.join), bd = D(c.dob), fa = D(c.first_appt), miny = num(F.min_years) ?? 5, ret = num(F.retire_age) ?? 58;
+      const jd = D(c.join), bd = D(c.dob), fa = D(c.first_appt);
       const sv = datedif(jd, dpc), ag = datedif(bd, dpc), tot = datedif(fa, dpc);
       let margin = "";
       if (jd && dpc) { const m = new Date(Date.UTC(jd.getUTCFullYear() + miny, jd.getUTCMonth(), jd.getUTCDate())); margin = days(m, dpc); }
       ws.set("B14", "લઘુત્તમ અનુભવ ઉપરાંતના દિવસ", st({})); ws.set("C14", { f: `=IF(OR(C5="",C7=""),"",C7-EDATE(C5,12*C9))`, v: margin }, st({ align: "center" }));
       ws.set("B15", "પ્રથમ નિમણૂકથી કુલ નોકરી (માહિતી માટે)", st({}));
       ws.set("C15", { f: `=IF(OR(C8="",C7=""),"",DATEDIF(C8,C7,"y")&" વર્ષ "&DATEDIF(C8,C7,"ym")&" માસ")`, v: tot ? `${tot.y} વર્ષ ${tot.m} માસ` : "" }, st({ align: "center" }));
+      ws.set("D15", c.first_appt_note || "", st({ size: 9 }));
+      [5, 7, 8, 9].forEach((r) => ws.height(r, 23.1)); ws.height(15, 25.35);
       H(ws, 17, ["ક્રમ", "માપદંડ", "જરૂરિયાત (નિયમ / આધાર)", "ઉમેદવારની સ્થિતિ (ફાઈલ મુજબ)", "આધાર (PDF પાન)", "ગણતરી / પરિણામ", "પૂર્ણ?"], [6, 28, 48, 60, 22, 24, 10]);
-      const req = F.req || [];
-      const crit = c.criteria || [];
-      const zf = num(F.zone_from), zt = num(F.zone_to), sen = num(c.seniority), vacN = vval[12];
+      const req = F.req || [], crit = c.criteria || [];
+      const sen = num(c.seniority), vacN = vv[12], conN = vv[15];
       const fm = {
         2: [{ f: `=IF(OR($C$5="",$C$7=""),"તારીખ નથી",DATEDIF($C$5,$C$7,"y")&" વર્ષ "&DATEDIF($C$5,$C$7,"ym")&" માસ "&DATEDIF($C$5,$C$7,"md")&" દિવસ")`, v: sv ? `${sv.y} વર્ષ ${sv.m} માસ ${sv.d} દિવસ` : "તારીખ નથી" },
           { f: `=IF(OR($C$5="",$C$7=""),"${C}",IF(DATEDIF($C$5,$C$7,"y")>=$C$9,"${Y}","${N}"))`, v: !sv ? C : (sv.y >= miny ? Y : N) }],
         7: [{ f: "=" + aparRef[ci].sum, v: aparRef[ci].summ }, { f: "=" + aparRef[ci].ok, v: aparRef[ci].okv }],
         10: [{ f: `="ક્રમ "&$C$11&", ક્ષેત્ર "&$C$12&"-"&$C$13`, v: `ક્રમ ${sen ?? ""}, ક્ષેત્ર ${zf ?? ""}-${zt ?? ""}` },
           { f: `=IF(OR($C$11="",$C$12="",$C$13=""),"${C}",IF(AND($C$11>=$C$12,$C$11<=$C$13),"${Y}","${N}"))`, v: sen == null || zf == null || zt == null ? C : (sen >= zf && sen <= zt ? Y : N) }],
-        11: [{ f: `=IF(${VAC}="","વિગત નથી",${VAC}&" ખાલી")`, v: vacN == null ? "વિગત નથી" : `${vacN} ખાલી` },
-          { f: `=IF(${VAC}="","${met(crit[10]?.met)}",IF(${VAC}>=1,"${Y}","${N}"))`, v: vacN == null ? met(crit[10]?.met) : (vacN >= 1 ? Y : N) }],
-        12: [{ f: `=IF(OR($C$6="",$C$7=""),"",DATEDIF($C$6,$C$7,"y")&" વર્ષ")`, v: ag ? `${ag.y} વર્ષ` : "" },
-          { f: `=IF(OR($C$6="",$C$7=""),"${C}",IF(DATEDIF($C$6,$C$7,"y")<$C$10,"${Y}","${N}"))`, v: !ag ? C : (ag.y < ret ? Y : N) }],
+        11: [{ f: `=IF(${VAC}="","વિગત નથી",${VAC}&" ખાલી"&IF(${VCON}="","","; "&${VCON}&" વિચારણામાં"))`, v: vacN == null ? "વિગત નથી" : `${vacN} ખાલી${conN != null ? `; ${conN} વિચારણામાં` : ""}` },
+          { f: `=IF(${VAC}="","${met(crit[10]?.met)}",IF(${VAC}>=MAX(1,N(${VCON})),"${Y}","${N}"))`, v: vacN == null ? met(crit[10]?.met) : (vacN >= Math.max(1, conN || 0) ? Y : N) }],
+        12: [{ f: `=IF(OR($C$6="",$C$7=""),"","ઉંમર "&DATEDIF($C$6,$C$7,"y")&" વર્ષ")`, v: ag ? `ઉંમર ${ag.y} વર્ષ` : "" },
+          { f: `=IF(OR($C$6="",$C$7=""),"${C}",IF(DATEDIF($C$6,$C$7,"y")<$C$10,"${Y}","${N}"))`, v: !ag ? C : (ag.y < retAge ? Y : N) }],
       };
       let r = 18; const first = r; const metVals = [];
-      CRIT.forEach((name, i) => {
+      CRIT.forEach((_, i) => {
         const k = i + 1, cr = crit[i] || {};
-        let val = cr.value || "", m = met(cr.met);
-        ws.set({ r, c: 1 }, k, st({ align: "center" })); ws.set({ r, c: 2 }, name, st({ bold: true }));
+        let m = met(cr.met);
+        ws.set({ r, c: 1 }, k, st({ align: "center" })); ws.set({ r, c: 2 }, critName(i), st({ bold: true }));
         ws.set({ r, c: 3 }, req[i] || "", st({})); ws.set({ r, c: 4 }, cr.pos || "", st({}));
-        ws.set({ r, c: 5 }, cr.pages || "", st({ size: 9, color: MUTED }));
+        ws.set({ r, c: 5 }, cr.pages || "", st({ size: 9 }));
         if (fm[k]) { ws.set({ r, c: 6 }, fm[k][0], st({ align: "center" })); ws.set({ r, c: 7 }, fm[k][1], st({ bold: true, align: "center" })); m = fm[k][1].v; }
-        else { ws.set({ r, c: 6 }, val, st({ align: "center" })); ws.set({ r, c: 7 }, m, st({ bold: true, align: "center" })); ws.dropdown(`G${r}`, [Y, N, C, NA]); }
-        metVals.push(m); ws.height(r, 110); r++;
+        else { ws.set({ r, c: 6 }, cr.value || "", st({ align: "center" })); ws.set({ r, c: 7 }, m, st({ bold: true, align: "center" })); ws.dropdown(`G${r}`, [Y, N, C, NA]); }
+        metVals.push(m); ws.height(r, 117.75); r++;
       });
-      const last = r - 1; statusCF(ws, `G${first}:G${last}`);
-      const rng = `G${first}:G${last}`;
+      const last = r - 1, rng = `G${first}:G${last}`; statusCF(ws, rng);
       const yes = metVals.filter((x) => x === Y).length, nas = metVals.filter((x) => x === NA).length;
       const verdict = metVals.includes(N) ? NEL : metVals.includes(C) ? NRV : EL;
       r++;
       ws.set({ r, c: 1 }, "પૂર્ણ થયેલ માપદંડ ('લાગુ નથી' સિવાય)", st({ bold: true, fill: SUB })); ws.merge(`A${r}:E${r}`);
       ws.set({ r, c: 6 }, { f: `=COUNTIF(${rng},"${Y}")&" / "&(COUNTA(${rng})-COUNTIF(${rng},"${NA}"))`, v: `${yes} / ${12 - nas}` }, st({ bold: true, align: "center", fill: SUB }));
       ws.set({ r, c: 7 }, "", st({ fill: SUB })); const metRow = r; r++;
-      ws.set({ r, c: 1 }, "એકંદર પરિણામ", st({ bold: true, fill: SUB, size: 11 })); ws.merge(`A${r}:E${r}`);
+      ws.set({ r, c: 1 }, "એકંદર પરિણામ", st({ bold: true, fill: SUB })); ws.merge(`A${r}:E${r}`);
       ws.set({ r, c: 6 }, { f: `=IF(COUNTIF(${rng},"${N}")>0,"${NEL}",IF(COUNTIF(${rng},"${C}")>0,"${NRV}","${EL}"))`, v: verdict }, st({ bold: true, align: "center", size: 11 }));
       ws.merge(`F${r}:G${r}`); verdictCF(ws, `F${r}`);
       ws.freeze = "A18";
-      linkify(ws, [["E", false], ["D", false], ["C", false]], 7);
-      EL_.push({ sh: q(ws.name), first, last, metRow, vRow: r, verdict, met: `${yes} / ${12 - nas}`, metVals, sv, margin });
+      linkify(ws, [["D", false], ["E", false]], 7);
+      EL_.push({ sh: q(ws.name), first, last, metRow, vRow: r, verdict, met: `${yes} / ${12 - nas}`, metVals, sv, ag, margin });
     });
 
-    // ---------- Zone
-    title(wsZone, "વિચારણા ક્ષેત્ર – આખરી પ્રવરતા યાદી", (F.seniority_list || "") + (F.zone_from ? ` સમિતિએ ક્રમ ${F.zone_from} થી ${F.zone_to}ની વિચારણા કરી.` : ""));
-    wsZone.set("B3", "સમિતિની તારીખ", st({ bold: true })); wsZone.set("C3", dpc, st({ color: BLUE, align: "center" }));
-    H(wsZone, 5, ["પ્રવરતા ક્રમ", "નામ", "જાતિ", "જન્મ તારીખ", "ફીડર સંવર્ગમાં તારીખ", "સમિતિની તારીખે સંવર્ગમાં વર્ષ", "સ્થિતિ / કારણ", "સ્થિતિ જૂથ", "નોંધ"], [10, 26, 14, 12, 14, 13, 44, 22, 36]);
-    let zr = 6;
-    for (const z of F.zone || []) {
+    // ---------- Zone of consideration
+    const zrows = F.zone || [];
+    title(wsZone, `વિચારણા ક્ષેત્ર – ${feederS ? feederS + "ની " : ""}આખરી પ્રવરતા યાદી${distS ? ", " + distS : ""}${F.seniority_as_on ? ` (તા.${F.seniority_as_on}ની સ્થિતિ)` : ""}`,
+      F.zone_note || `આધાર: ${F.seniority_list || "પ્રવરતા યાદી"}.${zf ? ` સમિતિએ ક્રમ ${zf} થી ${zt}ની વિચારણા કરી.` : ""}`);
+    wsZone.set("B3", "સમિતિની તારીખ", st({ bold: true })); wsZone.set("C3", dpc || "", st({ color: BLUE, align: "center" }));
+    H(wsZone, 5, ["પ્રવરતા ક્રમ", "નામ", "જાતિ", "જન્મ તારીખ", `${feederS || "ફીડર"} સંવર્ગમાં`, "સમિતિની તારીખે સંવર્ગમાં વર્ષ", "સ્થિતિ / કારણ", "સ્થિતિ જૂથ", "નોંધ (પ્રવરતા યાદી)"], [10, 26, 14, 12, 14, 13, 44, 26, 36]);
+    let zr = 6; const zcache = [];
+    for (const z of zrows) {
       const fit = /યોગ્ય/.test(z.group || "") && !/અયોગ્ય/.test(z.group || "");
       const hl = fit ? GREEN : undefined, dc = D(z.in_cadre), yy = datedif(dc, dpc);
+      const yrs = yy ? Math.round((yy.y + yy.m / 12) * 100) / 100 : "";
       wsZone.set({ r: zr, c: 1 }, num(z.no) ?? z.no ?? "", st({ align: "center", fill: hl, bold: fit }));
       wsZone.set({ r: zr, c: 2 }, z.name || "", st({ fill: hl, bold: fit })); wsZone.set({ r: zr, c: 3 }, z.category || "", st({ fill: hl, align: "center" }));
       wsZone.set({ r: zr, c: 4 }, D(z.dob) || z.dob || "", st({ fill: hl, color: BLUE, align: "center" }));
       wsZone.set({ r: zr, c: 5 }, dc || z.in_cadre || "", st({ fill: hl, color: BLUE, align: "center" }));
-      wsZone.set({ r: zr, c: 6 }, { f: `=IF(OR(E${zr}="",$C$3=""),"",ROUND(DATEDIF(E${zr},$C$3,"y")+DATEDIF(E${zr},$C$3,"ym")/12,2))`, v: yy ? Math.round((yy.y + yy.m / 12) * 100) / 100 : "" }, st({ fill: hl, align: "center", num: "0.00" }));
+      wsZone.set({ r: zr, c: 6 }, { f: `=IF(OR(E${zr}="",$C$3=""),"",ROUND(DATEDIF(E${zr},$C$3,"y")+DATEDIF(E${zr},$C$3,"ym")/12,2))`, v: yrs }, st({ fill: hl, align: "center", num: "0.00" }));
       wsZone.set({ r: zr, c: 7 }, z.status || "", st({ fill: hl })); wsZone.set({ r: zr, c: 8 }, z.group || "", st({ fill: hl, bold: fit }));
       wsZone.set({ r: zr, c: 9 }, z.remarks || "", st({ fill: hl, size: 9 }));
-      zr++;
+      zcache.push({ no: num(z.no), group: z.group || "", yrs }); zr++;
+    }
+    if (zrows.length) {
+      const z1 = 6, z2 = zr - 1, rc = F.recon || {};
+      const rr0 = zr + 1;
+      wsZone.set({ r: rr0, c: 1 }, "સમિતિના કાગળો સાથે મેળ", st({ bold: true, fill: SUB })); wsZone.merge(`A${rr0}:D${rr0}`);
+      wsZone.set({ r: rr0 + 1, c: 1 }, "વિગત", st({ bold: true, color: WHITE, fill: NAVY, align: "center" })); wsZone.merge(`A${rr0 + 1}:C${rr0 + 1}`);
+      ["સંખ્યા (આ પત્રક)", "સમિતિના કાગળો મુજબ", "મેળ?", "આધાર"].forEach((h, i) => wsZone.set({ r: rr0 + 1, c: 4 + i }, h, st({ bold: true, color: WHITE, fill: NAVY, align: "center" })));
+      const FIT = "યોગ્ય – ભલામણ", PRO = "અગાઉ બઢતી";
+      const recon = [
+        ["in_zone", `ક્રમ ${zf ?? "?"} થી ${zt ?? "?"} (નામ)`, zf != null && zt != null ? `=COUNTIFS($A$${z1}:$A$${z2},">=${zf}",$A$${z1}:$A$${z2},"<=${zt}")` : null, zcache.filter((z) => z.no != null && z.no >= zf && z.no <= zt).length],
+        ["fit", "યોગ્ય ઠરાવ્યા", `=COUNTIF($H$${z1}:$H$${z2},"${FIT}")`, zcache.filter((z) => z.group === FIT).length],
+        ["promoted_earlier", (() => { const ns = zcache.filter((z) => z.group === PRO && z.no != null).map((z) => z.no); return ns.length ? `અગાઉ બઢતી (ક્રમ ${ns.length > 1 && ns[ns.length - 1] - ns[0] === ns.length - 1 ? ns[0] + "-" + ns[ns.length - 1] : ns.join(", ")})` : "અગાઉ બઢતી"; })(), `=COUNTIF($H$${z1}:$H$${z2},"${PRO}")`, zcache.filter((z) => z.group === PRO).length],
+        ["eligible_5yr", `સમિતિની તારીખે સંવર્ગમાં ${miny} વર્ષ (બઢતી વગરના)`, `=COUNTIFS($F$${z1}:$F$${z2},">=${miny}",$H$${z1}:$H$${z2},"<>${PRO}")`, zcache.filter((z) => z.yrs !== "" && z.yrs >= miny && z.group !== PRO).length]];
+      recon.forEach(([k, lab, f, v], i) => {
+        const r = rr0 + 2 + i, ex = rc[k] || {}, en = num(typeof ex === "object" ? ex.n : ex);
+        wsZone.set({ r, c: 1 }, lab, st({})); wsZone.merge(`A${r}:C${r}`);
+        wsZone.set({ r, c: 4 }, f ? { f, v } : "", st({ align: "center" }));
+        wsZone.set({ r, c: 5 }, en ?? "", st({ align: "center", color: BLUE }));
+        wsZone.set({ r, c: 6 }, { f: `=IF(E${r}="","",IF(D${r}=E${r},"${Y}","${N}"))`, v: en == null ? "" : (en === v ? Y : N) }, st({ align: "center" }));
+        wsZone.set({ r, c: 7 }, (typeof ex === "object" && ex.src) || "", st({ size: 9 }));
+      });
+      statusCF(wsZone, `F${rr0 + 2}:F${rr0 + 5}`);
     }
     wsZone.freeze = "C6";
-    linkify(wsZone, [["G", false], ["I", false]], 9);
+    linkify(wsZone, [["G", false], ["I", false]], 9, true);
 
     // ---------- Observations
-    title(wsObs, "અવલોકનો, વિસંગતતાઓ અને નિકાલ કરવાના મુદ્દા", "'કાર્યવાહી' મુદ્દાનો નિકાલ મંડળના અભિપ્રાય પહેલાં જિ.વિ.અ. પાસેથી કરવો.");
+    title(wsObs, "અવલોકનો, વિસંગતતાઓ અને નિકાલ કરવાના મુદ્દા", `${X.obs_note ? X.obs_note + " " : ""}'કાર્યવાહી' મુદ્દાનો નિકાલ મંડળના અભિપ્રાય પહેલાં જિ.વિ.અ. પાસેથી કરવો.`);
     H(wsObs, 4, ["ક્રમ", "પ્રકાર", "અવલોકન", "લાયકાત પર અસર", "આધાર (PDF પાન)"], [6, 14, 82, 42, 24]);
-    const OBS = [...(F.observations || []), ...cands.flatMap((c) => (c.obs || []).map((o) => ({ ...o, text: `${c.short || c.name}: ${o.text}` })))];
     OBS.forEach((o, i) => {
       const r = 5 + i, t = o.type || "નોંધ";
       const fill = /મુખ્ય/.test(t) ? RED : /કાર્યવાહી|વિસંગત/.test(t) ? AMBER : /સ્થિતિ/.test(t) ? GREEN : undefined;
       wsObs.set({ r, c: 1 }, i + 1, st({ align: "center" })); wsObs.set({ r, c: 2 }, t, st({ bold: true, fill }));
-      wsObs.set({ r, c: 3 }, o.text || "", st({})); wsObs.set({ r, c: 4 }, o.impact || "", st({})); wsObs.set({ r, c: 5 }, o.pages || "", st({ size: 9, color: MUTED }));
-      wsObs.height(r, Math.max(48, 15 * (Math.floor((o.text || "").length / 85) + 2)));
+      wsObs.set({ r, c: 3 }, o.text || "", st({})); wsObs.set({ r, c: 4 }, o.impact || "", st({})); wsObs.set({ r, c: 5 }, o.pages || "", st({ size: 9 }));
+      wsObs.height(r, Math.max(45, 15 * (lines(o.text, 95) + 1)));
     });
-    linkify(wsObs, [["E", false], ["C", false]], 5);
+    linkify(wsObs, [["E", false]], 5);
 
-    // ---------- Rules
-    title(wsRules, "લાગુ પડતા નિયમો", "બઢતીને લાગુ પડતી દરેક જોગવાઈ ફાઈલની હકીકતો પર લાગુ કરેલ. નિયમનો પાઠ ભાવાર્થરૂપે છે.");
-    H(wsRules, 4, ["ક્રમ", "નિયમ", "આધાર (જાહેરનામું)", "નિયમ શું કહે છે", "પ્રકાર", "ઉમેદવારોને લાગુ", "પૂર્ણ?", "ફાઈલ પાન"], [6, 26, 40, 52, 14, 52, 13, 18]);
+    // ---------- Rules applied
     const RU = X.rules || [];
+    title(wsRules, `લાગુ પડતા નિયમો – ${feederS} → ${promoS}${distS ? ", " + distS : ""}${cands.length ? ` (ક્રમ ${cands.map((c) => c.seniority).join(", ")})` : ""}`,
+      `આ બઢતીને લાગુ પડતી દરેક જોગવાઈ, ${distS || "આ"} ફાઈલની હકીકતો પર લાગુ કરેલ. 'પૂર્વશરત' બઢતી પહેલાં પૂર્ણ થવી જોઈએ; 'બઢતી પછી' પસંદ થયેલ ઉમેદવાર માટેની શરત છે. ગુજરાતી પાઠ ભાવાર્થરૂપે છે.`, { merge: "H" });
+    H(wsRules, 4, ["ક્રમ", "નિયમ", "આધાર (જાહેરનામું)", "નિયમ શું કહે છે", "પ્રકાર", "ઉમેદવારોને લાગુ", "પૂર્ણ?", "ફાઈલ પાન"], [6, 26, 40, 52, 14, 52, 13, 18]);
     RU.forEach((ru, i) => {
       const r = 5 + i;
       [i + 1, ru.rule, ru.source, ru.text, ru.type, ru.applied, met(ru.met), ru.pages].forEach((v, j) =>
-        wsRules.set({ r, c: j + 1 }, v ?? "", st({ size: 9, bold: j === 1 || j === 6, color: j === 2 ? MUTED : "FF000000", align: [0, 4, 6].includes(j) ? "center" : "left" })));
-      wsRules.height(r, 90);
+        wsRules.set({ r, c: j + 1 }, v ?? "", st({ size: 9, bold: j === 1 || j === 6, color: j === 2 ? MUTED : BLACK, align: [0, 4, 6].includes(j) ? "center" : "left" })));
+      wsRules.height(r, Math.max(45, 13 * Math.max(lines(ru.text, 60), lines(ru.applied, 60), lines(ru.source, 46)) + 6));
     });
     if (RU.length) {
-      statusCF(wsRules, `G5:G${4 + RU.length}`);
-      const r = 6 + RU.length, E_ = `E5:E${4 + RU.length}`, G_ = `G5:G${4 + RU.length}`;
-      const pre = RU.filter((x) => x.type === "પૂર્વશરત"), preOk = pre.filter((x) => met(x.met) === Y).length;
-      wsRules.set({ r, c: 2 }, "પૂર્ણ થયેલ પૂર્વશરતો", st({ bold: true, fill: SUB })); wsRules.merge(`B${r}:C${r}`);
-      wsRules.set({ r, c: 4 }, { f: `=COUNTIFS(${E_},"પૂર્વશરત",${G_},"${Y}")&" / "&COUNTIF(${E_},"પૂર્વશરત")`, v: `${preOk} / ${pre.length}` }, st({ bold: true, align: "center" }));
+      const e = 4 + RU.length, E_ = `E5:E${e}`, G_ = `G5:G${e}`;
+      statusCF(wsRules, G_);
+      const cnt = (t, ok) => RU.filter((x) => x.type === t && (!ok || met(x.met) === Y)).length;
+      const notOk = (t) => RU.some((x) => x.type === t && met(x.met) !== Y);
+      const sumr = [
+        ["પૂર્ણ થયેલ પૂર્વશરતો", `=COUNTIFS(${E_},"પૂર્વશરત",${G_},"${Y}")&" / "&COUNTIF(${E_},"પૂર્વશરત")`, `${cnt("પૂર્વશરત", 1)} / ${cnt("પૂર્વશરત")}`],
+        ["પાલન થયેલ કાર્યપદ્ધતિના નિયમો", `=COUNTIFS(${E_},"કાર્યપદ્ધતિ",${G_},"${Y}")&" / "&COUNTIF(${E_},"કાર્યપદ્ધતિ")`, `${cnt("કાર્યપદ્ધતિ", 1)} / ${cnt("કાર્યપદ્ધતિ")}`],
+        ["આધાર લીધેલ મુક્તિ", `=COUNTIFS(${E_},"મુક્તિ",${G_},"${Y}")`, cnt("મુક્તિ", 1)],
+        ["બઢતી પછીની શરતો", `=COUNTIF(${G_},"${AFTER}")`, RU.filter((x) => met(x.met) === AFTER).length],
+        ["નિયમો મુજબ પરિણામ", `=IF(COUNTIFS(${E_},"પૂર્વશરત",${G_},"<>${Y}")>0,"${C}",IF(COUNTIFS(${E_},"કાર્યપદ્ધતિ",${G_},"<>${Y}")>0,"${EL} – કાર્યપદ્ધતિનો મુદ્દો બાકી","${EL}"))`,
+          notOk("પૂર્વશરત") ? C : notOk("કાર્યપદ્ધતિ") ? `${EL} – કાર્યપદ્ધતિનો મુદ્દો બાકી` : EL]];
+      sumr.forEach(([lab, f, v], i) => {
+        const r = e + 2 + i;
+        wsRules.set({ r, c: 2 }, lab, st({ bold: true, fill: SUB })); wsRules.merge(`B${r}:C${r}`);
+        wsRules.set({ r, c: 4 }, { f, v }, st({ bold: true, align: "center" }));
+      });
+      const nr = e + 2 + sumr.length + 1;
+      const note = X.rules_note || "નિયમનો પાઠ ભાવાર્થરૂપે છે; ભરતી નિયમો ફાઈલમાંની નકલમાંથી અને ખાતાકીય પરીક્ષા નિયમો-2022 (સુધારા સહિત), હિન્દી નિયમો-2020 તથા મંડળ પરામર્શ નિયમો-2021 ચકાસેલ નિયમ સંગ્રહમાંથી લીધેલ છે.";
+      wsRules.set({ r: nr, c: 2 }, note, st({ size: 9, color: MUTED })); wsRules.merge(`B${nr}:H${nr}`); wsRules.height(nr, Math.max(30, 13 * lines(note, 200)));
     }
-    linkify(wsRules, [["H", true]], 8);
+    wsRules.freeze = "C5";
+    linkify(wsRules, [["H", "auto"]], 8);
 
     // ---------- File map
-    title(wsMap, `ફાઈલ નકશો – ${R.base || "PDF"} (${n} પાન)`, "'બધા પાન' પર ક્લિક કરવાથી તે દસ્તાવેજના બધા પાન એક સાથે ખુલશે. 'pages' અને 'links' ફોલ્ડર આ એક્સેલ ફાઈલની બાજુમાં જ રાખવા.");
-    H(wsMap, 4, ["ક્રમ", "દસ્તાવેજ", "PDF પાન", "બધા પાન", "પ્રથમ પાન"], [6, 62, 12, 16, 14]);
-    const groups = [];
-    for (const pg of (R.pages || []).slice().sort((a, b) => a.p - b.p)) {
-      const lab = (TYPE_GU[pg.t] || TYPE_GU.other) + (pg.who ? ` – ${pg.who}` : "");
-      const g = groups[groups.length - 1];
-      if (g && g.lab === lab && g.b === pg.p - 1) g.b = pg.p; else groups.push({ lab, a: pg.p, b: pg.p });
+    wsMap.landscape = false; wsMap.fitH = 1;
+    title(wsMap, `ફાઈલ નકશો – ${pdfName} (${n} પાન)`, "'બધા પાન' પર ક્લિક કરવાથી તે દસ્તાવેજના બધા પાન એક સાથે ખુલશે; 'પ્રથમ પાન' પર ક્લિક કરવાથી ફક્ત પ્રથમ પાન. 'pages' અને 'links' ફોલ્ડર આ એક્સેલ ફાઈલની બાજુમાં જ રાખવા.", { merge: "E", h2: 31.5 });
+    ["ક્રમ", "દસ્તાવેજ", "PDF પાન", "બધા પાન", "પ્રથમ પાન"].forEach((h, i) => wsMap.set({ r: 4, c: i + 1 }, h, st({ bold: true, size: 11, color: WHITE, fill: NAVY, align: "center", valign: "center" })));
+    [6, 62, 12, 16, 14].forEach((w, i) => wsMap.width(i + 1, w));
+    let groups = (F.file_map || []).map((x) => ({ lab: x.doc || "", g: refGroups(String(x.pages || ""), n, true) })).filter((x) => x.lab && x.g.length);
+    if (!groups.length) {
+      const gs = [];
+      for (const pg of (R.pages || []).slice().sort((a, b) => a.p - b.p)) {
+        const lab = (TYPE_GU[pg.t] || TYPE_GU.other) + (pg.who ? ` – ${pg.who}` : "");
+        const g = gs[gs.length - 1];
+        if (g && g.lab === lab && g.b === pg.p - 1) g.b = pg.p; else gs.push({ lab, a: pg.p, b: pg.p });
+      }
+      groups = gs.map((x) => ({ lab: x.lab, g: [[x.a, x.b]] }));
     }
-    groups.forEach((g, i) => {
-      const r = 5 + i;
-      wsMap.set({ r, c: 1 }, i + 1, st({ align: "center" })); wsMap.set({ r, c: 2 }, g.lab, st({}));
-      wsMap.set({ r, c: 3 }, glabel([g.a, g.b]), st({ align: "center", underline: true, color: LINK })); wsMap.link(`C${r}`, target([[g.a, g.b]]), "પાન ખોલો");
-      wsMap.set({ r, c: 4 }, g.b > g.a ? `બધા ${g.b - g.a + 1} પાન →` : "પાન →", st({ align: "center", underline: true, color: LINK })); wsMap.link(`D${r}`, target([[g.a, g.b]]), "બધા પાન ખોલો");
-      wsMap.set({ r, c: 5 }, `પાન ${g.a}`, st({ align: "center", underline: true, color: LINK })); wsMap.link(`E${r}`, target([[g.a, g.a]]), "પ્રથમ પાન");
+    groups.forEach((x, i) => {
+      const r = 5 + i, cntP = x.g.reduce((k, [a, b]) => k + b - a + 1, 0), firstP = x.g[0][0];
+      wsMap.set({ r, c: 1 }, i + 1, st({ align: "center" })); wsMap.set({ r, c: 2 }, x.lab, st({}));
+      wsMap.set({ r, c: 3 }, x.g.map(glabel).join(", "), st({ align: "center", underline: true, color: LINK })); wsMap.link(`C${r}`, target(x.g), "પાન ખોલો");
+      wsMap.set({ r, c: 4 }, cntP > 1 ? `બધા ${cntP} પાન →` : "પાન →", st({ align: "center", underline: true, color: LINK })); wsMap.link(`D${r}`, target(x.g), "બધા પાન ખોલો");
+      wsMap.set({ r, c: 5 }, `પાન ${firstP}`, st({ align: "center", underline: true, color: LINK })); wsMap.link(`E${r}`, target([[firstP, firstP]]), "પ્રથમ પાન");
     });
-    wsMap.freeze = "A5";
+    wsMap.freeze = "A5"; wsMap.printCols = 5;
 
     // ---------- Result
-    const cl = (i) => XW.colName(2 + i), lastRC = 2 + cands.length;
-    title(wsRes, "બઢતી માટે લાયકાતનું પરિણામ", `${F.feeder || ""} → ${F.promotion || ""} – ${F.district || ""}. દરખાસ્ત ફાઈલ ${R.base || ""} (${n} પાન).`);
+    const cl = (i) => XW.colName(2 + i), lastRC = 2 + cands.length, LR = XW.colName(lastRC), LCAND = XW.colName(1 + Math.max(1, cands.length));
+    title(wsRes, "બઢતી માટે લાયકાતનું પરિણામ", `${feederS ? feederS + "માંથી " : ""}${promoT}${dist ? " – " + dist : ""}. દરખાસ્ત ફાઈલ ${pdfName} (${n} પાન)નું વિશ્લેષણ.`, { size: 16, merge: LR, h2: 15 });
     wsRes.width(1, 34); cands.forEach((_, i) => wsRes.width(2 + i, 36)); wsRes.width(lastRC, 20);
-    wsRes.set("A4", "", st({ fill: SUB }));
-    cands.forEach((c, i) => wsRes.set({ r: 4, c: 2 + i }, `${c.short || c.name} (ક્રમ ${c.seniority ?? "?"})`, st({ bold: true, fill: NAVY, color: WHITE, align: "center" })));
+    cands.forEach((c, i) => wsRes.set({ r: 4, c: 2 + i }, `${nm(c)} (ક્રમ ${c.seniority ?? "?"})`, st({ bold: true, fill: NAVY, color: WHITE, align: "center" })));
     wsRes.set({ r: 4, c: lastRC }, "આધાર", st({ bold: true, fill: NAVY, color: WHITE, align: "center" }));
     wsRes.set("A5", "પરિણામ", st({ bold: true, size: 13, fill: SUB })); wsRes.set("A6", "પૂર્ણ થયેલ માપદંડ", st({ bold: true }));
     const RV = ["બઢતી માટે લાયક", "બઢતી માટે લાયક નથી", NRV];
@@ -769,132 +997,183 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
       wsRes.set({ r: 5, c: 2 + i }, { f: `=IF(${e.sh}F${e.vRow}="${EL}","${RV[0]}",IF(${e.sh}F${e.vRow}="${NEL}","${RV[1]}","${RV[2]}"))`, v: e.verdict === EL ? RV[0] : e.verdict === NEL ? RV[1] : RV[2] }, st({ bold: true, size: 12, align: "center" }));
       wsRes.set({ r: 6, c: 2 + i }, { f: `=${e.sh}F${e.metRow}&" માપદંડ પૂર્ણ"`, v: e.met + " માપદંડ પૂર્ણ" }, st({ bold: true, align: "center" }));
     });
+    wsRes.set({ r: 5, c: lastRC }, "લાયકાત પત્રકો", st({ size: 9 })); wsRes.set({ r: 6, c: lastRC }, "'લાગુ નથી' સિવાય", st({ size: 9 }));
     if (cands.length) verdictCF(wsRes, `B5:${cl(cands.length - 1)}5`, RV);
     wsRes.height(5, 30);
     let rr = 8;
-    wsRes.set({ r: rr, c: 1 }, "ઉમેદવારની વિગત", st({ bold: true, fill: NAVY, color: WHITE })); wsRes.merge(`A${rr}:${XW.colName(lastRC)}${rr}`); rr++;
-    const det = [["નામ", (c) => c.name, "", ""], ["હાલનો હોદ્દો", (c) => c.present, "", ""], ["પ્રવરતા ક્રમ", (c) => num(c.seniority), "", ""], ["જાતિ", (c) => c.category, "", ""],
-      ["જન્મ તારીખ", (c) => D(c.dob) || c.dob, "", ""], ["ફીડર સંવર્ગમાં તારીખ", (c) => D(c.join) || c.join, "", ""],
-      ["સમિતિની તારીખે અનુભવ", (c, i) => EL_[i].sv ? `${EL_[i].sv.y} વર્ષ ${EL_[i].sv.m} માસ ${EL_[i].sv.d} દિવસ` : "—", "", ""],
-      ["લઘુત્તમ ઉપરાંતના દિવસ", (c, i) => EL_[i].margin, "", ""], ["ખાતાકીય પરીક્ષા", (c) => c.exam, "", ""],
-      ["ખાનગી અહેવાલના સરેરાશ ગુણ", (c, i) => aparRef[i].avg, "", ""], ["વયનિવૃત્તિ તારીખ", (c) => c.retirement, "", ""]];
-    for (const [lab, fn] of det) {
+    wsRes.set({ r: rr, c: 1 }, "ઉમેદવારની વિગત", st({ bold: true, fill: NAVY, color: WHITE })); wsRes.merge(`A${rr}:${LR}${rr}`); rr++;
+    const paP = pagesOf(cands.map((c) => c.pa_pages)), senP = pagesOf(F.seniority_source || F.seniority_list), dpcP = pagesOf(F.dpc_source);
+    const det = [
+      ["નામ", (c) => c.name, pp(pagesOf(paP, senP))],
+      ["હાલનો હોદ્દો", (c) => c.present, pp(pagesOf(paP, senP))],
+      [`પ્રવરતા ક્રમ${feederS ? ` (${feederS} યાદી${F.seniority_as_on ? ", " + F.seniority_as_on : ""})` : ""}`, (c, i) => ({ f: `=${EL_[i].sh}C11`, v: num(c.seniority) ?? "" }), pp(senP)],
+      ["જાતિ", (c) => c.category, pp(pagesOf(paP, senP))],
+      ["જન્મ તારીખ", (c, i) => ({ f: `=${EL_[i].sh}C6`, v: D(c.dob) || "" }), pp(paP || pagesOf(cands.map((c) => c.dob_source)))],
+      [`${feederS || "ફીડર"} સંવર્ગમાં તારીખ`, (c, i) => ({ f: `=${EL_[i].sh}C5`, v: D(c.join) || "" }), pp(pagesOf(paP, senP, dpcP))],
+      [`સમિતિની તારીખે ${feederS || "ફીડર સંવર્ગ"} તરીકે અનુભવ`, (c, i) => ({ f: `=${EL_[i].sh}F${EL_[i].first + 1}`, v: EL_[i].sv ? `${EL_[i].sv.y} વર્ષ ${EL_[i].sv.m} માસ ${EL_[i].sv.d} દિવસ` : "તારીખ નથી" }), "ગણતરી"],
+      [`${miny} વર્ષ ઉપરાંતના દિવસ`, (c, i) => ({ f: `=${EL_[i].sh}C14`, v: EL_[i].margin }), "ગણતરી"],
+      [F.exam_name || "ખાતાકીય પરીક્ષા", (c) => c.exam, pp(pagesOf(cands.map((c) => c.exam_pages || "")))],
+      ["ખાનગી અહેવાલના સરેરાશ ગુણ", (c, i) => ({ f: `=${aparRef[i].avgCell}`, v: aparRef[i].avg }), "ખાનગી અહેવાલ પત્રકો"],
+      ["વયનિવૃત્તિ તારીખ (પત્રક-ક)", (c) => c.retirement, pp(pagesOf(cands.map((c) => c.retirement_source)))],
+    ];
+    for (const [lab, fn, src] of det) {
       wsRes.set({ r: rr, c: 1 }, lab, st({ bold: true }));
-      cands.forEach((c, i) => wsRes.set({ r: rr, c: 2 + i }, fn(c, i) ?? "", st({})));
+      cands.forEach((c, i) => { const v = fn(c, i); wsRes.set({ r: rr, c: 2 + i }, v ?? "", st({ align: v && typeof v === "object" ? "center" : "left", num: lab.startsWith("ખાનગી") ? "0.0" : undefined })); });
+      wsRes.set({ r: rr, c: lastRC }, src || "", st({ size: 9 }));
       rr++;
     }
-    rr++;
-    wsRes.set({ r: rr, c: 1 }, "લાયકાતના માપદંડ", st({ bold: true, fill: NAVY, color: WHITE })); wsRes.merge(`A${rr}:${XW.colName(lastRC)}${rr}`); rr++;
+    wsRes.set({ r: rr, c: 1 }, "બઢતીની જગ્યા", st({ bold: true }));
+    wsRes.set({ r: rr, c: 2 }, F.post || F.promotion || "", st({})); if (cands.length > 1) wsRes.merge(`B${rr}:${LCAND}${rr}`);
+    wsRes.set({ r: rr, c: lastRC }, pp(pagesOf(F.post_source || "")), st({ size: 9 }));
+    rr += 2;
+    wsRes.set({ r: rr, c: 1 }, "લાયકાતના માપદંડ (વિગત 'લાયકાત' પત્રકોમાં)", st({ bold: true, fill: NAVY, color: WHITE })); wsRes.merge(`A${rr}:${LR}${rr}`); rr++;
     const cr1 = rr;
-    CRIT.forEach((name, k) => {
-      wsRes.set({ r: rr, c: 1 }, name, st({ bold: true }));
+    CRIT.forEach((_, k) => {
+      wsRes.set({ r: rr, c: 1 }, cands.length ? { f: `=${EL_[0].sh}B${EL_[0].first + k}`, v: critName(k) } : critName(k), st({ bold: true }));
       cands.forEach((c, i) => { const e = EL_[i]; wsRes.set({ r: rr, c: 2 + i }, { f: `=${e.sh}G${e.first + k}`, v: e.metVals[k] }, st({ bold: true, align: "center" })); });
       rr++;
     });
     if (cands.length) statusCF(wsRes, `B${cr1}:${cl(cands.length - 1)}${rr - 1}`);
     rr++;
-    const acts = OBS.filter((o) => /કાર્યવાહી/.test(o.type || ""));
-    wsRes.set({ r: rr, c: 1 }, "મંડળના અભિપ્રાય પહેલાં નિકાલ કરવાના મુદ્દા", st({ bold: true, fill: AMBER }));
-    wsRes.set({ r: rr, c: 2 }, acts.length ? acts.map((o, i) => `${i + 1}) ${o.text}`).join("\n") : "કોઈ મુદ્દો નથી.", st({}));
-    wsRes.merge(`B${rr}:${XW.colName(lastRC)}${rr}`); wsRes.height(rr, Math.min(400, 40 + acts.length * 45)); rr += 2;
-    wsRes.set({ r: rr, c: 1 }, "નિષ્કર્ષ", st({ bold: true, fill: SUB }));
-    wsRes.set({ r: rr, c: 2 }, X.conclusion || "", st({})); wsRes.merge(`B${rr}:${XW.colName(lastRC)}${rr}`); wsRes.height(rr, 100);
-    linkify(wsRes, [["B", false]], lastRC);
-
-    // ---------- Front page
-    const fp = wsFP; fp.landscape = false;
-    [6, 30, 18, 18, 18, 18, 18, 14].forEach((w, i) => fp.width(i + 1, w));
-    const lastFC = Math.max(8, 3 + cands.length);
-    const LC = XW.colName(lastFC);
-    fp.set("A1", "ગુજરાત પંચાયત સેવા પસંદગી મંડળ, ગાંધીનગર", st({ bold: true, size: 14, color: NAVY, align: "center" })); fp.merge(`A1:${LC}1`);
-    fp.set("A2", "બઢતી દરખાસ્ત – ચકાસણી પત્રક (ફાઈલનું આગળનું પાનું)", st({ bold: true, size: 12, align: "center" })); fp.merge(`A2:${LC}2`);
-    fp.set("A3", "પીળા ખાનામાં વિગત ભરવી; રાખોડી ખાના આપોઆપ ગણાય છે.", { size: 9, italic: true, color: MUTED, border: false });
-    let fr = 5;
-    const sec = (t) => { fp.set({ r: fr, c: 1 }, t, st({ bold: true, color: WHITE, fill: NAVY })); fp.merge(`A${fr}:${LC}${fr}`); fr++; };
-    const kv = (lab, v, o = {}) => { fp.set({ r: fr, c: 1 }, lab, st({ bold: true })); fp.merge(`A${fr}:B${fr}`); fp.set({ r: fr, c: 3 }, v ?? "", st({ fill: o.calc ? GREY : YEL, ...o })); fp.merge(`C${fr}:${LC}${fr}`); fr++; return fr - 1; };
-    sec("(ક) ફાઈલની વિગત");
-    kv("ફાઈલ નં. / દફતર", R.file_no || ""); kv("ઇનવર્ડ નં.", R.inward_no || "");
-    const inR = kv("ઇનવર્ડ તારીખ", D(R.inward_date) || "");
-    kv("પડતર દિવસ", { f: `=IF(C${inR}="","",TODAY()-C${inR})`, v: "" }, { calc: true });
-    kv("જિલ્લા પંચાયત", F.district); kv("દરખાસ્ત પત્ર નં. / તારીખ", F.letter); kv("ફીડર સંવર્ગ", F.feeder); kv("બઢતીનો સંવર્ગ", F.promotion);
-    kv("ભરતી નિયમો", F.rules_text); kv("આખરી પ્રવરતા યાદી", F.seniority_list); const dpcR = kv("ખાતાકીય બઢતી સમિતિની તારીખ", dpc || "");
-    kv("ખાલી જગ્યા (બઢતી ક્વોટા)", vval[12] ?? V.vacant_promotion ?? ""); kv("વિચારણા ક્ષેત્ર", F.zone_from ? `ક્રમ ${F.zone_from} થી ${F.zone_to}` : "");
-    kv("લઘુત્તમ અનુભવ (વર્ષ) / વયનિવૃત્તિ", `${F.min_years ?? 5} વર્ષ / ${F.retire_age ?? 58} વર્ષ`); kv("યોગ્ય / અયોગ્ય ઠરાવેલ", F.fit_unfit);
-    if (F.earlier_dpc) kv("અગાઉની દરખાસ્ત / મંડળનો અભિપ્રાય", F.earlier_dpc);
-    fr++; sec("(ખ) સામેલ દસ્તાવેજોની ચકાસણી (પંચાયત વિભાગનો પરિપત્ર તા.19-07-2021)");
-    ["ક્રમ", "દસ્તાવેજ", "મળેલ?", "પાન નં.", "નોંધ"].forEach((h, i) => fp.set({ r: fr, c: [1, 2, 3, 4, 5][i] }, h, st({ bold: true, fill: SUB, align: "center" })));
-    fp.merge(`E${fr}:${LC}${fr}`); fr++;
-    const d1 = fr; const docs = F.docs || [];
-    DOCS.forEach((d, i) => {
-      const x = docs[i] || {};
-      fp.set({ r: fr, c: 1 }, i + 1, st({ align: "center" })); fp.set({ r: fr, c: 2 }, d, st({}));
-      fp.set({ r: fr, c: 3 }, met(x.received) === C && !x.received ? "" : (MET.has(x.received) ? x.received : ""), st({ align: "center", fill: YEL }));
-      fp.set({ r: fr, c: 4 }, x.pages ? String(x.pages).replace(/^\s*(p\.|પાન)\s*/, "") : "", st({ align: "center", fill: YEL }));
-      fp.set({ r: fr, c: 5 }, x.remark || "", st({ size: 9, fill: YEL })); fp.merge(`E${fr}:${LC}${fr}`); fr++;
-    });
-    fp.dropdown(`C${d1}:C${fr - 1}`, [Y, N, PART, NA]); statusCF(fp, `C${d1}:C${fr - 1}`);
-    const dc = (v) => docs.filter((x) => x.received === v).length;
-    fp.set({ r: fr, c: 1 }, "દસ્તાવેજની સ્થિતિ", st({ bold: true, fill: SUB })); fp.merge(`A${fr}:B${fr}`);
-    fp.set({ r: fr, c: 3 }, { f: `=COUNTIF(C${d1}:C${fr - 1},"${Y}")&" મળેલ, "&COUNTIF(C${d1}:C${fr - 1},"${PART}")&" અંશતઃ, "&COUNTIF(C${d1}:C${fr - 1},"${N}")&" ખૂટતા, "&COUNTIF(C${d1}:C${fr - 1},"${NA}")&" લાગુ નથી"`, v: `${dc(Y)} મળેલ, ${dc(PART)} અંશતઃ, ${dc(N)} ખૂટતા, ${dc(NA)} લાગુ નથી` }, st({ bold: true, fill: GREY }));
-    fp.merge(`C${fr}:${LC}${fr}`); const docLast = fr - 1; fr += 2;
-    fp.breaks.push(fr - 1);
-    sec("(ગ) ઉમેદવારવાર લાયકાતની ચકાસણી");
-    fp.set({ r: fr, c: 1 }, "#", st({ bold: true, fill: SUB, align: "center" })); fp.set({ r: fr, c: 2 }, "વિગત / માપદંડ", st({ bold: true, fill: SUB }));
-    cands.forEach((c, i) => fp.set({ r: fr, c: 3 + i }, `ઉમેદવાર ${i + 1}`, st({ bold: true, fill: SUB, align: "center" })));
-    fr++;
-    const crow = (lab, fn, o = {}) => { fp.set({ r: fr, c: 1 }, o.k ?? "", st({ align: "center" })); fp.set({ r: fr, c: 2 }, lab, st({ bold: !o.k })); cands.forEach((c, i) => fp.set({ r: fr, c: 3 + i }, fn(c, i) ?? "", st({ align: "center", fill: o.fill }))); fr++; return fr - 1; };
-    const nmR = crow("નામ", (c) => c.short || c.name, { fill: YEL }); fp.height(nmR, 36);
-    crow("પ્રવરતા ક્રમ", (c) => num(c.seniority), { fill: YEL }); crow("જાતિ", (c) => c.category, { fill: YEL });
-    crow("જન્મ તારીખ", (c) => D(c.dob) || "", { fill: YEL }); crow("ફીડર સંવર્ગમાં તારીખ", (c) => D(c.join) || "", { fill: YEL });
-    crow("અનુભવ (સમિતિની તારીખે)", (c, i) => EL_[i].sv ? `${EL_[i].sv.y} વર્ષ ${EL_[i].sv.m} માસ` : "", { fill: GREY });
-    const fc1 = fr;
-    CRIT.forEach((name, k) => crow(name, (c, i) => ({ f: `=${EL_[i].sh}G${EL_[i].first + k}`, v: EL_[i].metVals[k] }), { k: k + 1, fill: GREY }));
-    if (cands.length) statusCF(fp, `C${fc1}:${XW.colName(2 + cands.length)}${fr - 1}`);
-    crow("પૂર્ણ થયેલ માપદંડ", (c, i) => ({ f: `=${EL_[i].sh}F${EL_[i].metRow}`, v: EL_[i].met }), { fill: GREY });
-    const vR = crow("પરિણામ", (c, i) => ({ f: `=${EL_[i].sh}F${EL_[i].vRow}`, v: EL_[i].verdict }), { fill: GREY });
-    if (cands.length) verdictCF(fp, `C${vR}:${XW.colName(2 + cands.length)}${vR}`);
-    const dR = crow("સમિતિનો નિર્ણય", (c) => c.dpc_decision || "", { fill: YEL });
-    if (cands.length) fp.dropdown(`C${dR}:${XW.colName(2 + cands.length)}${dR}`, ["યોગ્ય", "અયોગ્ય"]);
-    fr++; sec("(ઘ) ક્ષતિઓ / મુદ્દાઓ");
-    fp.set({ r: fr, c: 1 }, "#", st({ bold: true, fill: SUB, align: "center" })); fp.set({ r: fr, c: 2 }, "મુદ્દો (પાન સાથે)", st({ bold: true, fill: SUB }));
-    fp.merge(`B${fr}:${XW.colName(lastFC - 1)}${fr}`); fp.set({ r: fr, c: lastFC }, "પ્રકાર", st({ bold: true, fill: SUB, align: "center" })); fr++;
-    const o1 = fr; const top = [...OBS.filter((o) => /કાર્યવાહી/.test(o.type || "")), ...OBS.filter((o) => !/કાર્યવાહી/.test(o.type || ""))].slice(0, 8);
-    for (let i = 0; i < 8; i++) {
-      const o = top[i];
-      fp.set({ r: fr, c: 1 }, i + 1, st({ align: "center" }));
-      fp.set({ r: fr, c: 2 }, o ? `${o.text}${o.pages ? " (" + o.pages + ")" : ""}`.slice(0, 600) : "", st({ size: 9, fill: YEL })); fp.merge(`B${fr}:${XW.colName(lastFC - 1)}${fr}`);
-      fp.set({ r: fr, c: lastFC }, o ? (/કાર્યવાહી/.test(o.type || "") ? "જિ.વિ.અ.ને પૃચ્છા" : "નોંધ") : "", st({ align: "center", fill: YEL }));
-      fp.height(fr, o ? Math.max(30, 13 * (Math.floor((o.text || "").length / 110) + 2)) : 20); fr++;
+    const hist = (F.history || []).filter((h) => h && (h.step || h.text));
+    if (hist.length) {
+      wsRes.set({ r: rr, c: 1 }, "ફાઈલની કાર્યવાહીનો ક્રમ", st({ bold: true, fill: NAVY, color: WHITE })); wsRes.merge(`A${rr}:${LR}${rr}`); rr++;
+      for (const h of hist) {
+        wsRes.set({ r: rr, c: 1 }, h.step || "", st({ bold: true }));
+        wsRes.set({ r: rr, c: 2 }, h.text || "", st({})); if (cands.length > 1) wsRes.merge(`B${rr}:${LCAND}${rr}`);
+        wsRes.set({ r: rr, c: lastRC }, h.pages || "–", st({ size: 9 }));
+        wsRes.height(rr, Math.max(31.5, 13 * lines(h.text, 36 * Math.max(1, cands.length) * 1.1))); rr++;
+      }
+      rr++;
     }
-    fp.dropdown(`${LC}${o1}:${LC}${fr - 1}`, ["જિ.વિ.અ.ને પૃચ્છા", "નોંધ"]);
-    fp.cf(`${LC}${o1}:${LC}${fr - 1}`, [{ eq: "જિ.વિ.અ.ને પૃચ્છા", style: { fill: AMBER, bold: true, color: "FF7F5500" } }]);
-    fr++; fp.breaks.push(fr - 1);
-    sec("(ચ) સૂચિત કાર્યવાહી");
-    const ACTS = ["સંમત – બઢતીની ભલામણ", "શરતોને આધીન સંમત", "જિ.વિ.અ. પાસેથી ખુલાસો મંગાવવો", "દરખાસ્ત પરત કરવી"];
-    fp.set({ r: fr, c: 1 }, "સૂચિત કાર્યવાહી", st({ bold: true })); fp.merge(`A${fr}:B${fr}`);
-    fp.set({ r: fr, c: 3 }, ACTS.includes(X.action) ? X.action : (acts.length ? ACTS[2] : ACTS[0]), st({ bold: true, fill: YEL })); fp.merge(`C${fr}:E${fr}`);
-    fp.dropdown(`C${fr}`, ACTS);
-    fp.set({ r: fr, c: 6 }, "ખુલાસાના મુદ્દા", st({ bold: true })); fp.set({ r: fr, c: 7 }, { f: `=COUNTIF(${LC}${o1}:${LC}${o1 + 7},"જિ.વિ.અ.ને પૃચ્છા")`, v: top.filter((o) => /કાર્યવાહી/.test(o.type || "")).length }, st({ align: "center", fill: GREY }));
-    fr++;
-    fp.set({ r: fr, c: 1 }, "નોંધ", st({ bold: true, fill: SUB })); fp.merge(`A${fr}:${LC}${fr}`); fr++;
-    fp.set({ r: fr, c: 1 }, X.note || "", st({ fill: YEL })); fp.merge(`A${fr}:${LC}${fr}`); fp.height(fr, 190); fr += 2;
-    sec("(છ) રજૂઆત અને મંજૂરી");
-    [["A", "રજૂ કરનાર (ડીલીંગ ક્લાર્ક)"], ["C", "સેકશન અધિકારી"], ["E", "નાયબ સચિવ"], ["G", "સચિવ"]].forEach(([col, t]) => {
-      fp.set(`${col}${fr}`, t, st({ bold: true, align: "center", fill: SUB }));
-      fp.set(`${col}${fr + 1}`, "", st({})); fp.set(`${col}${fr + 2}`, "નામ:", st({ size: 9 })); fp.set(`${col}${fr + 3}`, "તારીખ:", st({ size: 9 }));
-    });
-    fp.height(fr + 1, 40);
-    fp.set({ r: fr + 5, c: 1 }, "પંચાયત, ગ્રામ ગૃહ નિર્માણ અને ગ્રામ વિકાસ વિભાગના પરિપત્ર નં. બઢત/152021/920/ખ તા.19-07-2021ના ચેકલીસ્ટના સંદર્ભમાં તૈયાર કરેલ.", { size: 8, italic: true, color: MUTED, border: false });
-    linkify(fp, [["D", true]], lastFC);
-    void docLast; void dpcR;
+    const issues = X.issues || (acts.length ? acts.map((o, i) => `${i + 1}) ${o.text}`).join("\n") : "કોઈ મુદ્દો નથી.");
+    wsRes.set({ r: rr, c: 1 }, "મંડળના અભિપ્રાય પહેલાં નિકાલ કરવાના મુદ્દા", st({ bold: true, fill: AMBER }));
+    wsRes.set({ r: rr, c: 2 }, issues, st({})); wsRes.merge(`B${rr}:${LR}${rr}`); wsRes.height(rr, Math.min(409, Math.max(45, 14 * lines(issues, 40 * (cands.length + 1))))); rr += 2;
+    wsRes.set({ r: rr, c: 1 }, "નિષ્કર્ષ", st({ bold: true, fill: SUB }));
+    wsRes.set({ r: rr, c: 2 }, X.conclusion || "", st({})); wsRes.merge(`B${rr}:${LR}${rr}`); wsRes.height(rr, Math.min(409, Math.max(45, 14 * lines(X.conclusion, 40 * (cands.length + 1)))));
+    linkify(wsRes, [[LR, false]], lastRC);
 
-    // ---------- Register row
+    // ---------- Front page (fixed rows, as in the approved format; candidates in C:F)
+    const fp = wsFP; fp.landscape = false;
+    fp.width(1, 5); fp.width(2, 34); [3, 4, 5, 6].forEach((c) => fp.width(c, 17)); fp.width(7, 20);
+    const S9 = (o) => st({ size: 9, valign: "center", ...o });
+    const fset = (ref, v, o) => fp.set(ref, v, S9(o));
+    const sec = (r, t) => { fset(`A${r}`, t, { bold: true, size: 10, color: WHITE, fill: FPG }); fp.merge(`A${r}:G${r}`); fp.height(r, 19.5); };
+    fset("A1", "ગુજરાત પંચાયત સેવા પસંદગી મંડળ, ગાંધીનગર", { bold: true, size: 14, color: FPG, align: "center" }); fp.merge("A1:G1"); fp.height(1, 24);
+    fp.merge("A2:G2");
+    fset("A3", "બઢતી દરખાસ્ત – ચકાસણી પત્રક (ફાઈલનું આગળનું પાનું)", { bold: true, size: 10, fill: FPH, align: "center" }); fp.merge("A3:G3"); fp.height(3, 21.75);
+    fset("A4", "પીળા ખાનામાં વિગત ભરવી; રાખોડી ખાના આપોઆપ ગણાય છે. પરિણામ: હા / ના / ચકાસો / લાગુ નથી.", { size: 8, color: FPMUTED }); fp.merge("A4:G4");
+    sec(6, "(ક) ફાઈલની વિગત");
+    const lab = (r, t, col = "A") => { fset(`${col}${r}`, t, { bold: true }); if (col === "A") fp.merge(`A${r}:B${r}`); };
+    const inp = (ref, v, o = {}) => fset(ref, v ?? "", { fill: FPIN, ...o });
+    const calc = (ref, v, o = {}) => fset(ref, v, { fill: FPCALC, ...o });
+    const inDate = D(R.inward_date);
+    lab(7, "ફાઈલ નં. / દફતર"); inp("C7", R.file_no || F.file_no_text || ""); lab(7, "ઇનવર્ડ નં.", "D"); inp("E7", R.inward_no || ""); fp.merge("E7:G7");
+    lab(8, "ઇનવર્ડ તારીખ"); inp("C8", inDate || "", { align: "center" }); lab(8, "પડતર દિવસ", "D");
+    calc("E8", { f: `=IF(C8="","",TODAY()-C8)`, v: inDate ? days(inDate, new Date(Date.UTC(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()))) : "" }); fp.merge("E8:G8");
+    [[9, "જિલ્લા પંચાયત", dist], [10, "દરખાસ્તનો પત્ર નં. / તારીખ", F.letter], [11, "ફીડર સંવર્ગ (પગાર ધોરણ)", F.feeder], [12, "બઢતીનો સંવર્ગ (પગાર ધોરણ)", F.promotion],
+      [13, "ભરતી નિયમો", F.rules_text], [14, "આખરી પ્રવરતા યાદી", F.seniority_list]].forEach(([r, t, v]) => { lab(r, t); inp(`C${r}`, v || ""); fp.merge(`C${r}:G${r}`); });
+    lab(15, "ખાતાકીય બઢતી સમિતિની તારીખ"); inp("C15", dpc || "", { align: "center" }); lab(15, "ખાલી જગ્યા", "D"); inp("E15", vv[12] ?? "", { align: "center" }); fp.merge("E15:G15");
+    lab(16, "વિચારણા ક્ષેત્ર: પ્રવરતા ક્રમથી"); inp("C16", zf ?? "", { align: "center" }); lab(16, "સુધી", "D"); inp("E16", zt ?? "", { align: "center" }); fp.merge("E16:G16");
+    lab(17, "લઘુત્તમ અનુભવ (વર્ષ)"); inp("C17", miny, { align: "center" }); lab(17, "વયનિવૃત્તિ", "D"); inp("E17", retAge, { align: "center" }); fp.merge("E17:G17");
+    lab(18, "યોગ્ય / અયોગ્ય ઠરાવેલ"); inp("C18", F.fit_unfit || ""); fp.merge("C18:G18");
+    for (let r = 7; r <= 18; r++) fp.height(r, 25.5);
+    sec(20, "(ખ) સામેલ દસ્તાવેજોની ચકાસણી (પંચાયત વિભાગનો પરિપત્ર તા.19-07-2021)");
+    const th = (ref, t) => fset(ref, t, { bold: true, fill: FPH, align: "center" });
+    th("A21", "#"); th("B21", "દસ્તાવેજ"); fp.merge("B21:C21"); th("D21", "મળેલ?"); th("E21", "પાન નં."); th("F21", "નોંધ"); fp.merge("F21:G21"); fp.height(21, 15);
+    const docs = F.docs || [];
+    DOCS.forEach((dn, i) => {
+      const r = 22 + i, x = docs[i] || {};
+      fset(`A${r}`, i + 1, { align: "center" }); fset(`B${r}`, dn); fp.merge(`B${r}:C${r}`);
+      inp(`D${r}`, MET.has(x.received) ? x.received : "", { align: "center" });
+      const pg = x.pages ? String(x.pages).replace(/^\s*(p\.|પાન)\s*/, "") : "";
+      inp(`E${r}`, pg || "–", { align: "center" }); inp(`F${r}`, x.remark || ""); fp.merge(`F${r}:G${r}`); fp.height(r, 21.75);
+    });
+    fp.dropdown("D22:D37", [Y, N, PART, NA]);
+    fp.cf("D22:D37", [{ eq: Y, style: { fill: GREEN, color: "FF006100" } }, { eq: N, style: { fill: RED, color: "FF9C0006" } }, { eq: PART, style: { fill: AMBER, color: "FF7F5500" } }, { eq: NA, style: { fill: GREY } }]);
+    const dcnt = (v) => docs.slice(0, 16).filter((x) => x && x.received === v).length, dblank = 16 - [Y, N, PART, NA].reduce((k, v) => k + dcnt(v), 0);
+    fset("A38", "દસ્તાવેજની સ્થિતિ", { bold: true, fill: FPH }); fp.merge("A38:C38");
+    calc("D38", { f: `=COUNTIF(D22:D37,"${Y}")&" મળેલ, "&COUNTIF(D22:D37,"${PART}")&" અંશતઃ, "&COUNTIF(D22:D37,"${N}")&" ખૂટતા, "&COUNTIF(D22:D37,"${NA}")&" લાગુ નથી, "&COUNTBLANK(D22:D37)&" ચકાસવાના બાકી"`,
+      v: `${dcnt(Y)} મળેલ, ${dcnt(PART)} અંશતઃ, ${dcnt(N)} ખૂટતા, ${dcnt(NA)} લાગુ નથી, ${dblank} ચકાસવાના બાકી` }, { bold: true }); fp.merge("D38:G38"); fp.height(38, 19.5);
+    fp.breaks.push(39);
+    sec(40, "(ગ) ઉમેદવારવાર લાયકાતની ચકાસણી");
+    th("A41", "#"); th("B41", "વિગત / માપદંડ"); ["C", "D", "E", "F"].forEach((col, i) => th(`${col}41`, `ઉમેદવાર ${i + 1}`)); th("G41", "આધાર પાન"); fp.height(41, 25.5);
+    const FC = ["C", "D", "E", "F"], c4 = cands.slice(0, 4);
+    const rowLab = (r, t, k) => { fset(`A${r}`, k ?? "", { align: "center" }); fset(`B${r}`, t, { bold: k == null }); };
+    const srcG = (r, txt) => fset(`G${r}`, String(txt || "").split(", ").filter(Boolean).slice(0, 4).join(", "), { align: "center" }); // at most 4 page groups, so the cell stays one line
+    rowLab(42, "નામ"); FC.forEach((col, i) => inp(`${col}42`, c4[i] ? (c4[i].fp_name || c4[i].name || c4[i].short) : "", { align: "center" })); srcG(42, paP); fp.height(42, 39.75);
+    rowLab(43, "પ્રવરતા ક્રમ"); FC.forEach((col, i) => inp(`${col}43`, c4[i] ? num(c4[i].seniority) ?? "" : "", { align: "center" })); srcG(43, senP);
+    rowLab(44, "જાતિ"); FC.forEach((col, i) => inp(`${col}44`, c4[i]?.category || "", { align: "center" })); srcG(44, pagesOf(paP, senP));
+    rowLab(45, "જન્મ તારીખ"); FC.forEach((col, i) => inp(`${col}45`, c4[i] ? D(c4[i].dob) || "" : "", { align: "center" })); srcG(45, paP || pagesOf(c4.map((c) => c.dob_source)));
+    rowLab(46, "ફીડર સંવર્ગમાં નિમણૂક"); FC.forEach((col, i) => inp(`${col}46`, c4[i] ? D(c4[i].join) || "" : "", { align: "center" })); srcG(46, pagesOf(c4.map((c) => c.join_source)));
+    rowLab(47, "અનુભવ (સમિતિની તારીખે)");
+    FC.forEach((col, i) => { const e = c4[i] ? EL_[i] : null; calc(`${col}47`, { f: `=IF(OR(${col}46="",$C$15=""),"",DATEDIF(${col}46,$C$15,"y")&" વર્ષ "&DATEDIF(${col}46,$C$15,"ym")&" માસ")`, v: e?.sv ? `${e.sv.y} વર્ષ ${e.sv.m} માસ` : "" }, { align: "center" }); });
+    rowLab(48, "ઉંમર (સમિતિની તારીખે)");
+    FC.forEach((col, i) => { const e = c4[i] ? EL_[i] : null; calc(`${col}48`, { f: `=IF(OR(${col}45="",$C$15=""),"",DATEDIF(${col}45,$C$15,"y")&" વર્ષ")`, v: e?.ag ? `${e.ag.y} વર્ષ` : "" }, { align: "center" }); });
+    const fpf = {
+      2: (col, e) => ({ f: `=IF(OR(${col}46="",$C$15="",$C$17=""),"",IF(DATEDIF(${col}46,$C$15,"y")>=$C$17,"${Y}","${N}"))`, v: e?.sv ? (e.sv.y >= miny ? Y : N) : "" }),
+      10: (col, e, c) => { const s = num(c?.seniority); return { f: `=IF(OR(${col}43="",$C$16="",$E$16=""),"",IF(AND(${col}43>=$C$16,${col}43<=$E$16),"${Y}","${N}"))`, v: s == null || zf == null || zt == null ? "" : (s >= zf && s <= zt ? Y : N) }; },
+      11: (col, e, c) => ({ f: `=IF(OR(${col}42="",$E$15=""),"",IF($E$15>0,"${Y}","${N}"))`, v: !c || vv[12] == null ? "" : (vv[12] > 0 ? Y : N) }),
+      12: (col, e) => ({ f: `=IF(OR(${col}45="",$C$15="",$E$17=""),"",IF(DATEDIF(${col}45,$C$15,"y")<$E$17,"${Y}","${N}"))`, v: e?.ag ? (e.ag.y < retAge ? Y : N) : "" }),
+    };
+    FP_CRIT.forEach((name, k) => {
+      const r = 49 + k, kk = k + 1;
+      rowLab(r, name, kk);
+      FC.forEach((col, i) => {
+        const c = c4[i], e = c ? EL_[i] : null;
+        if (fpf[kk]) calc(`${col}${r}`, fpf[kk](col, e, c), { align: "center" });
+        else inp(`${col}${r}`, e ? e.metVals[k] : "", { align: "center" });
+      });
+      srcG(r, pagesOf(c4.map((c) => (c.criteria || [])[k]?.pages || "")));
+    });
+    for (let r = 43; r <= 61; r++) fp.height(r, 21);
+    rowLab(61, "મળેલ માપદંડ");
+    FC.forEach((col, i) => { const e = c4[i] ? EL_[i] : null; calc(`${col}61`, { f: `=IF(${col}42="","",COUNTIF(${col}49:${col}60,"${Y}")&" / "&(12-COUNTIF(${col}49:${col}60,"${NA}")))`, v: e ? e.met : "" }, { align: "center" }); });
+    rowLab(62, "પરિણામ");
+    FC.forEach((col, i) => { const e = c4[i] ? EL_[i] : null; calc(`${col}62`, { f: `=IF(${col}42="","",IF(COUNTIF(${col}49:${col}60,"${N}")>0,"${NEL}",IF(COUNTIF(${col}49:${col}60,"${C}")+COUNTBLANK(${col}49:${col}60)>0,"${NRV}","${EL}")))`, v: e ? e.verdict : "" }, { align: "center", bold: true }); });
+    fp.height(62, 25.5);
+    rowLab(63, "સમિતિનો નિર્ણય"); FC.forEach((col, i) => inp(`${col}63`, c4[i]?.dpc_decision || "", { align: "center" })); srcG(63, pagesOf(F.decision_source || F.dpc_source)); fp.height(63, 21);
+    fp.dropdown("C49:F49 C51:F57", [Y, N, C, NA]); fp.dropdown("C63:F63", ["યોગ્ય", "અયોગ્ય"]);
+    fp.cf("C49:F60", [{ eq: Y, style: { fill: GREEN, color: "FF006100" } }, { eq: N, style: { fill: RED, color: "FF9C0006" } }, { eq: C, style: { fill: AMBER, color: "FF7F5500" } }, { eq: NA, style: { fill: GREY } }]);
+    verdictCF(fp, "C62:F62");
+    fset("A64", "4 થી વધુ ઉમેદવાર હોય તો આ પત્રકની વધારાની નકલ જોડવી.", { size: 8, color: FPMUTED }); fp.merge("A64:G64"); fp.height(64, 15);
+    sec(66, "(ઘ) ક્ષતિઓ / મુદ્દાઓ");
+    th("A67", "#"); th("B67", "મુદ્દો"); fp.merge("B67:F67"); th("G67", "પ્રકાર"); fp.height(67, 15);
+    const top = [...acts, ...OBS.filter((o) => !isQ(o) && !/સ્થિતિ/.test(o.type || ""))].slice(0, 8);
+    for (let i = 0; i < 8; i++) {
+      const r = 68 + i, o = top[i];
+      fset(`A${r}`, i + 1, { align: "center" });
+      const txt = o ? String(o.text || "").slice(0, 700) : "";
+      inp(`B${r}`, txt); fp.merge(`B${r}:F${r}`);
+      inp(`G${r}`, o ? (isQ(o) ? "જિ.વિ.અ.ને પૃચ્છા" : "નોંધ") : "", { align: "center" });
+      fp.height(r, o ? Math.max(24, 12.5 * lines(txt, 95) + 6) : 24);
+    }
+    fp.dropdown("G68:G75", ["જિ.વિ.અ.ને પૃચ્છા", "નોંધ"]);
+    fp.cf("G68:G75", [{ eq: "જિ.વિ.અ.ને પૃચ્છા", style: { fill: AMBER, bold: true, color: "FF7F5500" } }]);
+    fp.breaks.push(76);
+    sec(77, "(ચ) સૂચિત કાર્યવાહી");
+    fset("A78", "સૂચિત કાર્યવાહી", { bold: true }); fp.merge("A78:B78");
+    inp("C78", ACTS.includes(X.action) ? X.action : (acts.length ? ACTS[2] : ACTS[0]), { bold: true }); fp.merge("C78:E78"); fp.dropdown("C78", ACTS);
+    fset("F78", "ખુલાસાના મુદ્દા", { bold: true });
+    calc("G78", { f: `=COUNTIF(G68:G75,"જિ.વિ.અ.ને પૃચ્છા")`, v: top.filter(isQ).length }, { bold: true, align: "center" }); fp.height(78, 24);
+    fset("A79", "નોંધ", { bold: true, fill: FPH }); fp.merge("A79:G79"); fp.height(79, 15);
+    inp("A80", X.note || "", { valign: "top" }); fp.merge("A80:G80"); fp.height(80, Math.min(409, Math.max(60, 12.5 * lines(X.note, 125) + 8)));
+    sec(82, "(છ) રજૂઆત અને મંજૂરી");
+    [["A", "B", "રજૂ કરનાર (ડીલીંગ ક્લાર્ક)"], ["C", "D", "સેકશન અધિકારી"], ["E", "F", "નાયબ સચિવ"], ["G", null, "સચિવ"]].forEach(([a, b, t]) => {
+      th(`${a}83`, t); fset(`${a}84`, ""); fset(`${a}85`, "નામ:"); fset(`${a}86`, "તારીખ:");
+      if (b) { [83, 84, 85, 86].forEach((r) => { fset(`${b}${r}`, ""); fp.merge(`${a}${r}:${b}${r}`); }); }
+    });
+    fp.height(83, 30); fp.height(84, 45.75); fp.height(85, 18); fp.height(86, 18);
+    fset("A87", "પંચાયત, ગ્રામ ગૃહ નિર્માણ અને ગ્રામ વિકાસ વિભાગના પરિપત્ર નં. બઢત/152021/920/ખ તા.19-07-2021ના ચેકલીસ્ટના સંદર્ભમાં તૈયાર કરેલ.", { size: 7, color: FPMUTED }); fp.merge("A87:G87"); fp.height(87, 15);
+    linkify(fp, [["E", "auto"], ["G", "auto"]], 7);
+
+    // ---------- Register row (to copy into Promotion_Register_Gujarati.xlsx)
     title(wsReg, "રજીસ્ટર માટેની હાર", "આ હાર 'Promotion_Register_Gujarati.xlsx'ના રજીસ્ટર પત્રકમાં નકલ કરી શકાય.");
     const RH = ["ફાઈલ નં.", "જિલ્લા પંચાયત", "ઉમેદવાર", "પ્રવરતા ક્રમ", "જાતિ", "ફીડર → બઢતીનો સંવર્ગ", "સમિતિની તારીખ", "દરખાસ્ત પત્ર નં.", "પૂર્ણ માપદંડ", "ચકાસણીનું પરિણામ", "નિકાલ કરવાના મુદ્દા", "સૂચિત કાર્યવાહી", "મંડળમાં સ્થિતિ"];
-    H(wsReg, 4, RH, [12, 16, 28, 10, 12, 30, 12, 22, 10, 14, 60, 22, 16]);
+    H(wsReg, 4, RH, [12, 16, 28, 10, 12, 30, 12, 22, 10, 14, 60, 22, 16]); wsReg.printCols = 13;
     cands.forEach((c, i) => {
       const r = 5 + i, e = EL_[i];
-      [R.file_no || R.base, F.district, c.name, num(c.seniority), c.category, `${F.feeder || ""} → ${F.promotion || ""}`, dpc || "", F.letter, e.met, e.verdict,
+      [R.file_no || F.file_no_text || R.base, dist, c.name, num(c.seniority), c.category, `${feederS} → ${promoS}`, dpc || "", F.letter, e.met, e.verdict,
         acts.map((o) => o.text).join(" ").slice(0, 900), ACTS.includes(X.action) ? X.action : ACTS[2], "ચકાસણી હેઠળ"].forEach((v, j) => wsReg.set({ r, c: j + 1 }, v ?? "", st({ size: 9 })));
     });
 
@@ -944,7 +1223,7 @@ function log(msg, kind) {
   L.append(d); L.scrollTop = L.scrollHeight;
 }
 const bytes = (s) => new TextEncoder().encode(s).length;
-function setBar(id, frac) { $(id).querySelector("i").style.width = Math.max(0, Math.min(100, frac * 100)) + "%"; }
+function setBar(id, frac) { const v = Math.max(0, Math.min(100, frac * 100)); $(id).querySelector("i").style.width = v + "%"; if (id === "pbar") $("pct").textContent = Math.round(v) + "%"; }
 const metClass = (m) => m === Y ? "c-ok" : m === N ? "c-bad" : m === NA || m === "બઢતી પછી" ? "c-na" : "c-warn";
 const verdictOf = (crit) => crit.includes(N) ? "લાયક નથી" : crit.includes(C) ? "ચકાસણી જરૂરી" : "લાયક";
 
@@ -964,12 +1243,12 @@ async function loadPdf(file) {
   if (S.running) return;
   S.pages.forEach((p) => URL.revokeObjectURL(p.url));
   Object.assign(S, { file, pdf: null, n: 0, pages: [], cls: {}, txt: {}, fail: {}, fileJ: null, cands: [], extra: null, R: null, ready: false });
-  $("fname").textContent = file.name; $("filecard").hidden = false; $("rbar").hidden = false; setBar("rbar", 0);
-  $("rmsg").textContent = "PDF ખોલી રહ્યા છીએ…"; $("run").disabled = true; $("dlzip").disabled = true; $("dlxlsx").disabled = true;
+  $("drop").classList.add("compact"); $("drop").querySelector("strong").textContent = "બીજી PDF પસંદ કરો"; $("fname").textContent = file.name; $("fsize").textContent = (file.size / 1048576).toFixed(1) + " MB"; $("fpages").textContent = "…"; $("filecard").hidden = false; $("rbar").hidden = false; setBar("rbar", 0);
+  $("rmsg").textContent = "PDF ખોલી રહ્યા છીએ…"; $("run").disabled = true; $("dlzip").disabled = true; $("dlxlsx").disabled = true; stepState();
   try {
     S.pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
   } catch (e) { $("rmsg").textContent = "આ PDF ખોલી શકાઈ નથી. ફાઈલ બરાબર છે કે નહીં તે તપાસો."; log("PDF ખોલવામાં ભૂલ: " + (e?.message || e), "err"); return; }
-  S.n = S.pdf.numPages; $("fpages").textContent = `${S.n} પાન`;
+  S.n = S.pdf.numPages; $("fpages").textContent = `${S.n} પાન`; $("pgcount").textContent = S.n;
   S.key = `${file.name}|${file.size}|${S.n}`;
   log(`${file.name} – ${S.n} પાન મળ્યા. પાન તૈયાર કરી રહ્યા છીએ.`);
   renderPagesGrid();
@@ -988,7 +1267,6 @@ async function loadPdf(file) {
     setBar("rbar", p / S.n); $("rmsg").textContent = `પાન તૈયાર: ${p} / ${S.n}`;
   }
   $("rmsg").textContent = `${S.n} પાન તૈયાર. હવે 'ચકાસણી શરૂ કરો' દબાવો.`;
-  $("s1").classList.add("done");
   const saved = await idb.get(S.key);
   if (saved && saved.cls && Object.keys(saved.cls).length) {
     Object.assign(S, { cls: saved.cls || {}, txt: saved.txt || {}, fileJ: saved.fileJ || null, cands: saved.cands || [], extra: saved.extra || null });
@@ -1110,7 +1388,7 @@ const STAGES = [["cls", "પાન ઓળખવા (દસ્તાવેજન�
 const stageState = {};
 function setStage(k, state, info) {
   stageState[k] = { state, info: info || "" };
-  $("stages").innerHTML = STAGES.map(([id, lab]) => { const s = stageState[id] || { state: "wait" }; const ic = { done: "✓", run: "…", err: "!", wait: "·" }[s.state]; return `<div class="st-${s.state}"><span>${ic} ${lab}</span><span>${esc(s.info)}</span></div>`; }).join("");
+  $("stages").innerHTML = STAGES.map(([id, lab]) => { const s = stageState[id] || { state: "wait" }; return `<li class="st-${s.state}"><i aria-hidden="true"></i><span>${lab}</span><em>${esc(s.info)}</em></li>`; }).join("");
 }
 STAGES.forEach(([k]) => setStage(k, "wait"));
 function estimate() {
@@ -1137,7 +1415,7 @@ const sameWho = (a, b) => { const x = (a || "").replace(/\s+/g, ""), y = (b || "
 
 async function runPipeline() {
   if (!sample || !limits?.images) return;
-  S.running = true; S.stop = false; $("run").disabled = true; $("stop").hidden = false; $("runnote").hidden = true;
+  S.running = true; S.stop = false; $("run").disabled = true; $("stop").hidden = false; $("runnote").hidden = true; stepState();
   const maxImg = limits.images.maxCount;
   try {
     // 1. classify pages via contact sheets
@@ -1186,10 +1464,11 @@ Reply with only a JSON array: [{"p":N,"t":"${TYPES.split(", ")[0]}|…","who":"s
     setStage("read", "done", `${key.length} પાન`);
     renderPagesGrid();
 
-    // 3. file-level analysis
+    // 3. file-level analysis, in two parts so each answer stays a manageable size
+    const fpages = key.filter((p) => FILE_TYPES.has(S.cls[p].t) || S.cls[p].t === "patrak_a");
+    const VITEM = '{"n":0,"check":null,"src":"document, item and page"}';
     if (!S.fileJ) {
-      setStage("file", "run", "Claude વિચારે છે…");
-      const fpages = key.filter((p) => FILE_TYPES.has(S.cls[p].t) || S.cls[p].t === "patrak_a");
+      setStage("file", "run", "Claude વિચારે છે… (1/2)");
       const prompt = `${RULES}
 
 TASK: From the transcribed pages of ONE promotion proposal below, give the file-level facts. Use the recruitment rules found in the file first.
@@ -1197,30 +1476,56 @@ PAGE INDEX (page:type:candidate) – use it for page references:
 ${pageIndex()}
 
 TRANSCRIBED PAGES:
-${textsFor(fpages, 170000)}
+${textsFor(fpages, 165000)}
 
 Reply with only a JSON object (all text in Gujarati):
-{"district":"","letter":"letter no. and date of the DDO's proposal, or 'ફાઈલમાં નથી'","feeder":"feeder cadre","promotion":"promotion cadre","rules_text":"recruitment rules with notification no./date and pages",
-"seniority_list":"which list, as on, final date, pages","dpc_date":"dd-mm-yyyy","dpc_source":"minutes pages","zone_from":0,"zone_to":0,"min_years":5,"retire_age":58,
-"fit_unfit":"who was found fit / unfit","earlier_dpc":"earlier DPC and Board advice, or ''",
-"req":["12 strings: the requirement of each criterion 1-12 for THIS cadre with rule and notification"],
-"vac":{"sanctioned":0,"direct":0,"promotion":0,"filled_direct":0,"filled_promotion":0,"vacant_direct":0,"vacant_promotion":0,"considered":0,"statement":"what the vacancy statement says, with dates","notes":"roster / reservation remarks","pages":"પાન …"},
+{"district":"જિલ્લા પંચાયત …","letter":"letter no. and date of the DDO's proposal, or 'ફાઈલમાં નથી' with what is there instead","file_no_text":"Board file no. / desk if written on the file, else ''",
+"feeder":"feeder cadre, class and pay scale / level","feeder_short":"feeder cadre name only, e.g. સીનીયર ક્લાર્ક (હિસાબી)","promotion":"promotion cadre, class, pay scale / level; direct : promotion ratio","promotion_short":"promotion cadre name only, e.g. નાયબ હિસાબનીશ",
+"post":"promotion post with class and pay level","post_source":"પાન …","exam_name":"name of the prescribed departmental examination, e.g. ઉચ્ચ શ્રેણી ખાતાકીય પરીક્ષા",
+"rules_text":"recruitment rules with notification no. and date, and file pages","seniority_list":"which seniority list: cadre, as on date, final on date, order no.","seniority_as_on":"dd-mm-yyyy","seniority_source":"e.g. આખરી પ્રવરતા યાદી (પાન 15)",
+"dpc_date":"dd-mm-yyyy","dpc_source":"e.g. કાર્યવાહી નોંધ, ઠરાવ નં.19 (પાન 20)","decision_source":"pages where the DPC decision on these candidates is recorded, e.g. પાન 5, 24",
+"zone_from":0,"zone_to":0,"zone_source":"e.g. ચેકલીસ્ટ 6(6) (પાન 2)","min_years":5,"min_years_source":"rule clause and page, e.g. ભરતી નિયમો-2018 નિ.2(અ)(1) (પાન 16)","retire_age":58,
+"fit_unfit":"who was found fit / unfit, and why the others in the zone were not considered","earlier_dpc":"earlier DPC and Board advice, or ''",
+"req":["12 strings: the requirement of each criterion 1-12 for THIS cadre, quoting rule, clause and notification"],
+"vac":{"sanctioned":${VITEM},"direct":${VITEM},"promotion":${VITEM},"filled_direct":${VITEM},"filled_promotion":${VITEM},"vacant_direct":${VITEM},"vacant_promotion":${VITEM},"statement_total":${VITEM},"roster_points":${VITEM},"considered":${VITEM},
+ "ratio_text":"e.g. (પ્રમાણ 1:2, ભ.નિ. નિ.3)","statement_pages":"પાન …","statement_rows":[{"reason":"","posts":0,"date":"dd-mm-yyyy, or the text written","note":""}],"notes":"roster / reservation remarks","pages":"sources of this sheet with pages"},
 "candidates":[{"short":"surname","name":"full name","seniority":0,"who":"surname as used in the page index"}],
-"zone":[{"no":0,"name":"","category":"","dob":"dd-mm-yyyy","in_cadre":"dd-mm-yyyy","status":"","group":"યોગ્ય – ભલામણ|અયોગ્ય|નિવૃત્ત|અગાઉ બઢતી|ક્ષેત્ર બહાર|અન્ય","remarks":""}],
-"docs":[16 objects {"received":"હા|ના|અંશતઃ|લાગુ નથી","pages":"12-14","remark":""} in this order: ${BUILD.DOCS.join("; ")}],
-"observations":[{"type":"મુખ્ય મુદ્દો|કાર્યવાહી|વિસંગતતા|નોંધ|સ્થિતિ","text":"","impact":"impact on eligibility","pages":"પાન …"}]}
-Use numbers (not strings) for counts; use null when a count is not in the file. "candidates" = only those the DPC recommended. "zone" = the zone of consideration rows of the seniority list plus a few around it. Observations: file-level points only (missing documents, discrepancies, roster, vacancies, minutes); type "કાર્યવાહી" for points to ask the DDO.`;
-      if (bytes(prompt) > 250000) throw { code: "prompt_too_large" };
+"zone":[{"no":0,"name":"","category":"","dob":"dd-mm-yyyy","in_cadre":"dd-mm-yyyy","status":"status / reason with pages","group":"યોગ્ય – ભલામણ|અયોગ્ય|નિવૃત્ત|અગાઉ બઢતી|ક્ષેત્ર બહાર|અન્ય","remarks":"remarks column of the list"}],
+"zone_note":"one line: sources with pages and what happened to those senior to the zone",
+"recon":{"in_zone":{"n":0,"src":"where the papers state it, with page"},"fit":{"n":0,"src":""},"promoted_earlier":{"n":0,"src":""},"eligible_5yr":{"n":0,"src":""}},
+"docs":[16 objects {"received":"હા|ના|અંશતઃ|લાગુ નથી","pages":"12-14","remark":"short"} in this order: ${BUILD.DOCS.join("; ")}]}
+Use numbers (not strings) for counts and null when not in the file. vac: n = the figure in the main source (roster register / minutes), check = the same figure from a second document or null; statement_total = posts vacant per the vacancy statement; roster_points = roster points used in the roster abstract; considered = posts the DPC considered. recon: the counts as stated in the checklist / minutes / Patrak-K. "candidates" = only those the DPC recommended. "zone" = the zone of consideration rows of the seniority list plus the few around it.`;
       const j = await ask(prompt, null, "complex");
       if (!j || typeof j !== "object" || !Array.isArray(j.candidates)) throw { code: "invalid_json", message: "file" };
-      S.fileJ = j; S.cands = new Array(j.candidates.length).fill(null); saveWork();
+      j._b = false; S.fileJ = j; S.cands = new Array(j.candidates.length).fill(null); saveWork();
       log(`ફાઈલની વિગત તૈયાર: ${j.candidates.length} ઉમેદવાર (${j.candidates.map((c) => c.short).join(", ")}).`);
+    }
+    if (!S.fileJ._b) {
+      setStage("file", "run", "Claude વિચારે છે… (2/2)");
+      const brief = JSON.stringify({ ...S.fileJ, zone: undefined, docs: undefined, req: undefined, _b: undefined });
+      const j = await ask(`${RULES}
+
+TASK: For the same promotion proposal, list the observations, the history of the case and a map of the whole PDF.
+FILE FACTS (already worked out): ${brief}
+PAGE INDEX (page:type:candidate):
+${pageIndex()}
+
+TRANSCRIBED PAGES:
+${textsFor(fpages, 160000)}
+
+Reply with only a JSON object (all text in Gujarati):
+{"observations":[{"type":"મુખ્ય મુદ્દો|કાર્યવાહી|વિસંગતતા|નોંધ|સ્થિતિ","text":"the point, with dates, numbers and pages","impact":"impact on eligibility","pages":"પાન …","ask_ddo":true}],
+"history":[{"step":"short label, e.g. સીનીયર ક્લાર્ક (હિસાબી)માં બઢતી or ખાતાકીય બઢતી સમિતિ – 28-10-2026","text":"what happened: orders, dates, numbers","pages":"પાન …"}],
+"file_map":[{"doc":"document description, naming the candidate where it belongs to one","pages":"1-6"}]}
+observations: file-level points (missing documents, discrepancies, roster, vacancies, minutes, checklist vs other papers), most important first; ask_ddo = true when the point must be asked from the DDO before the Board's advice. history: the case in order – first appointment, promotion to the feeder cadre, departmental examination, earlier DPC and Board advice, final seniority list, this DPC, proposal to the Board, Board advice ('આ ફાઈલમાં નથી' if absent). file_map: consecutive page ranges covering every PDF page from 1 to ${S.n} in order, 15-40 entries.`, null, "complex");
+      if (!j || typeof j !== "object") throw { code: "invalid_json", message: "file 2" };
+      Object.assign(S.fileJ, { observations: j.observations || [], history: j.history || [], file_map: j.file_map || [], _b: true }); saveWork();
     }
     setStage("file", "done", `${S.fileJ.candidates.length} ઉમેદવાર`); setBar("pbar", 0.72);
 
     // 4. candidates
     if (S.cands.length !== S.fileJ.candidates.length) S.cands = new Array(S.fileJ.candidates.length).fill(null);
-    const fileBrief = JSON.stringify({ ...S.fileJ, zone: undefined, docs: undefined, observations: undefined });
+    const fileBrief = JSON.stringify({ ...S.fileJ, zone: undefined, docs: undefined, observations: undefined, history: undefined, file_map: undefined, recon: undefined, _b: undefined });
     for (let i = 0; i < S.fileJ.candidates.length; i++) {
       if (S.cands[i]) continue; if (S.stop) throw { code: "cancelled" };
       const fc = S.fileJ.candidates[i];
@@ -1239,13 +1544,15 @@ TRANSCRIBED PAGES (this candidate first, then common pages):
 ${textsFor([...mine, ...common], 165000)}
 
 Reply with only a JSON object (all text in Gujarati):
-{"short":"${fc.short}","name":"full name","seniority":${+fc.seniority || 0},"category":"","present":"present post and office","dob":"dd-mm-yyyy","dob_source":"પાન …",
-"join":"dd-mm-yyyy date of appointment/joining in the FEEDER cadre","join_source":"documents and pages; say forenoon/afternoon if shown","first_appt":"dd-mm-yyyy first appointment in service","first_appt_source":"",
-"retirement":"dd-mm-yyyy","exam":"short result of the departmental exam","dpc_decision":"યોગ્ય|અયોગ્ય",
+{"short":"${fc.short}","name":"full name with શ્રી / કુ. / શ્રીમતી","name_short":"title, initials and surname, e.g. શ્રી બી.જે. છૈયા","seniority":${+fc.seniority || 0},"category":"","present":"present post, branch and office","pa_pages":"this candidate's Patrak-A page(s), e.g. પાન 7",
+"dob":"dd-mm-yyyy","dob_source":"documents with pages, e.g. પત્રક-અ મુદ્દો 4 (પાન 7); પ્રવરતા યાદી (પાન 15)",
+"join":"dd-mm-yyyy date of appointment/joining in the FEEDER cadre","join_source":"documents with pages; say forenoon/afternoon if shown",
+"first_appt":"dd-mm-yyyy first appointment in service","first_appt_post":"post of first appointment, e.g. જુનિયર ક્લાર્ક (હિસાબી)","first_appt_source":"documents with pages","first_appt_note":"e.g. fixed-pay years; whether it counts for this promotion",
+"retirement":"dd-mm-yyyy","retirement_source":"e.g. પત્રક-ક નિવૃત્તિ 30-05-2052 (પાન 13)","exam":"short result of the departmental exam: date, attempt, marks","exam_pages":"પાન …","dpc_decision":"યોગ્ય|અયોગ્ય",
 "criteria":[12 objects in the order of criteria 1-12: {"pos":"candidate's position from the file in 1-3 sentences","pages":"પાન …","value":"short value","met":"હા|ના|ચકાસો|લાગુ નથી"}],
 "apar":[{"year":"2021-22","from":"dd-mm-yyyy","to":"dd-mm-yyyy","rep":"reporting marks","rev":"reviewing marks","type":"ખાનગી અહેવાલ|પ્રમાણપત્ર","marks":82,"remark":"reason / pages"}],
-"apar_start":"dd-mm-yyyy","apar_end":"dd-mm-yyyy","apar_adverse":"","apar_note":"","apar_source":"Patrak-A page and copies pages",
-"obs":[{"type":"મુખ્ય મુદ્દો|કાર્યવાહી|વિસંગતતા|નોંધ","text":"","impact":"","pages":"પાન …"}]}
+"apar_start":"dd-mm-yyyy","apar_end":"dd-mm-yyyy","apar_adverse":"'નથી' or the adverse remark, with source pages","apar_note":"corrections made or anything unusual in the APAR record","apar_source":"Patrak-A item 12 page and pages of the APAR copies",
+"obs":[{"type":"મુખ્ય મુદ્દો|કાર્યવાહી|વિસંગતતા|નોંધ","text":"","impact":"","pages":"પાન …","ask_ddo":false}]}
 APAR rows: every row of the Patrak-A APAR table for the period checked, final marks as a number (null for certificates). Use "ચકાસો" when the file does not prove a criterion. obs = points specific to this candidate.`;
       let j = null;
       try { j = await ask(prompt, null, "complex"); } catch (e) { if (!SOFT.has(e?.code)) throw e; }
@@ -1258,17 +1565,21 @@ APAR rows: every row of the Patrak-A APAR table for the period checked, final ma
     // 5. rules applied, action, note
     if (!S.extra) {
       setStage("extra", "run", "Claude વિચારે છે…");
-      const brief = { file: { ...S.fileJ, zone: undefined }, cands: S.cands.map((c) => ({ short: c.short, name: c.name, seniority: c.seniority, join: c.join, exam: c.exam, criteria: c.criteria.map((x) => ({ met: x.met, value: x.value, pages: x.pages })), obs: c.obs })) };
+      const brief = { file: { ...S.fileJ, zone: undefined, file_map: undefined, history: undefined, _b: undefined }, cands: S.cands.map((c) => ({ short: c.short, name: c.name, seniority: c.seniority, join: c.join, exam: c.exam, criteria: c.criteria.map((x) => ({ met: x.met, value: x.value, pages: x.pages })), obs: c.obs })) };
+      const qs = [...(S.fileJ.observations || []), ...S.cands.flatMap((c) => (c.obs || []).map((o) => ({ ...o, text: `${c.short}: ${o.text}` })))]
+        .filter((o) => o.ask_ddo === true || /કાર્યવાહી/.test(o.type || "")).slice(0, 8);
       const j = await ask(`${RULES}
 
 TASK: Finish the scrutiny of this promotion proposal.
 DATA: ${JSON.stringify(brief)}
+DDO QUERIES (front page section (ઘ), in this order): ${qs.length ? qs.map((o, i) => `${i + 1}) ${o.text}`).join(" ") : "none"}
 
 Reply with only a JSON object (Gujarati):
 {"rules":[{"rule":"rule and clause","source":"notification no. and date","text":"what the rule says (paraphrase)","type":"પૂર્વશરત|કાર્યપદ્ધતિ|મુક્તિ|બઢતી પછી","applied":"how it applies to the candidates","met":"હા|ના|ચકાસો|લાગુ નથી|બઢતી પછી|અંશતઃ","pages":"12-14"}],
 "action":"one of: સંમત – બઢતીની ભલામણ | શરતોને આધીન સંમત | જિ.વિ.અ. પાસેથી ખુલાસો મંગાવવો | દરખાસ્ત પરત કરવી",
-"note":"office note in Gujarati for the file: proposal, DPC, each candidate's eligibility, then every point to be asked from the DDO numbered, ending with '...મંજૂરી અર્થે રજૂ.'",
-"conclusion":"2-3 sentence conclusion"}
+"note":"office note in Gujarati for the file: the proposal (district, feeder → promotion cadre, candidates with seniority nos.), the DPC date and resolution, each candidate's eligibility under the recruitment rules; then, if there are DDO queries, 'પરંતુ ઉપર મુદ્દા (ઘ)-1 થી N મુજબ' and each query in one short clause numbered (1) (2) …, asking that the DDO's clarification be obtained; ending with '...મંજૂરી અર્થે રજૂ.'",
+"issues":"the points to settle before the Board's advice, numbered 1) 2) 3) …, or 'કોઈ મુદ્દો નથી.'","conclusion":"2-3 sentence conclusion naming each candidate's eligibility",
+"obs_note":"one sentence on whether any observation makes a candidate ineligible","rules_note":"one sentence on which rule texts were read from the file and which come from the rules library"}
 List 10-16 rules that govern this case (recruitment rules clauses, departmental exam rules, CCC, Hindi rules, superannuation, Board consultation, checklist circular).`, null, "complex");
       if (!j || typeof j !== "object") throw { code: "invalid_json", message: "extra" };
       S.extra = j; saveWork();
@@ -1304,7 +1615,7 @@ $("run").onclick = () => {
   if (S.R) { // a finished file: redo the analysis from the pages already read
     Object.assign(S, { fileJ: null, cands: [], extra: null, R: null });
     ["file", "cand", "extra", "xls"].forEach((k) => setStage(k, "wait")); $("dlzip").disabled = true; $("dlxlsx").disabled = true;
-    log("વિશ્લેષણ ફરીથી શરૂ (વાંચેલા પાન ફરી વંચાશે નહીં).");
+    log("વિશ્લેષણ ફરીથી શરૂ (વાંચેલા પાન ફરી વંચાશે નહીં)."); stepState();
   }
   runPipeline();
 };
@@ -1322,50 +1633,62 @@ function collectR() {
 function finish() {
   S.R = collectR();
   setStage("xls", "done", "તૈયાર"); setBar("pbar", 1);
-  $("s3").classList.add("done"); $("run").textContent = "ફરીથી ચકાસો";
+  $("run").textContent = "ફરીથી ચકાસો"; stepState();
   renderResults(S.R, false);
   $("dlzip").disabled = !downloads; $("dlxlsx").disabled = !downloads;
   log("ચકાસણી પૂરી. એક્સેલ ડાઉનલોડ કરી શકાય છે.");
 }
 function renderResults(R, example) {
-  const F = R.file || {}, box = $("v-res");
-  const vac = F.vac || {};
-  let h = `<div style="display:flex;flex-direction:column;gap:16px">`;
-  h += `<div><h2 style="font-size:20px">${esc(F.feeder || "")} → ${esc(F.promotion || "")}${example ? '<span class="example">નમૂનો – ઉદાહરણ માટે</span>' : ""}</h2>
-  <div class="muted">${esc(F.district || "")}${R.n ? ` · ${R.n} પાન` : ""}</div></div>`;
-  h += `<div class="sumgrid">
-    <div><b>ખાતાકીય બઢતી સમિતિ</b>${esc(F.dpc_date || "—")}</div>
-    <div><b>વિચારણા ક્ષેત્ર</b>${F.zone_from ? `ક્રમ ${esc(F.zone_from)} થી ${esc(F.zone_to)}` : "—"}</div>
-    <div><b>બઢતી ક્વોટામાં ખાલી જગ્યા</b>${vac.vacant_promotion ?? "—"}${vac.considered ? ` (વિચારણા ${vac.considered})` : ""}</div>
-    <div><b>ભરતી નિયમો</b>${esc(F.rules_text || "—")} ${refButtons(F.rules_text)}</div>
-    <div><b>પ્રવરતા યાદી</b>${esc(F.seniority_list || "—")} ${refButtons(F.seniority_list)}</div>
-    <div><b>દરખાસ્ત પત્ર</b>${esc(F.letter || "—")}</div>
-  </div>`;
-  h += `<div class="cands">`;
-  (R.cands || []).forEach((c) => {
-    if (!c) return;
-    const mets = (c.criteria || []).map((x) => x.met);
-    const v = verdictOf(mets), cls = v === "લાયક" ? "ok" : v === "લાયક નથી" ? "bad" : "warn";
-    h += `<article class="cand"><div class="cand-head"><div><h3>${esc(c.name || c.short)}</h3><div class="muted">પ્રવરતા ક્રમ ${esc(c.seniority)} · ${esc(c.category || "")} · ફીડરમાં ${esc(c.join || "—")}</div></div><span class="stamp ${cls}">${v}</span></div><div class="crit">`;
+  const F = R.file || {}, box = $("v-res"), vac = F.vac || {};
+  const cands = (R.cands || []).filter(Boolean);
+  const verdicts = cands.map((c) => verdictOf((c.criteria || []).map((x) => x.met)));
+  const cnt = (v) => verdicts.filter((x) => x === v).length;
+  const obs = [...(F.observations || []), ...cands.flatMap((c) => (c.obs || []).map((o) => ({ ...o, text: `${c.short}: ${o.text}` })))];
+  const meta = [F.district, R.n ? `${R.n} પાન` : "", F.dpc_date ? `સમિતિ તા. ${F.dpc_date}` : ""].filter(Boolean).map(esc).join(" · ");
+  let h = `<div class="rep"><header class="rhead"><div class="eyebrow">ચકાસણી અહેવાલ${example ? '<span class="example">નમૂનો – ઉદાહરણ માટે</span>' : ""}</div>
+    <h2>${esc(F.feeder || "—")} <span class="arrow">→</span> ${esc(F.promotion || "—")}</h2><p class="meta">${meta}</p></header>`;
+  h += `<div class="kpis" role="list">
+    <div role="listitem"><span>ઉમેદવાર</span><b>${cands.length}</b></div>
+    <div role="listitem" class="${cnt("લાયક") ? "k-ok" : ""}"><span>લાયક</span><b>${cnt("લાયક")}</b></div>
+    <div role="listitem" class="${cnt("ચકાસણી જરૂરી") ? "k-warn" : ""}"><span>ચકાસણી જરૂરી</span><b>${cnt("ચકાસણી જરૂરી")}</b></div>
+    <div role="listitem" class="${cnt("લાયક નથી") ? "k-bad" : ""}"><span>લાયક નથી</span><b>${cnt("લાયક નથી")}</b></div>
+    <div role="listitem"><span>જિ.વિ.અ.ને પૃચ્છા</span><b>${obs.filter((o) => /કાર્યવાહી/.test(o.type || "")).length}</b></div></div>`;
+  const parts = [
+    ["ખાતાકીય બઢતી સમિતિ", F.dpc_date, F.dpc_source],
+    ["વિચારણા ક્ષેત્ર", F.zone_from ? `પ્રવરતા ક્રમ ${F.zone_from} થી ${F.zone_to}` : "", ""],
+    ["બઢતી ક્વોટામાં ખાલી જગ્યા", vac.vacant_promotion != null ? `${vac.vacant_promotion}${vac.considered ? ` (વિચારણા ${vac.considered})` : ""}` : "", vac.pages],
+    ["ભરતી નિયમો", F.rules_text, F.rules_text],
+    ["પ્રવરતા યાદી", F.seniority_list, F.seniority_list],
+    ["દરખાસ્ત પત્ર", F.letter, ""],
+  ];
+  h += `<section class="sect"><h3>ફાઈલની વિગત</h3><dl class="parts">${parts.map(([k, v, p]) => `<div><dt>${k}</dt><dd>${esc(v || "—")}${refButtons(p)}</dd></div>`).join("")}</dl></section>`;
+  h += `<section class="sect"><h3>ઉમેદવારવાર લાયકાત <span class="count">${cands.length}</span></h3><div class="cands">`;
+  cands.forEach((c, ci) => {
+    const mets = (c.criteria || []).map((x) => x.met), v = verdicts[ci];
+    const cls = v === "લાયક" ? "ok" : v === "લાયક નથી" ? "bad" : "warn";
+    const applicable = BUILD.CRIT.length - mets.filter((m) => m === NA || m === "બઢતી પછી").length;
+    h += `<article class="cand"><header class="cand-head"><div><h4>${esc(c.name || c.short)}</h4><div class="tags"><span>પ્રવરતા ક્રમ <b class="mono">${esc(c.seniority ?? "—")}</b></span>${c.category ? `<span>${esc(c.category)}</span>` : ""}<span>ફીડર સંવર્ગમાં <b class="mono">${esc(c.join || "—")}</b></span></div></div>
+      <div class="cand-v"><span class="stamp ${cls}">${v}</span><small>${mets.filter((m) => m === Y).length} / ${applicable} માપદંડ પૂર્ણ</small></div></header>
+      <div class="crit"><div class="crit-h"><span>ક્રમ</span><span>માપદંડ અને ઉમેદવારની સ્થિતિ</span><span style="text-align:right">પરિણામ</span></div>`;
     BUILD.CRIT.forEach((name, i) => {
-      const x = (c.criteria || [])[i] || {};
-      h += `<div><span class="muted">${i + 1}</span><span>${esc(name)}<small>${esc(x.value || "")}${x.pos ? " – " + esc(trim(x.pos, 160)) : ""}</small>${refButtons(x.pages)}</span><span class="chip ${metClass(x.met)}">${esc(x.met || C)}</span></div>`;
+      const x = (c.criteria || [])[i] || {}, detail = [x.value, x.pos ? trim(x.pos, 170) : ""].filter(Boolean).join(" – ");
+      h += `<div class="crit-r"><span class="n">${i + 1}</span><span class="c"><b>${esc(name)}</b>${detail ? `<small>${esc(detail)}</small>` : ""}${refButtons(x.pages)}</span><span><span class="chip ${metClass(x.met)}">${esc(x.met || C)}</span></span></div>`;
     });
     h += `</div></article>`;
   });
-  h += `</div>`;
-  const obs = [...(F.observations || []), ...(R.cands || []).filter(Boolean).flatMap((c) => (c.obs || []).map((o) => ({ ...o, text: `${c.short}: ${o.text}` })))];
+  h += `</div></section>`;
   if (obs.length) {
-    h += `<div><h3 style="font-size:17px;margin-bottom:8px">અવલોકનો અને નિકાલ કરવાના મુદ્દા</h3><div class="obs">`;
+    h += `<section class="sect"><h3>અવલોકનો અને નિકાલ કરવાના મુદ્દા <span class="count">${obs.length}</span></h3><ol class="obs">`;
     for (const o of obs) {
       const t = o.type || "નોંધ", k = /કાર્યવાહી/.test(t) ? "t-act" : /મુખ્ય/.test(t) ? "t-key" : /વિસંગત/.test(t) ? "t-dis" : "";
-      h += `<div class="${k}"><b>${esc(t)}</b>${esc(o.text)} ${refButtons(o.pages)}</div>`;
+      h += `<li class="${k}"><span class="otype">${esc(t)}</span><p>${esc(o.text)}</p>${refButtons(o.pages)}</li>`;
     }
-    h += `</div></div>`;
+    h += `</ol></section>`;
   }
-  if (R.extra?.note) h += `<div><h3 style="font-size:17px;margin-bottom:6px">ફાઈલ નોંધ (મુસદ્દો)</h3><div class="note info" style="white-space:pre-wrap">${esc(R.extra.note)}</div></div>`;
-  h += `</div>`;
-  box.innerHTML = h;
+  if (R.extra?.note || R.extra?.action) {
+    h += `<section class="sect"><h3>ફાઈલ નોંધ (મુસદ્દો)</h3>${R.extra.action ? `<div class="action"><span class="muted">સૂચિત કાર્યવાહી</span><b>${esc(R.extra.action)}</b></div>` : ""}${R.extra.note ? `<div class="notesheet">${esc(R.extra.note)}</div>` : ""}</section>`;
+  }
+  box.innerHTML = h + `</div>`;
 }
 
 // ---------------------------------------------------------------- downloads
@@ -1379,7 +1702,7 @@ async function save(filename, data) {
 }
 $("dlzip").onclick = async () => {
   if (!S.R || !downloads) return;
-  const b = $("dlzip"); b.disabled = true; b.textContent = "ZIP તૈયાર થાય છે…";
+  const b = $("dlzip"); b.disabled = true; $("dlziplab").textContent = "ZIP તૈયાર થાય છે…";
   try {
     const R = collectR(); S.R = R;
     const { blob, viewers } = await makeXlsx(R);
@@ -1391,7 +1714,7 @@ $("dlzip").onclick = async () => {
     const zb = await z.generateAsync({ type: "blob", compression: "STORE" });
     await save(`${R.base}_Scrutiny.zip`, zb);
   } catch (e) { log("ZIP બનાવવામાં ભૂલ: " + (e?.message || e), "err"); $("dlmsg").textContent = "ZIP બની શકી નથી; 'ફક્ત એક્સેલ' અજમાવો."; }
-  finally { b.disabled = false; b.textContent = "ZIP: એક્સેલ + બધા પાન + લિંક"; }
+  finally { b.disabled = false; $("dlziplab").textContent = "ZIP ડાઉનલોડ કરો"; }
 };
 $("dlxlsx").onclick = async () => {
   if (!S.R || !downloads) return;
@@ -1412,6 +1735,7 @@ document.querySelectorAll(".tab").forEach((t) => t.onclick = () => {
   ["res", "pages", "log"].forEach((k) => $("v-" + k).hidden = k !== t.dataset.tab);
 });
 function updateRunState() {
+  stepState();
   const can = !!(sample && limits?.images && HOST.ok);
   $("run").disabled = !(S.ready && can) || S.running;
 }
@@ -1425,8 +1749,23 @@ const EXAMPLE = {
     { name: "ઉમેદવાર ક (ઉદાહરણ)", short: "ક", seniority: 10, category: "બિન અનામત", join: "27-08-2021", criteria: BUILD.CRIT.map((_, i) => ({ met: i === 3 ? NA : Y, value: i === 1 ? "5 વર્ષ 2 માસ" : i === 2 ? "પાસ, પ્રથમ તક" : "", pages: i === 1 ? "પાન 7, 15" : "" })) },
     { name: "ઉમેદવાર ખ (ઉદાહરણ)", short: "ખ", seniority: 11, category: "સા.શૈ.પ.વ.", join: "16-10-2021", criteria: BUILD.CRIT.map((_, i) => ({ met: i === 3 ? NA : i === 6 ? C : Y, value: i === 6 ? "2022-23નો અહેવાલ ખૂટે છે" : "", pages: "" })) },
   ],
+  extra: { action: "જિ.વિ.અ. પાસેથી ખુલાસો મંગાવવો", note: "ઉદાહરણ: જિલ્લા પંચાયતની નાયબ હિસાબનીશ સંવર્ગની બઢતી દરખાસ્ત. ખાતાકીય બઢતી સમિતિએ તા. 28-10-2026ની બેઠકમાં પ્રવરતા ક્રમ 10 અને 11ના કર્મચારીઓને યોગ્ય ગણ્યા છે.\n(ક) ઉમેદવાર ક: લાગુ પડતા તમામ માપદંડ પૂર્ણ થાય છે.\n(ખ) ઉમેદવાર ખ: વર્ષ 2022-23નો ખાનગી અહેવાલ ફાઈલમાં નથી.\n(ગ) નીચેના મુદ્દે જિ.વિ.અ. પાસેથી ખુલાસો મંગાવવો: (1) ખાલી જગ્યાનું પત્રક, (2) ઉમેદવાર ખનો વર્ષ 2022-23નો ખાનગી અહેવાલ.\nમંજૂરી અર્થે રજૂ." },
 };
-renderResults(EXAMPLE, true);
+function stepState() {
+  const has2 = ["fileno", "inwardno", "inwarddate"].some((id) => $(id).value.trim());
+  const st = {
+    s1: S.ready ? ["done", `${S.n} પાન તૈયાર`] : S.file ? ["active", "પાન તૈયાર થાય છે"] : ["active", "શરૂ કરો"],
+    s2: has2 ? ["done", "ભરેલ"] : ["", "મરજિયાત"],
+    s3: S.R ? ["done", "પૂર્ણ"] : S.running ? ["active", "ચાલુ છે"] : S.ready ? ["active", "શરૂ કરી શકાય"] : ["", ""],
+    s4: S.R ? ["active", "તૈયાર"] : ["", ""],
+  };
+  for (const [id, [cls, txt]] of Object.entries(st)) {
+    const el = $(id); el.classList.toggle("done", cls === "done"); el.classList.toggle("active", cls === "active");
+    el.querySelector(".state").textContent = txt;
+  }
+}
+["fileno", "inwardno", "inwarddate"].forEach((id) => $(id).addEventListener("input", stepState));
+renderResults(EXAMPLE, true); stepState();
 
 // ---------------------------------------------------------------- server client (hosted version)
 function toB64(blob) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.onerror = () => rej(r.error); r.readAsDataURL(blob); }); }
@@ -1470,7 +1809,11 @@ function hostedSample() {
   return Object.assign(async (p, o) => ({ text: JSON.stringify(await json(p, o)) }), { json, limits: async () => limits });
 }
 const HOST = { code: "", ok: false };
-function showCode(msg, bad) { $("codemsg").textContent = msg; $("codemsg").style.color = bad ? "var(--bad)" : "var(--ok)"; }
+function showCode(msg, bad) {
+  $("codemsg").textContent = msg; $("codemsg").style.color = bad ? "var(--bad)" : "var(--ok)";
+  $("svc").classList.toggle("on", !bad); $("svc").classList.toggle("off", !!bad);
+  $("svctext").textContent = bad ? "પ્રવેશ કોડ જરૂરી" : "Claude સાથે જોડાયેલ";
+}
 async function checkCode() {
   HOST.code = $("code").value.trim(); HOST.ok = false; updateRunState();
   if (!HOST.code) { showCode("ચકાસણી માટે પ્રવેશ કોડ નાખો.", true); return; }
