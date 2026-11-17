@@ -1,0 +1,1501 @@
+<!doctype html>
+<html lang="gu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>બઢતી ફાઈલ ચકાસણી</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&family=Noto+Sans+Gujarati:wght@400;600&display=swap">
+<style>
+/* Layout: docket-style two-pane desk – steps on the left, file result and pages on the right; one column on phones. */
+:root{
+  --bg:#F2F4F8; --surface:#FFFFFF; --ink:#17202E; --muted:#596476; --line:#D8DEE8; --accent:#2B47A6; --accent-ink:#FFFFFF; --accent-soft:#E5EAF9;
+  --ok:#1D7443; --ok-bg:#DCF1E3; --bad:#AE2A21; --bad-bg:#FAE2DF; --warn:#835600; --warn-bg:#FAEDCF; --na:#5E6878; --na-bg:#EDEFF3;
+  --f-display:"Hind Vadodara","Noto Sans Gujarati","Nirmala UI",system-ui,sans-serif; --f-body:"Noto Sans Gujarati","Hind Vadodara","Nirmala UI",system-ui,sans-serif;
+  --r:10px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F131A; --surface:#171D27; --ink:#E6EAF1; --muted:#9AA5B6; --line:#2A3341; --accent:#8EA7F4; --accent-ink:#0F131A; --accent-soft:#1E2947;
+  --ok:#72D39D; --ok-bg:#12301F; --bad:#FF8F84; --bad-bg:#3A1714; --warn:#F1C46A; --warn-bg:#382A0D; --na:#A6B0BF; --na-bg:#232B37; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F131A; --surface:#171D27; --ink:#E6EAF1; --muted:#9AA5B6; --line:#2A3341; --accent:#8EA7F4; --accent-ink:#0F131A; --accent-soft:#1E2947;
+  --ok:#72D39D; --ok-bg:#12301F; --bad:#FF8F84; --bad-bg:#3A1714; --warn:#F1C46A; --warn-bg:#382A0D; --na:#A6B0BF; --na-bg:#232B37; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.25}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:2px solid var(--ink);padding-bottom:12px}
+header.top h1{font-size:28px;font-weight:700}
+header.top p{margin:4px 0 0;color:var(--muted);max-width:62ch}
+.docket{font-family:var(--f-display);font-size:12px;letter-spacing:.06em;color:var(--muted);text-align:right}
+.docket b{display:block;color:var(--ink);font-size:14px;letter-spacing:0}
+.desk{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:860px){.desk{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.step{display:flex;flex-direction:column;gap:10px;padding-bottom:14px;border-bottom:1px dashed var(--line)}
+.step:last-child{border-bottom:0;padding-bottom:0}
+.step h2{font-size:17px;display:flex;gap:10px;align-items:center}
+.num{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);font-size:13px;font-weight:700;flex:none}
+.step.done .num{background:var(--accent);color:var(--accent-ink)}
+.muted{color:var(--muted);font-size:13px}
+.drop{border:1.5px dashed var(--accent);border-radius:var(--r);background:var(--accent-soft);padding:18px;text-align:center;cursor:pointer;display:flex;flex-direction:column;gap:6px;align-items:center}
+.drop.over{outline:3px solid var(--accent)}
+.drop strong{font-family:var(--f-display);font-size:16px}
+.filecard{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:14px;background:var(--bg);border-radius:8px;padding:8px 10px}
+.filecard span{min-width:0;overflow-wrap:anywhere}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+input[type=text],input[type=date]{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 14px}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,.drop:focus-visible,a:focus-visible,.tab:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+.stages{display:flex;flex-direction:column;gap:6px;font-size:13px}
+.stages div{display:flex;justify-content:space-between;gap:8px}
+.stages .st-done{color:var(--ok)} .stages .st-run{color:var(--accent);font-weight:600} .stages .st-wait{color:var(--muted)} .stages .st-err{color:var(--bad)}
+.note{font-size:13px;border-radius:8px;padding:10px 12px;background:var(--warn-bg);color:var(--warn)}
+.note.info{background:var(--accent-soft);color:var(--ink)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tab{border:0;border-bottom:3px solid transparent;border-radius:0;background:none;padding:8px 12px;color:var(--muted);font-family:var(--f-display);font-size:15px}
+.tab[aria-selected=true]{color:var(--ink);border-color:var(--accent);font-weight:600}
+.sumgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 18px;font-size:14px}
+.sumgrid div{min-width:0} .sumgrid b{display:block;font-size:12px;color:var(--muted);font-weight:500}
+.example{display:inline-block;font-size:12px;letter-spacing:.04em;border:1px solid var(--warn);color:var(--warn);border-radius:4px;padding:1px 8px;margin-left:8px;vertical-align:middle}
+.cands{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+.cand{border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.cand-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.cand-head h3{font-size:17px}
+.stamp{flex:none;font-family:var(--f-display);font-weight:700;font-size:14px;letter-spacing:.04em;border:2px solid currentColor;border-radius:6px;padding:3px 10px;transform:rotate(-3deg)}
+.stamp.ok{color:var(--ok)} .stamp.bad{color:var(--bad)} .stamp.warn{color:var(--warn)}
+.crit{display:flex;flex-direction:column}
+.crit div{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:start;padding:6px 0;border-top:1px solid var(--line);font-size:13.5px}
+.crit small{display:block;color:var(--muted);font-size:12.5px}
+.chip{font-size:12px;font-weight:600;border-radius:999px;padding:1px 9px;white-space:nowrap}
+.c-ok{background:var(--ok-bg);color:var(--ok)} .c-bad{background:var(--bad-bg);color:var(--bad)} .c-warn{background:var(--warn-bg);color:var(--warn)} .c-na{background:var(--na-bg);color:var(--na)}
+.refs{display:inline-flex;flex-wrap:wrap;gap:4px;margin-top:3px}
+.ref{font-size:12px;padding:0 7px;border-radius:5px;border:1px solid var(--line);background:var(--bg);color:var(--accent);cursor:pointer}
+.ref:disabled{color:var(--muted)}
+.obs{display:flex;flex-direction:column;gap:8px}
+.obs div{border-left:3px solid var(--line);padding:4px 10px;font-size:14px}
+.obs .t-act{border-color:var(--warn)} .obs .t-key{border-color:var(--bad)} .obs .t-dis{border-color:var(--warn)}
+.obs b{font-family:var(--f-display);font-size:13px;margin-right:6px}
+.pages{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px}
+.pg{border:1px solid var(--line);border-radius:6px;background:var(--surface);padding:4px;cursor:pointer;display:flex;flex-direction:column;gap:3px;font-size:11.5px;text-align:left;color:var(--ink)}
+.pg img{width:100%;aspect-ratio:1/1.41;object-fit:cover;object-position:top;background:#fff;border-radius:3px}
+.pg span{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.log{font-size:12.5px;max-height:420px;overflow:auto;background:var(--bg);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:3px;font-variant-numeric:tabular-nums}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+.viewer{position:fixed;inset:0;z-index:50;background:rgba(10,14,20,.86);display:flex;flex-direction:column;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.vbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 16px;background:var(--surface);color:var(--ink)}
+.vbar strong{font-family:var(--f-display);margin-right:auto}
+.vchips{display:flex;flex-wrap:wrap;gap:4px;padding:6px 16px;background:var(--surface);border-top:1px solid var(--line)}
+.vchips button{padding:1px 8px;font-size:12px}
+.vchips button[aria-current=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.vimg{flex:1;overflow:auto;display:flex;justify-content:center;padding:12px}
+.vimg img{max-width:min(1000px,100%);height:auto;background:#fff;align-self:flex-start}
+.tablewrap{overflow-x:auto}
+table.mini{border-collapse:collapse;font-size:13px;width:100%}
+table.mini th,table.mini td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left;vertical-align:top}
+table.mini th{color:var(--muted);font-weight:500}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>બઢતી ફાઈલ ચકાસણી</h1>
+      <p>જિલ્લા પંચાયતની બઢતી દરખાસ્તની સ્કેન PDF અપલોડ કરો. Claude દરેક પાન વાંચી ઉમેદવારવાર લાયકાત તપાસશે અને ગુજરાતી એક્સેલ તૈયાર કરશે, જેમાં દરેક આધાર પાન પર ક્લિક કરી તે પાન જોઈ શકાય.</p>
+    </div>
+    <div class="docket">ગુજરાત પંચાયત સેવા પસંદગી મંડળ<b>વર્ગ-3 બઢતી દરખાસ્ત</b></div>
+  </header>
+
+  <div class="desk">
+    <aside class="panel" aria-label="પગલાં">
+      <section class="step" id="s1">
+        <h2><span class="num">1</span>PDF અપલોડ</h2>
+        <div class="drop" id="drop" tabindex="0" role="button" aria-label="PDF પસંદ કરો">
+          <strong>અહીં PDF મૂકો અથવા ક્લિક કરી પસંદ કરો</strong>
+          <span class="muted">સ્કેન કરેલ દરખાસ્ત ફાઈલ (300 પાન સુધી)</span>
+        </div>
+        <input type="file" id="pdfin" accept="application/pdf,.pdf" hidden>
+        <div class="filecard" id="filecard" hidden><span id="fname"></span><span id="fpages" class="muted"></span></div>
+        <div class="bar" id="rbar" hidden><i></i></div>
+        <div class="muted" id="rmsg"></div>
+      </section>
+
+      <section class="step" id="s2">
+        <h2><span class="num">2</span>ફાઈલની વિગત <span class="muted">(મરજિયાત)</span></h2>
+        <label class="f">મંડળનો ફાઈલ નં. / દફતર<input type="text" id="fileno" placeholder="દા.ત. B-21"></label>
+        <div class="grid2">
+          <label class="f">ઇનવર્ડ નં.<input type="text" id="inwardno"></label>
+          <label class="f">ઇનવર્ડ તારીખ<input type="date" id="inwarddate"></label>
+        </div>
+      </section>
+
+      <section class="step" id="s3">
+        <h2><span class="num">3</span>ચકાસણી</h2>
+        <label class="f">પ્રવેશ કોડ (ઍડમિન પાસેથી મેળવો)<input type="password" id="code" autocomplete="off" spellcheck="false"></label>
+        <div class="muted" id="codemsg"></div>
+        <div class="row">
+          <button class="primary" id="run" disabled>ચકાસણી શરૂ કરો</button>
+          <button id="stop" hidden>અટકાવો</button>
+        </div>
+        <div class="bar" id="pbar"><i></i></div>
+        <div class="stages" id="stages"></div>
+        <div class="note" id="runnote" hidden></div>
+        <div class="muted" id="estimate"></div>
+      </section>
+
+      <section class="step" id="s4">
+        <h2><span class="num">4</span>એક્સેલ ડાઉનલોડ</h2>
+        <button class="primary" id="dlzip" disabled>ZIP: એક્સેલ + બધા પાન + લિંક</button>
+        <button id="dlxlsx" disabled>ફક્ત એક્સેલ</button>
+        <div class="muted" id="dlmsg">ZIP આખી કાઢ્યા (Extract) પછી એક્સેલ ખોલો; પાન નંબર પર ક્લિક કરતાં સ્કેન પાન ખુલશે.</div>
+      </section>
+    </aside>
+
+    <main class="panel" aria-label="પરિણામ">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" aria-selected="true" data-tab="res" id="tab-res">પરિણામ</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="pages" id="tab-pages">બધા પાન</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="log" id="tab-log">પ્રવૃત્તિ</button>
+      </div>
+      <section id="v-res"></section>
+      <section id="v-pages" hidden><div class="empty">PDF અપલોડ કર્યા પછી અહીં બધા પાન દેખાશે; પાન પર ક્લિક કરી મોટું જુઓ.</div></section>
+      <section id="v-log" hidden><div class="log" id="log"><span class="muted">હજુ કોઈ પ્રવૃત્તિ નથી.</span></div></section>
+    </main>
+  </div>
+</div>
+
+<div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-label="પાન જુઓ">
+  <div class="vbar">
+    <strong id="vtitle">પાન</strong>
+    <button id="vprev" aria-label="પાછલું પાન">‹ પાછલું</button>
+    <button id="vnext" aria-label="પછીનું પાન">પછીનું ›</button>
+    <button id="vclose">બંધ કરો</button>
+  </div>
+  <div class="vchips" id="vchips" hidden></div>
+  <div class="vimg"><img id="vimg" alt=""></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+/* Minimal XLSX writer (styles, merges, formulas, hyperlinks, conditional formats, dropdowns). Needs JSZip. */
+const XW = (() => {
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "");
+  const colName = (n) => { let s = ""; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
+  const colNum = (s) => s.split("").reduce((a, ch) => a * 26 + ch.charCodeAt(0) - 64, 0);
+  const parseRef = (ref) => { const m = /^([A-Z]+)(\d+)$/.exec(ref); return { c: colNum(m[1]), r: +m[2] }; };
+  const dateSerial = (d) => (Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - Date.UTC(1899, 11, 30)) / 86400000;
+
+  class Sheet {
+    constructor(wb, name) {
+      this.wb = wb; this.name = name; this.cells = new Map(); this.rowsH = {}; this.colsW = {};
+      this.merges = []; this.cfs = []; this.dvs = []; this.links = []; this.freeze = null; this.landscape = true; this.grid = false;
+      this.maxR = 0; this.maxC = 0; this.breaks = [];
+    }
+    set(ref, value, style = {}) {
+      const { r, c } = typeof ref === "string" ? parseRef(ref) : ref;
+      this.maxR = Math.max(this.maxR, r); this.maxC = Math.max(this.maxC, c);
+      this.cells.set(r * 10000 + c, { r, c, value, style });
+      return this;
+    }
+    get(ref) { const { r, c } = parseRef(ref); return this.cells.get(r * 10000 + c); }
+    width(col, w) { this.colsW[typeof col === "string" ? colNum(col) : col] = w; }
+    height(r, h) { this.rowsH[r] = h; }
+    merge(rng) { this.merges.push(rng); }
+    cf(sqref, rules) { this.cfs.push({ sqref, rules }); }
+    dropdown(sqref, items) { this.dvs.push({ sqref, items }); }
+    link(ref, target, tip) { this.links.push({ ref, target, tip }); }
+    xml() {
+      const wb = this.wb; const rows = {};
+      for (const cell of this.cells.values()) (rows[cell.r] = rows[cell.r] || []).push(cell);
+      let sd = "";
+      const rnums = Object.keys(rows).map(Number).sort((a, b) => a - b);
+      const allR = new Set([...rnums, ...Object.keys(this.rowsH).map(Number)]);
+      for (const r of [...allR].sort((a, b) => a - b)) {
+        const ht = this.rowsH[r] ? ` ht="${this.rowsH[r]}" customHeight="1"` : "";
+        sd += `<row r="${r}"${ht}>`;
+        for (const cell of (rows[r] || []).sort((a, b) => a.c - b.c)) {
+          const ref = colName(cell.c) + r; let v = cell.value; let st = { ...cell.style };
+          if (v instanceof Date) { st.date = true; }
+          const s = wb.styleId(st);
+          if (v === null || v === undefined || v === "") { sd += `<c r="${ref}" s="${s}"/>`; continue; }
+          if (typeof v === "object" && !(v instanceof Date) && v.f) {
+            const res = v.v;
+            if (typeof res === "number") sd += `<c r="${ref}" s="${s}"><f>${esc(v.f.replace(/^=/, ""))}</f><v>${res}</v></c>`;
+            else sd += `<c r="${ref}" s="${s}" t="str"><f>${esc(v.f.replace(/^=/, ""))}</f><v>${esc(res ?? "")}</v></c>`;
+          } else if (v instanceof Date) sd += `<c r="${ref}" s="${s}"><v>${dateSerial(v)}</v></c>`;
+          else if (typeof v === "number") sd += `<c r="${ref}" s="${s}"><v>${v}</v></c>`;
+          else sd += `<c r="${ref}" s="${s}" t="inlineStr"><is><t xml:space="preserve">${esc(v)}</t></is></c>`;
+        }
+        sd += "</row>";
+      }
+      const cols = Object.keys(this.colsW).map(Number).sort((a, b) => a - b)
+        .map((c) => `<col min="${c}" max="${c}" width="${this.colsW[c]}" customWidth="1"/>`).join("");
+      let pane = "";
+      if (this.freeze) {
+        const { r, c } = parseRef(this.freeze);
+        const xs = c - 1, ys = r - 1;
+        pane = `<pane${xs ? ` xSplit="${xs}"` : ""}${ys ? ` ySplit="${ys}"` : ""} topLeftCell="${this.freeze}" activePane="${xs && ys ? "bottomRight" : ys ? "bottomLeft" : "topRight"}" state="frozen"/>`;
+      }
+      let x = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">`;
+      x += `<sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>`;
+      x += `<dimension ref="A1:${colName(Math.max(1, this.maxC))}${Math.max(1, this.maxR)}"/>`;
+      x += `<sheetViews><sheetView workbookViewId="0"${this.grid ? "" : ' showGridLines="0"'}>${pane}</sheetView></sheetViews>`;
+      x += `<sheetFormatPr defaultRowHeight="15"/>`;
+      if (cols) x += `<cols>${cols}</cols>`;
+      x += `<sheetData>${sd}</sheetData>`;
+      if (this.merges.length) x += `<mergeCells count="${this.merges.length}">${this.merges.map((m) => `<mergeCell ref="${m}"/>`).join("")}</mergeCells>`;
+      let prio = 1;
+      for (const cf of this.cfs) {
+        x += `<conditionalFormatting sqref="${cf.sqref}">`;
+        for (const ru of cf.rules) {
+          const dxf = wb.dxfId(ru.style);
+          if (ru.expr) x += `<cfRule type="expression" dxfId="${dxf}" priority="${prio++}"><formula>${esc(ru.expr)}</formula></cfRule>`;
+          else x += `<cfRule type="cellIs" dxfId="${dxf}" priority="${prio++}" operator="equal"><formula>"${esc(ru.eq)}"</formula></cfRule>`;
+        }
+        x += `</conditionalFormatting>`;
+      }
+      if (this.dvs.length) {
+        x += `<dataValidations count="${this.dvs.length}">` + this.dvs.map((d) =>
+          `<dataValidation type="list" allowBlank="1" showInputMessage="1" showErrorMessage="1" sqref="${d.sqref}"><formula1>"${esc(d.items.join(","))}"</formula1></dataValidation>`).join("") + `</dataValidations>`;
+      }
+      if (this.links.length) {
+        x += `<hyperlinks>` + this.links.map((l, i) => `<hyperlink ref="${l.ref}" r:id="rIdL${i + 1}"${l.tip ? ` tooltip="${esc(l.tip.slice(0, 250))}"` : ""}/>`).join("") + `</hyperlinks>`;
+      }
+      x += `<pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/>`;
+      x += `<pageSetup paperSize="9" orientation="${this.landscape ? "landscape" : "portrait"}" fitToWidth="1" fitToHeight="0"/>`;
+      if (this.breaks.length) x += `<rowBreaks count="${this.breaks.length}" manualBreakCount="${this.breaks.length}">${this.breaks.map((b) => `<brk id="${b}" max="16383" man="1"/>`).join("")}</rowBreaks>`;
+      x += `</worksheet>`;
+      return x;
+    }
+    rels() {
+      if (!this.links.length) return null;
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+        this.links.map((l, i) => `<Relationship Id="rIdL${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="${esc(l.target)}" TargetMode="External"/>`).join("") +
+        `</Relationships>`;
+    }
+  }
+
+  class Workbook {
+    constructor(font = "Nirmala UI") {
+      this.font = font; this.sheets = []; this.fonts = []; this.fills = []; this.xfs = []; this.xfIndex = new Map(); this.dxfs = []; this.dxfIndex = new Map();
+      this.fontId({}); this.fills.push('<fill><patternFill patternType="none"/></fill>', '<fill><patternFill patternType="gray125"/></fill>');
+      this.styleId({});
+    }
+    add(name) { const s = new Sheet(this, name.slice(0, 31).replace(/[\[\]:*?\/\\]/g, "-")); this.sheets.push(s); return s; }
+    fontId(st) {
+      const key = `${st.bold ? 1 : 0}|${st.italic ? 1 : 0}|${st.size || 10}|${st.color || "FF000000"}|${st.underline ? 1 : 0}`;
+      let i = this.fonts.findIndex((f) => f.key === key);
+      if (i < 0) {
+        i = this.fonts.length;
+        this.fonts.push({ key, xml: `<font>${st.bold ? "<b/>" : ""}${st.italic ? "<i/>" : ""}${st.underline ? '<u/>' : ""}<sz val="${st.size || 10}"/><color rgb="${st.color || "FF000000"}"/><name val="${esc(this.font)}"/></font>` });
+      }
+      return i;
+    }
+    fillId(c) {
+      if (!c) return 0;
+      const xml = `<fill><patternFill patternType="solid"><fgColor rgb="${c}"/><bgColor indexed="64"/></patternFill></fill>`;
+      let i = this.fills.indexOf(xml); if (i < 0) { i = this.fills.length; this.fills.push(xml); } return i;
+    }
+    styleId(st) {
+      const f = this.fontId(st), fl = this.fillId(st.fill), b = st.border === false ? 0 : (st.border ? 1 : 0);
+      const fmt = st.date ? 164 : st.num ? (st.num === "0.0" ? 165 : st.num === "0.00" ? 166 : 1) : 0;
+      const key = `${f}|${fl}|${b}|${fmt}|${st.align || "left"}|${st.valign || "top"}|${st.wrap === false ? 0 : 1}`;
+      if (this.xfIndex.has(key)) return this.xfIndex.get(key);
+      const i = this.xfs.length; this.xfIndex.set(key, i);
+      this.xfs.push(`<xf numFmtId="${fmt}" fontId="${f}" fillId="${fl}" borderId="${b}" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"${fmt ? ' applyNumberFormat="1"' : ""}><alignment horizontal="${st.align || "left"}" vertical="${st.valign || "top"}"${st.wrap === false ? "" : ' wrapText="1"'}/></xf>`);
+      return i;
+    }
+    dxfId(s) {
+      const key = JSON.stringify(s); if (this.dxfIndex.has(key)) return this.dxfIndex.get(key);
+      const i = this.dxfs.length; this.dxfIndex.set(key, i);
+      this.dxfs.push(`<dxf>${s.color ? `<font>${s.bold ? "<b/>" : ""}<color rgb="${s.color}"/></font>` : ""}<fill><patternFill patternType="solid"><bgColor rgb="${s.fill}"/></patternFill></fill></dxf>`);
+      return i;
+    }
+    stylesXml() {
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
+        `<numFmts count="3"><numFmt numFmtId="164" formatCode="dd\\-mm\\-yyyy"/><numFmt numFmtId="165" formatCode="0.0"/><numFmt numFmtId="166" formatCode="0.00"/></numFmts>` +
+        `<fonts count="${this.fonts.length}">${this.fonts.map((f) => f.xml).join("")}</fonts>` +
+        `<fills count="${this.fills.length}">${this.fills.join("")}</fills>` +
+        `<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFA6A6A6"/></left><right style="thin"><color rgb="FFA6A6A6"/></right><top style="thin"><color rgb="FFA6A6A6"/></top><bottom style="thin"><color rgb="FFA6A6A6"/></bottom><diagonal/></border></borders>` +
+        `<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
+        `<cellXfs count="${this.xfs.length}">${this.xfs.join("")}</cellXfs>` +
+        `<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>` +
+        `<dxfs count="${this.dxfs.length}">${this.dxfs.join("")}</dxfs></styleSheet>`;
+    }
+    async toBlob(JSZip, type = "blob") {
+      const z = new JSZip();
+      const sheetXml = this.sheets.map((s) => s.xml());   // builds styles as a side effect
+      z.file("[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${this.sheets.map((s, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")}</Types>`);
+      z.file("_rels/.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`);
+      z.file("xl/workbook.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><bookViews><workbookView activeTab="0"/></bookViews><sheets>${this.sheets.map((s, i) => `<sheet name="${esc(s.name)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join("")}</sheets><calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>`);
+      z.file("xl/_rels/workbook.xml.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${this.sheets.map((s, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join("")}<Relationship Id="rId${this.sheets.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`);
+      z.file("xl/styles.xml", this.stylesXml());
+      this.sheets.forEach((s, i) => {
+        z.file(`xl/worksheets/sheet${i + 1}.xml`, sheetXml[i]);
+        const r = s.rels(); if (r) z.file(`xl/worksheets/_rels/sheet${i + 1}.xml.rels`, r);
+      });
+      return z.generateAsync({ type, compression: "DEFLATE" });
+    }
+  }
+  return { Workbook, colName, colNum, parseRef };
+})();
+
+
+</script>
+<script>
+/* Builds the Gujarati scrutiny workbook + page-viewer files from an analysis result R. Needs XW (xlsxw.js). */
+const BUILD = (() => {
+  const Y = "હા", N = "ના", C = "ચકાસો", NA = "લાગુ નથી", AFTER = "બઢતી પછી", PART = "અંશતઃ";
+  const EL = "લાયક", NEL = "લાયક નથી", NRV = "ચકાસણી જરૂરી";
+  const CERT = "પ્રમાણપત્ર", APARW = "ખાનગી અહેવાલ";
+  const NAVY = "FF1F3864", SUB = "FFD9E1F2", GREEN = "FFC6EFCE", RED = "FFFFC7CE", AMBER = "FFFFEB9C", GREY = "FFF2F2F2", LBLUE = "FFDDEBF7", YEL = "FFFFF8DC";
+  const BLUE = "FF0000FF", MUTED = "FF595959", LINK = "FF0563C1", WHITE = "FFFFFFFF";
+  const CRIT = ["ફીડર જગ્યા અને શાખા", "ફીડર સંવર્ગમાં લઘુત્તમ અનુભવ", "ખાતાકીય પરીક્ષા", "તાલીમ / તાલીમાંત પરીક્ષા", "કમ્પ્યુટર પરીક્ષા (સીસીસી / સીસીસી+)",
+    "હિન્દી / ગુજરાતી પરીક્ષા", "સિદ્ધ ગુણવત્તા અને કાર્યક્ષમતા (ખાનગી અહેવાલ)", "ખાતાકીય તપાસ / આરોપનામું / ફોજદારી કેસ નથી", "શિક્ષા અમલમાં નથી",
+    "વિચારણા ક્ષેત્રમાં", "ખાલી જગ્યા ઉપલબ્ધ", "ઉંમર / વયનિવૃત્તિ પહેલાં"];
+  const DOCS = ["જિ.વિ.અ.નો દરખાસ્ત પત્ર", "અનુક્રમણિકા", "ચેકલીસ્ટ", "પત્રક-અ", "પત્રક-બ", "પત્રક-ક", "આખરી પ્રવરતા યાદી", "ભરતી નિયમોની નકલ",
+    "ખાતાકીય બઢતી સમિતિની કાર્યવાહી નોંધ", "છેલ્લા પાંચ વર્ષના ખાનગી અહેવાલ", "રોસ્ટર રજીસ્ટર", "સૂચિત પસંદગી યાદી", "ખાલી જગ્યાઓનું પત્રક",
+    "પરીક્ષા પરિણામ / સેવાપોથી નોંધ", "તપાસ / લેણું ન હોવાનું પ્રમાણપત્ર", "બંધ કવર / એડહોક બઢતીની વિગત"];
+  const TYPE_GU = {
+    forwarding_letter: "જિ.વિ.અ.નો દરખાસ્ત પત્ર", index: "અનુક્રમણિકા", checklist: "ચેકલીસ્ટ", patrak_a: "પત્રક-અ", patrak_b: "પત્રક-બ", patrak_k: "પત્રક-ક",
+    patrak_d: "પત્રક-ડ", seniority_list: "પ્રવરતા યાદી", recruitment_rules: "ભરતી નિયમો", dpc_minutes: "સમિતિની કાર્યવાહી નોંધ", apar: "ખાનગી અહેવાલ",
+    apar_certificate: "ખાનગી અહેવાલ – પ્રમાણપત્ર", roster: "રોસ્ટર", select_list: "સૂચિત પસંદગી યાદી", vacancy_statement: "ખાલી જગ્યાનું પત્રક",
+    exam_result: "પરીક્ષા પરિણામ", service_book: "સેવાપોથી", order: "હુકમ", certificate: "પ્રમાણપત્ર", marksheet: "ગુણપત્રક", board_letter: "મંડળનો પત્ર", other: "અન્ય",
+  };
+  const MET = new Set([Y, N, C, NA, AFTER, PART]);
+
+  // ---------- helpers
+  const toDate = (s) => {
+    if (!s) return null; if (s instanceof Date) return s;
+    const m = /(\d{1,2})[-./](\d{1,2})[-./](\d{4})/.exec(String(s)); if (!m) return null;
+    const d = new Date(Date.UTC(+m[3], +m[2] - 1, +m[1]));
+    return isNaN(d) || d.getUTCMonth() !== +m[2] - 1 ? null : d;
+  };
+  const fmt = (d) => d ? `${String(d.getUTCDate()).padStart(2, "0")}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${d.getUTCFullYear()}` : "";
+  function datedif(a, b) {
+    if (!a || !b || b < a) return null;
+    let y = b.getUTCFullYear() - a.getUTCFullYear(), m = b.getUTCMonth() - a.getUTCMonth(), d = b.getUTCDate() - a.getUTCDate();
+    if (d < 0) { m -= 1; d += new Date(Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), 0)).getUTCDate(); }
+    if (m < 0) { y -= 1; m += 12; }
+    return { y, m, d };
+  }
+  const days = (a, b) => Math.round((b - a) / 86400000);
+  const num = (v) => (v === null || v === undefined || v === "" || isNaN(+v)) ? null : +v;
+  const met = (v) => MET.has(v) ? v : (v ? C : C);
+  const LIST = "(\\d{1,3}(?:\\s*[-–]\\s*\\d{1,3})?(?:\\s*,\\s*\\d{1,3}(?:\\s*[-–]\\s*\\d{1,3})?)*)";
+  const PREF = new RegExp("(?:\\bp\\.|પાન)\\s*" + LIST, "g"), RAW = new RegExp("^\\s*" + LIST);
+  function refGroups(text, n, raw) {
+    if (typeof text !== "string") return [];
+    const out = [], ms = raw ? [RAW.exec(text)] : [...text.matchAll(PREF)];
+    for (const m of ms) {
+      if (!m) continue;
+      for (const part of m[1].split(/\s*,\s*/)) {
+        const xs = part.split(/\s*[-–]\s*/).map(Number);
+        let a = xs[0], b = xs[xs.length - 1]; if (b < a) [a, b] = [b, a];
+        if (a >= 1 && b <= n && b - a < 400 && !out.some((g) => g[0] === a && g[1] === b)) out.push([a, b]);
+      }
+    }
+    return out;
+  }
+  const glabel = (g) => g[0] === g[1] ? `${g[0]}` : `${g[0]}-${g[1]}`;
+  const p3 = (p) => String(p).padStart(3, "0");
+
+  function viewerHtml(pages, key, title) {
+    const chips = pages.map((p) => `<a class="chip" href="#p${p}">${p}</a>`).join("");
+    const blocks = pages.map((p) => `<section id="p${p}"><div class="bar"><b>પાન ${p}</b><a href="../pages/p${p3(p)}.jpg" target="_blank">પૂરા કદમાં ખોલો</a><a href="#top">↑ ઉપર</a></div><img src="../pages/p${p3(p)}.jpg" alt="પાન ${p}" loading="lazy"></section>`).join("");
+    return `<!doctype html><html lang="gu"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title} – પાન ${key}</title><style>
+:root{--bg:#eef1f5;--card:#fff;--ink:#1d2733;--muted:#5b6673;--acc:#1f3864;--line:#d5dbe3}
+@media (prefers-color-scheme:dark){:root{--bg:#14181d;--card:#1e242b;--ink:#e6eaef;--muted:#9aa5b1;--acc:#8fb0e8;--line:#323a44}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Nirmala UI","Segoe UI",Arial,sans-serif}
+header{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--line);padding:10px 16px;z-index:2}
+h1{font-size:16px;margin:0 0 6px}.sub{color:var(--muted);font-size:12px;margin-bottom:6px}
+.chip{display:inline-block;margin:2px 3px;padding:2px 9px;border:1px solid var(--line);border-radius:12px;color:var(--acc);text-decoration:none;font-size:13px}
+main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:var(--card);border:1px solid var(--line);border-radius:6px;margin:14px 0;padding:8px;scroll-margin-top:110px}
+.bar{display:flex;gap:16px;align-items:center;font-size:13px;margin-bottom:6px;flex-wrap:wrap}.bar a{color:var(--acc)}img{width:100%;height:auto;display:block;background:#fff}
+</style></head><body><a id="top"></a><header><h1>${title} – ઉલ્લેખિત પાન: ${key}</h1><div class="sub">${pages.length} પાન. નંબર પર ક્લિક કરી તે પાન પર જાઓ.</div>${chips}</header><main>${blocks}</main></body></html>`;
+  }
+
+  function build(R, XW) {
+    const n = R.n, F = R.file || {}, cands = R.cands || [], X = R.extra || {};
+    const wb = new XW.Workbook("Nirmala UI");
+    const viewers = new Map();
+    const dpc = toDate(F.dpc_date);
+    const st = (o) => ({ border: true, ...o });
+    const H = (ws, row, heads, widths) => {
+      heads.forEach((h, i) => ws.set({ r: row, c: i + 1 }, h, st({ bold: true, color: WHITE, fill: NAVY, align: "center", valign: "center" })));
+      (widths || []).forEach((w, i) => ws.width(i + 1, w));
+    };
+    const title = (ws, t, sub) => {
+      ws.set("A1", t, { bold: true, size: 14, color: NAVY, wrap: false, border: false });
+      if (sub) ws.set("A2", sub, { italic: true, size: 9, color: MUTED, wrap: false, border: false });
+    };
+    const statusCF = (ws, rng) => ws.cf(rng, [
+      { eq: Y, style: { fill: GREEN, color: "FF006100", bold: true } }, { eq: N, style: { fill: RED, color: "FF9C0006", bold: true } },
+      { eq: C, style: { fill: AMBER, color: "FF7F5500", bold: true } }, { eq: NA, style: { fill: GREY } },
+      { eq: AFTER, style: { fill: LBLUE } }, { eq: PART, style: { fill: AMBER } }]);
+    const verdictCF = (ws, rng, vals = [EL, NEL, NRV]) => ws.cf(rng, vals.map((v, i) => ({ eq: v, style: { fill: [GREEN, RED, AMBER][i], color: ["FF006100", "FF9C0006", "FF7F5500"][i], bold: true } })));
+    const D = (s) => toDate(s);
+    const used = new Set();
+    const sheetName = (base) => { let s = base.slice(0, 31).replace(/[\[\]:*?\/\\]/g, "-"); let i = 2; while (used.has(s)) s = base.slice(0, 28) + "-" + i++; used.add(s); return s; };
+
+    // ---------- link machinery
+    function target(groups) {
+      if (groups.length === 1 && groups[0][0] === groups[0][1]) return `pages/p${p3(groups[0][0])}.jpg`;
+      const pages = []; groups.forEach(([a, b]) => { for (let p = a; p <= b; p++) if (!pages.includes(p)) pages.push(p); });
+      const key = groups.map(glabel).join(", ");
+      let slug = groups.map(glabel).join("_"); if (slug.length > 40) slug = slug.slice(0, 30) + "_" + Math.abs([...key].reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 7)).toString(36);
+      const f = `links/pages_${slug}.html`;
+      if (!viewers.has(f)) viewers.set(f, viewerHtml(pages, key, R.base || "PDF"));
+      return f;
+    }
+    function linkify(ws, specs, lastCol) {
+      const start = lastCol + 2, done = {};
+      for (const [col, raw] of specs) {
+        const c = XW.colNum(col);
+        for (const cell of [...ws.cells.values()].filter((x) => x.c === c)) {
+          const v = cell.value; if (typeof v !== "string") continue;
+          if (raw && !/^\s*\d/.test(v)) continue;
+          const g = refGroups(v, n, raw); if (!g.length) continue;
+          const ref = XW.colName(c) + cell.r;
+          ws.link(ref, target(g), "ઉલ્લેખિત પાન ખોલો: " + g.map(glabel).join(", "));
+          cell.style = { ...cell.style, underline: true, color: LINK };
+          const k0 = done[cell.r] || 0;
+          g.forEach((gg, j) => {
+            ws.set({ r: cell.r, c: start + k0 + j }, "પાન " + glabel(gg), st({ size: 9, align: "center", underline: true, color: LINK }));
+            ws.link(XW.colName(start + k0 + j) + cell.r, target([gg]), "પાન ખોલો: " + glabel(gg));
+          });
+          done[cell.r] = k0 + g.length;
+        }
+      }
+      const rows = Object.keys(done).map(Number).sort((a, b) => a - b); if (!rows.length) return;
+      const nc = Math.max(...Object.values(done));
+      for (let j = 0; j < nc; j++) ws.width(start + j, 11);
+      for (const r0 of rows) {
+        if (done[r0 - 1] || r0 < 2) continue;
+        const hr = r0 - 1; if (ws.get(XW.colName(start) + hr)) continue;
+        ws.set({ r: hr, c: start }, "આધાર પાનની લિંક (દરેક પર ક્લિક કરો)", st({ bold: true, size: 9, color: WHITE, fill: NAVY, align: "center" }));
+        if (nc > 1) ws.merge(`${XW.colName(start)}${hr}:${XW.colName(start + nc - 1)}${hr}`);
+      }
+    }
+
+    const shorts = cands.map((c) => c.short || c.name || "ઉમેદવાર");
+    const SN = {
+      fp: sheetName("આગળનું પાનું"), map: sheetName("ફાઈલ નકશો"), res: sheetName("પરિણામ"),
+      el: shorts.map((s) => sheetName("લાયકાત-" + s)), rules: null, ap: [], zone: null, vac: null, obs: null, reg: null,
+    };
+    // order of creation = order of tabs
+    const wsFP = wb.add(SN.fp), wsMap = wb.add(SN.map), wsRes = wb.add(SN.res);
+    const wsEl = SN.el.map((s) => wb.add(s));
+    SN.rules = sheetName("લાગુ નિયમો"); const wsRules = wb.add(SN.rules);
+    SN.ap = shorts.map((s) => sheetName("ખાનગી અહેવાલ-" + s)); const wsAp = SN.ap.map((s) => wb.add(s));
+    SN.zone = sheetName("વિચારણા ક્ષેત્ર"); const wsZone = wb.add(SN.zone);
+    SN.vac = sheetName("ખાલી જગ્યા"); const wsVac = wb.add(SN.vac);
+    SN.obs = sheetName("અવલોકનો"); const wsObs = wb.add(SN.obs);
+    SN.reg = sheetName("રજીસ્ટરની હાર"); const wsReg = wb.add(SN.reg);
+    const q = (s) => `'${s}'!`;
+
+    // ---------- Vacancies
+    const V = F.vac || {};
+    title(wsVac, "જગ્યાઓ, ખાલી જગ્યા અને રોસ્ટર", "આધાર: " + (V.pages || "રોસ્ટર રજીસ્ટર, ખાલી જગ્યાનું પત્રક, કાર્યવાહી નોંધ"));
+    [6, 54, 14, 14, 12, 46].forEach((w, i) => wsVac.width(i + 1, w));
+    wsVac.set("B3", "સમિતિની તારીખ", st({ bold: true })); wsVac.set("C3", dpc, st({ color: BLUE, align: "center" }));
+    H(wsVac, 5, ["ક્રમ", "વિગત", "સંખ્યા", "ચકાસણી", "મેળ?", "આધાર"]);
+    const vv = (k) => num(V[k]);
+    const vr = [
+      ["મંજૂર જગ્યા", vv("sanctioned"), null], ["સીધી પસંદગીનો હિસ્સો", vv("direct"), null], ["બઢતીનો હિસ્સો", vv("promotion"), "=C6-C7"],
+      ["સીધી પસંદગીથી ભરેલ", vv("filled_direct"), null], ["બઢતીથી ભરેલ", vv("filled_promotion"), null],
+      ["ખાલી – સીધી પસંદગી ક્વોટા", "=C7-C9", vv("vacant_direct")], ["ખાલી – બઢતી ક્વોટા", "=C8-C10", vv("vacant_promotion")],
+      ["સમિતિએ વિચારણામાં લીધેલ જગ્યા", vv("considered"), null]];
+    const vval = {}; // cached numbers
+    vr.forEach((row, i) => {
+      const r = 6 + i; wsVac.set({ r, c: 1 }, i + 1, st({ align: "center" })); wsVac.set({ r, c: 2 }, row[0], st({}));
+      let v = row[1];
+      if (typeof v === "string") {
+        const [a, b] = v === "=C7-C9" ? [vval[7], vval[9]] : v === "=C8-C10" ? [vval[8], vval[10]] : v === "=C6-C7" ? [vval[6], vval[7]] : [null, null];
+        const res = a !== null && a !== undefined && b !== null && b !== undefined ? a - b : "";
+        vval[r] = res === "" ? null : res;
+        wsVac.set({ r, c: 3 }, { f: `=IF(OR(${v.slice(1, 3)}="",${v.slice(4)}=""),"",${v.slice(1)})`, v: res }, st({ align: "center" }));
+      } else { vval[r] = v; wsVac.set({ r, c: 3 }, v, st({ align: "center", color: BLUE })); }
+      let chk = row[2];
+      if (typeof chk === "string") { const a = vval[6], b = vval[7]; wsVac.set({ r, c: 4 }, { f: "=IF(OR(C6=\"\",C7=\"\"),\"\",C6-C7)", v: a != null && b != null ? a - b : "" }, st({ align: "center" })); chk = a != null && b != null ? a - b : null; }
+      else wsVac.set({ r, c: 4 }, chk, st({ align: "center", color: BLUE }));
+      const ok = chk === null || chk === undefined || vval[r] === null ? "" : (vval[r] === chk ? Y : N);
+      wsVac.set({ r, c: 5 }, { f: `=IF(OR(C${r}="",D${r}=""),"",IF(C${r}=D${r},"${Y}","${N}"))`, v: ok }, st({ align: "center" }));
+    });
+    statusCF(wsVac, "E6:E13");
+    wsVac.set("B15", "બઢતી ક્વોટાની ખાલી જગ્યા વિચારણા હેઠળની જગ્યા જેટલી છે?", st({ bold: true, fill: SUB }));
+    wsVac.set("C15", { f: `=IF(OR(C12="",C13=""),"${C}",IF(C12>=C13,"${Y}","${N}"))`, v: vval[12] == null || vval[13] == null ? C : (vval[12] >= vval[13] ? Y : N) }, st({ bold: true, align: "center" }));
+    statusCF(wsVac, "C15");
+    wsVac.set("B17", "ખાલી જગ્યાના પત્રક / રોસ્ટર અંગે નોંધ", st({ bold: true, fill: SUB })); wsVac.merge("B17:F17");
+    wsVac.set("B18", [V.statement, V.notes].filter(Boolean).join("\n") || "—", st({ size: 9 })); wsVac.merge("B18:F18"); wsVac.height(18, 90);
+    linkify(wsVac, [["F", false], ["B", false]], 6);
+    const VAC = q(SN.vac) + "$C$12";
+
+    // ---------- APAR sheets
+    const aparRef = [];
+    cands.forEach((c, ci) => {
+      const ws = wsAp[ci];
+      title(ws, `ખાનગી અહેવાલની વિગત – ${c.short || c.name} (પ્રવરતા ક્રમ ${c.seniority ?? "?"})`, c.apar_source || "આધાર: પત્રક-અ મુદ્દો 12 અને ખાનગી અહેવાલની નકલો");
+      H(ws, 4, ["વર્ષ", "તારીખથી", "તારીખ સુધી", "દિવસ", "અહેવાલ લખનાર", "સમીક્ષક", "પ્રકાર", "આખરી ગુણ", "આગલા સમયગાળા સાથે સળંગ?", "પ્રમાણપત્ર માન્ય?", "નોંધ / પાન"],
+        [9, 12, 12, 7, 11, 11, 15, 10, 17, 12, 54]);
+      let endD = D(c.apar_end), startD = D(c.apar_start);
+      if (!endD && dpc) endD = new Date(Date.UTC(dpc.getUTCMonth() >= 3 ? dpc.getUTCFullYear() : dpc.getUTCFullYear() - 1, 2, 31));
+      if (!startD && endD) startD = new Date(Date.UTC(endD.getUTCFullYear() - 5, 3, 1));
+      const rows = (c.apar || []).map((a) => ({ ...a, f: D(a.from), t: D(a.to) })).filter((a) => a.f && a.t).sort((a, b) => a.f - b.f);
+      let r = 5, prev = null, gaps = 0, ovl = 0, bad = 0, certDays = 0, certN = 0, marks = [], total = 0;
+      for (const a of rows) {
+        const isCert = /પ્રમાણ|cert/i.test(a.type || "");
+        const dd = days(a.f, a.t) + 1; total += dd;
+        ws.set({ r, c: 1 }, a.year || "", st({ align: "center" }));
+        ws.set({ r, c: 2 }, a.f, st({ color: BLUE, align: "center" })); ws.set({ r, c: 3 }, a.t, st({ color: BLUE, align: "center" }));
+        ws.set({ r, c: 4 }, { f: `=C${r}-B${r}+1`, v: dd }, st({ align: "center" }));
+        ws.set({ r, c: 5 }, a.rep ?? "", st({ align: "center" })); ws.set({ r, c: 6 }, a.rev ?? "", st({ align: "center" }));
+        ws.set({ r, c: 7 }, isCert ? CERT : APARW, st({ align: "center", fill: isCert ? GREY : undefined }));
+        const mk = num(a.marks); if (mk !== null && !isCert) marks.push(mk);
+        ws.set({ r, c: 8 }, isCert ? "" : mk, st({ align: "center", color: BLUE }));
+        let cont;
+        if (!prev) {
+          cont = startD && a.f.getTime() === startD.getTime() ? "શરૂઆત બરાબર" : "શરૂઆત ચકાસો";
+          ws.set({ r, c: 9 }, { f: startD ? `=IF(B${r}=DATE(${startD.getUTCFullYear()},${startD.getUTCMonth() + 1},${startD.getUTCDate()}),"શરૂઆત બરાબર","શરૂઆત ચકાસો")` : `="શરૂઆત ચકાસો"`, v: cont }, st({ align: "center" }));
+        } else {
+          const diff = days(prev.t, a.f);
+          cont = diff === 1 ? "સળંગ" : diff <= 0 ? "બેવડો દિવસ" : "ખૂટતો ગાળો";
+          if (diff > 1) gaps++; if (diff <= 0) ovl++;
+          ws.set({ r, c: 9 }, { f: `=IF(B${r}=C${r - 1}+1,"સળંગ",IF(B${r}<=C${r - 1},"બેવડો દિવસ","ખૂટતો ગાળો"))`, v: cont }, st({ align: "center" }));
+        }
+        if (isCert) { certN++; certDays += dd; if (dd > 90) bad++; }
+        ws.set({ r, c: 10 }, { f: `=IF(G${r}="${CERT}",IF(D${r}<=90,"${Y}","${N}"),"–")`, v: isCert ? (dd <= 90 ? Y : N) : "–" }, st({ align: "center" }));
+        ws.set({ r, c: 11 }, a.remark || "", st({ size: 9, color: MUTED }));
+        prev = a; r++;
+      }
+      const a1 = 5, a2 = Math.max(5, r - 1);
+      ws.cf(`I${a1}:I${a2}`, [{ eq: "ખૂટતો ગાળો", style: { fill: RED } }, { eq: "બેવડો દિવસ", style: { fill: AMBER } }]);
+      statusCF(ws, `J${a1}:J${a2}`);
+      r += 1;
+      const S = startD ? `DATE(${startD.getUTCFullYear()},${startD.getUTCMonth() + 1},${startD.getUTCDate()})` : `""`;
+      const E = endD ? `DATE(${endD.getUTCFullYear()},${endD.getUTCMonth() + 1},${endD.getUTCDate()})` : `""`;
+      const covOk = rows.length && startD && endD && rows[0].f.getTime() === startD.getTime() && rows[rows.length - 1].t.getTime() >= endD.getTime() && gaps === 0;
+      const avg = marks.length ? Math.round(marks.reduce((x, y) => x + y, 0) / marks.length * 10) / 10 : "";
+      const sum = [
+        ["req", "જરૂરી સમયગાળો", startD && endD ? { f: `=TEXT(${S},"dd-mm-yyyy")&" – "&TEXT(${E},"dd-mm-yyyy")`, v: `${fmt(startD)} – ${fmt(endD)}` } : "—"],
+        ["days", "આવરી લીધેલ દિવસ (કુલ)", rows.length ? { f: `=SUM(D${a1}:D${a2})`, v: total } : 0],
+        ["cov", "સંપૂર્ણ સમયગાળો આવરી લીધો (સમયસર શરૂ-અંત, ખૂટતો ગાળો નહિ)?", rows.length && startD && endD ? { f: `=IF(AND(B${a1}=${S},C${a2}>=${E},COUNTIF(I${a1}:I${a2},"ખૂટતો ગાળો")=0),"${Y}","${N}")`, v: covOk ? Y : N } : C],
+        ["gap", "ખૂટતા ગાળા", rows.length ? { f: `=COUNTIF(I${a1}:I${a2},"ખૂટતો ગાળો")`, v: gaps } : 0],
+        ["ovl", "બેવડા દિવસવાળી હાર", rows.length ? { f: `=COUNTIF(I${a1}:I${a2},"બેવડો દિવસ")`, v: ovl } : 0],
+        ["cert", "પ્રમાણપત્રથી આવરી લીધેલ સમયગાળા", `${certN} / ${rows.length}, ${certDays} દિવસ`],
+        ["bad", "3 માસથી વધુના પ્રમાણપત્ર", rows.length ? { f: `=COUNTIF(J${a1}:J${a2},"${N}")`, v: bad } : 0],
+        ["avg", "સરેરાશ આખરી ગુણ", marks.length ? { f: `=ROUND(AVERAGE(H${a1}:H${a2}),1)`, v: avg } : "—"],
+        ["lohi", "ઓછામાં ઓછા / વધુમાં વધુ ગુણ", marks.length ? `${Math.min(...marks)} / ${Math.max(...marks)}` : "—"],
+        ["adv", "પ્રતિકૂળ નોંધ", c.apar_adverse || "—"]];
+      const R0 = {};
+      for (const [k, lab, val] of sum) {
+        ws.set({ r, c: 1 }, lab, st({ bold: true, fill: SUB })); ws.merge(`A${r}:D${r}`);
+        ws.set({ r, c: 5 }, val, st({ align: "center", num: k === "avg" ? "0.0" : undefined })); ws.merge(`E${r}:H${r}`);
+        R0[k] = r; r++;
+      }
+      statusCF(ws, `E${R0.cov}`);
+      r++;
+      const sr = r, okr = r + 1;
+      const okv = rows.length ? (covOk && bad === 0 ? Y : N) : C;
+      ws.set({ r: sr, c: 1 }, "સારાંશ", st({ bold: true, fill: SUB })); ws.merge(`A${sr}:B${sr}`);
+      const summ = rows.length ? `${rows.length} હાર; સરેરાશ ${avg || "—"}; ગુણ ${marks.length ? Math.min(...marks) + " / " + Math.max(...marks) : "—"}; ખૂટતા ગાળા ${gaps}` : "ખાનગી અહેવાલની વિગત મળી નથી – ચકાસો";
+      ws.set({ r: sr, c: 3 }, summ, st({ align: "center" })); ws.merge(`C${sr}:H${sr}`);
+      ws.set({ r: okr, c: 1 }, "ખાનગી અહેવાલ 'સિદ્ધ ગુણવત્તા અને કાર્યક્ષમતા' દર્શાવે છે?", st({ bold: true, fill: SUB })); ws.merge(`A${okr}:B${okr}`);
+      ws.set({ r: okr, c: 3 }, rows.length ? { f: `=IF(AND(E${R0.cov}="${Y}",E${R0.gap}=0,E${R0.bad}=0),"${Y}","${N}")`, v: okv } : C, st({ bold: true, align: "center" }));
+      ws.merge(`C${okr}:H${okr}`); statusCF(ws, `C${okr}`);
+      ws.set({ r: okr + 1, c: 1 }, c.apar_note || "", st({ size: 9, color: MUTED })); ws.merge(`A${okr + 1}:K${okr + 1}`); ws.height(okr + 1, 54);
+      ws.freeze = "A5";
+      linkify(ws, [["K", false]], 11);
+      aparRef.push({ sum: q(ws.name) + `C${sr}`, ok: q(ws.name) + `C${okr}`, okv, summ, avg });
+    });
+
+    // ---------- Eligibility sheets
+    const EL_ = [];
+    cands.forEach((c, ci) => {
+      const ws = wsEl[ci];
+      title(ws, `માપદંડવાર લાયકાતની ચકાસણી: ${c.name || c.short} (પ્રવરતા ક્રમ ${c.seniority ?? "?"})`,
+        `${F.feeder || ""} → ${F.promotion || ""}. પાન નંબર ${R.base || "PDF"} (${n} પાન)ના છે; પાન નંબર પર ક્લિક કરવાથી તે પાન ખુલશે.`);
+      ws.set("B4", "ગણતરીમાં લીધેલ મુખ્ય તારીખો", st({ bold: true, fill: SUB })); ws.merge("B4:D4");
+      const inputs = [
+        ["ફીડર સંવર્ગમાં તારીખ", D(c.join), c.join_source], ["જન્મ તારીખ", D(c.dob), c.dob_source], ["ખાતાકીય બઢતી સમિતિની તારીખ", dpc, F.dpc_source],
+        ["પ્રથમ નિમણૂક", D(c.first_appt), c.first_appt_source], ["ફીડર સંવર્ગમાં લઘુત્તમ અનુભવ (વર્ષ)", num(F.min_years) ?? 5, F.rules_text],
+        ["વયનિવૃત્તિની ઉંમર (વર્ષ)", num(F.retire_age) ?? 58, c.retirement ? "નિવૃત્તિ તારીખ " + c.retirement : ""], ["પ્રવરતા ક્રમ", num(c.seniority), F.seniority_list],
+        ["વિચારણા ક્ષેત્ર – ક્રમથી", num(F.zone_from), ""], ["વિચારણા ક્ષેત્ર – ક્રમ સુધી", num(F.zone_to), ""]];
+      inputs.forEach(([lab, v, src], i) => {
+        const r = 5 + i; ws.set({ r, c: 2 }, lab, st({})); ws.set({ r, c: 3 }, v ?? "", st({ color: BLUE, align: "center" })); ws.set({ r, c: 4 }, src || "", st({ size: 9, color: MUTED }));
+      });
+      const jd = D(c.join), bd = D(c.dob), fa = D(c.first_appt), miny = num(F.min_years) ?? 5, ret = num(F.retire_age) ?? 58;
+      const sv = datedif(jd, dpc), ag = datedif(bd, dpc), tot = datedif(fa, dpc);
+      let margin = "";
+      if (jd && dpc) { const m = new Date(Date.UTC(jd.getUTCFullYear() + miny, jd.getUTCMonth(), jd.getUTCDate())); margin = days(m, dpc); }
+      ws.set("B14", "લઘુત્તમ અનુભવ ઉપરાંતના દિવસ", st({})); ws.set("C14", { f: `=IF(OR(C5="",C7=""),"",C7-EDATE(C5,12*C9))`, v: margin }, st({ align: "center" }));
+      ws.set("B15", "પ્રથમ નિમણૂકથી કુલ નોકરી (માહિતી માટે)", st({}));
+      ws.set("C15", { f: `=IF(OR(C8="",C7=""),"",DATEDIF(C8,C7,"y")&" વર્ષ "&DATEDIF(C8,C7,"ym")&" માસ")`, v: tot ? `${tot.y} વર્ષ ${tot.m} માસ` : "" }, st({ align: "center" }));
+      H(ws, 17, ["ક્રમ", "માપદંડ", "જરૂરિયાત (નિયમ / આધાર)", "ઉમેદવારની સ્થિતિ (ફાઈલ મુજબ)", "આધાર (PDF પાન)", "ગણતરી / પરિણામ", "પૂર્ણ?"], [6, 28, 48, 60, 22, 24, 10]);
+      const req = F.req || [];
+      const crit = c.criteria || [];
+      const zf = num(F.zone_from), zt = num(F.zone_to), sen = num(c.seniority), vacN = vval[12];
+      const fm = {
+        2: [{ f: `=IF(OR($C$5="",$C$7=""),"તારીખ નથી",DATEDIF($C$5,$C$7,"y")&" વર્ષ "&DATEDIF($C$5,$C$7,"ym")&" માસ "&DATEDIF($C$5,$C$7,"md")&" દિવસ")`, v: sv ? `${sv.y} વર્ષ ${sv.m} માસ ${sv.d} દિવસ` : "તારીખ નથી" },
+          { f: `=IF(OR($C$5="",$C$7=""),"${C}",IF(DATEDIF($C$5,$C$7,"y")>=$C$9,"${Y}","${N}"))`, v: !sv ? C : (sv.y >= miny ? Y : N) }],
+        7: [{ f: "=" + aparRef[ci].sum, v: aparRef[ci].summ }, { f: "=" + aparRef[ci].ok, v: aparRef[ci].okv }],
+        10: [{ f: `="ક્રમ "&$C$11&", ક્ષેત્ર "&$C$12&"-"&$C$13`, v: `ક્રમ ${sen ?? ""}, ક્ષેત્ર ${zf ?? ""}-${zt ?? ""}` },
+          { f: `=IF(OR($C$11="",$C$12="",$C$13=""),"${C}",IF(AND($C$11>=$C$12,$C$11<=$C$13),"${Y}","${N}"))`, v: sen == null || zf == null || zt == null ? C : (sen >= zf && sen <= zt ? Y : N) }],
+        11: [{ f: `=IF(${VAC}="","વિગત નથી",${VAC}&" ખાલી")`, v: vacN == null ? "વિગત નથી" : `${vacN} ખાલી` },
+          { f: `=IF(${VAC}="","${met(crit[10]?.met)}",IF(${VAC}>=1,"${Y}","${N}"))`, v: vacN == null ? met(crit[10]?.met) : (vacN >= 1 ? Y : N) }],
+        12: [{ f: `=IF(OR($C$6="",$C$7=""),"",DATEDIF($C$6,$C$7,"y")&" વર્ષ")`, v: ag ? `${ag.y} વર્ષ` : "" },
+          { f: `=IF(OR($C$6="",$C$7=""),"${C}",IF(DATEDIF($C$6,$C$7,"y")<$C$10,"${Y}","${N}"))`, v: !ag ? C : (ag.y < ret ? Y : N) }],
+      };
+      let r = 18; const first = r; const metVals = [];
+      CRIT.forEach((name, i) => {
+        const k = i + 1, cr = crit[i] || {};
+        let val = cr.value || "", m = met(cr.met);
+        ws.set({ r, c: 1 }, k, st({ align: "center" })); ws.set({ r, c: 2 }, name, st({ bold: true }));
+        ws.set({ r, c: 3 }, req[i] || "", st({})); ws.set({ r, c: 4 }, cr.pos || "", st({}));
+        ws.set({ r, c: 5 }, cr.pages || "", st({ size: 9, color: MUTED }));
+        if (fm[k]) { ws.set({ r, c: 6 }, fm[k][0], st({ align: "center" })); ws.set({ r, c: 7 }, fm[k][1], st({ bold: true, align: "center" })); m = fm[k][1].v; }
+        else { ws.set({ r, c: 6 }, val, st({ align: "center" })); ws.set({ r, c: 7 }, m, st({ bold: true, align: "center" })); ws.dropdown(`G${r}`, [Y, N, C, NA]); }
+        metVals.push(m); ws.height(r, 110); r++;
+      });
+      const last = r - 1; statusCF(ws, `G${first}:G${last}`);
+      const rng = `G${first}:G${last}`;
+      const yes = metVals.filter((x) => x === Y).length, nas = metVals.filter((x) => x === NA).length;
+      const verdict = metVals.includes(N) ? NEL : metVals.includes(C) ? NRV : EL;
+      r++;
+      ws.set({ r, c: 1 }, "પૂર્ણ થયેલ માપદંડ ('લાગુ નથી' સિવાય)", st({ bold: true, fill: SUB })); ws.merge(`A${r}:E${r}`);
+      ws.set({ r, c: 6 }, { f: `=COUNTIF(${rng},"${Y}")&" / "&(COUNTA(${rng})-COUNTIF(${rng},"${NA}"))`, v: `${yes} / ${12 - nas}` }, st({ bold: true, align: "center", fill: SUB }));
+      ws.set({ r, c: 7 }, "", st({ fill: SUB })); const metRow = r; r++;
+      ws.set({ r, c: 1 }, "એકંદર પરિણામ", st({ bold: true, fill: SUB, size: 11 })); ws.merge(`A${r}:E${r}`);
+      ws.set({ r, c: 6 }, { f: `=IF(COUNTIF(${rng},"${N}")>0,"${NEL}",IF(COUNTIF(${rng},"${C}")>0,"${NRV}","${EL}"))`, v: verdict }, st({ bold: true, align: "center", size: 11 }));
+      ws.merge(`F${r}:G${r}`); verdictCF(ws, `F${r}`);
+      ws.freeze = "A18";
+      linkify(ws, [["E", false], ["D", false], ["C", false]], 7);
+      EL_.push({ sh: q(ws.name), first, last, metRow, vRow: r, verdict, met: `${yes} / ${12 - nas}`, metVals, sv, margin });
+    });
+
+    // ---------- Zone
+    title(wsZone, "વિચારણા ક્ષેત્ર – આખરી પ્રવરતા યાદી", (F.seniority_list || "") + (F.zone_from ? ` સમિતિએ ક્રમ ${F.zone_from} થી ${F.zone_to}ની વિચારણા કરી.` : ""));
+    wsZone.set("B3", "સમિતિની તારીખ", st({ bold: true })); wsZone.set("C3", dpc, st({ color: BLUE, align: "center" }));
+    H(wsZone, 5, ["પ્રવરતા ક્રમ", "નામ", "જાતિ", "જન્મ તારીખ", "ફીડર સંવર્ગમાં તારીખ", "સમિતિની તારીખે સંવર્ગમાં વર્ષ", "સ્થિતિ / કારણ", "સ્થિતિ જૂથ", "નોંધ"], [10, 26, 14, 12, 14, 13, 44, 22, 36]);
+    let zr = 6;
+    for (const z of F.zone || []) {
+      const fit = /યોગ્ય/.test(z.group || "") && !/અયોગ્ય/.test(z.group || "");
+      const hl = fit ? GREEN : undefined, dc = D(z.in_cadre), yy = datedif(dc, dpc);
+      wsZone.set({ r: zr, c: 1 }, num(z.no) ?? z.no ?? "", st({ align: "center", fill: hl, bold: fit }));
+      wsZone.set({ r: zr, c: 2 }, z.name || "", st({ fill: hl, bold: fit })); wsZone.set({ r: zr, c: 3 }, z.category || "", st({ fill: hl, align: "center" }));
+      wsZone.set({ r: zr, c: 4 }, D(z.dob) || z.dob || "", st({ fill: hl, color: BLUE, align: "center" }));
+      wsZone.set({ r: zr, c: 5 }, dc || z.in_cadre || "", st({ fill: hl, color: BLUE, align: "center" }));
+      wsZone.set({ r: zr, c: 6 }, { f: `=IF(OR(E${zr}="",$C$3=""),"",ROUND(DATEDIF(E${zr},$C$3,"y")+DATEDIF(E${zr},$C$3,"ym")/12,2))`, v: yy ? Math.round((yy.y + yy.m / 12) * 100) / 100 : "" }, st({ fill: hl, align: "center", num: "0.00" }));
+      wsZone.set({ r: zr, c: 7 }, z.status || "", st({ fill: hl })); wsZone.set({ r: zr, c: 8 }, z.group || "", st({ fill: hl, bold: fit }));
+      wsZone.set({ r: zr, c: 9 }, z.remarks || "", st({ fill: hl, size: 9 }));
+      zr++;
+    }
+    wsZone.freeze = "C6";
+    linkify(wsZone, [["G", false], ["I", false]], 9);
+
+    // ---------- Observations
+    title(wsObs, "અવલોકનો, વિસંગતતાઓ અને નિકાલ કરવાના મુદ્દા", "'કાર્યવાહી' મુદ્દાનો નિકાલ મંડળના અભિપ્રાય પહેલાં જિ.વિ.અ. પાસેથી કરવો.");
+    H(wsObs, 4, ["ક્રમ", "પ્રકાર", "અવલોકન", "લાયકાત પર અસર", "આધાર (PDF પાન)"], [6, 14, 82, 42, 24]);
+    const OBS = [...(F.observations || []), ...cands.flatMap((c) => (c.obs || []).map((o) => ({ ...o, text: `${c.short || c.name}: ${o.text}` })))];
+    OBS.forEach((o, i) => {
+      const r = 5 + i, t = o.type || "નોંધ";
+      const fill = /મુખ્ય/.test(t) ? RED : /કાર્યવાહી|વિસંગત/.test(t) ? AMBER : /સ્થિતિ/.test(t) ? GREEN : undefined;
+      wsObs.set({ r, c: 1 }, i + 1, st({ align: "center" })); wsObs.set({ r, c: 2 }, t, st({ bold: true, fill }));
+      wsObs.set({ r, c: 3 }, o.text || "", st({})); wsObs.set({ r, c: 4 }, o.impact || "", st({})); wsObs.set({ r, c: 5 }, o.pages || "", st({ size: 9, color: MUTED }));
+      wsObs.height(r, Math.max(48, 15 * (Math.floor((o.text || "").length / 85) + 2)));
+    });
+    linkify(wsObs, [["E", false], ["C", false]], 5);
+
+    // ---------- Rules
+    title(wsRules, "લાગુ પડતા નિયમો", "બઢતીને લાગુ પડતી દરેક જોગવાઈ ફાઈલની હકીકતો પર લાગુ કરેલ. નિયમનો પાઠ ભાવાર્થરૂપે છે.");
+    H(wsRules, 4, ["ક્રમ", "નિયમ", "આધાર (જાહેરનામું)", "નિયમ શું કહે છે", "પ્રકાર", "ઉમેદવારોને લાગુ", "પૂર્ણ?", "ફાઈલ પાન"], [6, 26, 40, 52, 14, 52, 13, 18]);
+    const RU = X.rules || [];
+    RU.forEach((ru, i) => {
+      const r = 5 + i;
+      [i + 1, ru.rule, ru.source, ru.text, ru.type, ru.applied, met(ru.met), ru.pages].forEach((v, j) =>
+        wsRules.set({ r, c: j + 1 }, v ?? "", st({ size: 9, bold: j === 1 || j === 6, color: j === 2 ? MUTED : "FF000000", align: [0, 4, 6].includes(j) ? "center" : "left" })));
+      wsRules.height(r, 90);
+    });
+    if (RU.length) {
+      statusCF(wsRules, `G5:G${4 + RU.length}`);
+      const r = 6 + RU.length, E_ = `E5:E${4 + RU.length}`, G_ = `G5:G${4 + RU.length}`;
+      const pre = RU.filter((x) => x.type === "પૂર્વશરત"), preOk = pre.filter((x) => met(x.met) === Y).length;
+      wsRules.set({ r, c: 2 }, "પૂર્ણ થયેલ પૂર્વશરતો", st({ bold: true, fill: SUB })); wsRules.merge(`B${r}:C${r}`);
+      wsRules.set({ r, c: 4 }, { f: `=COUNTIFS(${E_},"પૂર્વશરત",${G_},"${Y}")&" / "&COUNTIF(${E_},"પૂર્વશરત")`, v: `${preOk} / ${pre.length}` }, st({ bold: true, align: "center" }));
+    }
+    linkify(wsRules, [["H", true]], 8);
+
+    // ---------- File map
+    title(wsMap, `ફાઈલ નકશો – ${R.base || "PDF"} (${n} પાન)`, "'બધા પાન' પર ક્લિક કરવાથી તે દસ્તાવેજના બધા પાન એક સાથે ખુલશે. 'pages' અને 'links' ફોલ્ડર આ એક્સેલ ફાઈલની બાજુમાં જ રાખવા.");
+    H(wsMap, 4, ["ક્રમ", "દસ્તાવેજ", "PDF પાન", "બધા પાન", "પ્રથમ પાન"], [6, 62, 12, 16, 14]);
+    const groups = [];
+    for (const pg of (R.pages || []).slice().sort((a, b) => a.p - b.p)) {
+      const lab = (TYPE_GU[pg.t] || TYPE_GU.other) + (pg.who ? ` – ${pg.who}` : "");
+      const g = groups[groups.length - 1];
+      if (g && g.lab === lab && g.b === pg.p - 1) g.b = pg.p; else groups.push({ lab, a: pg.p, b: pg.p });
+    }
+    groups.forEach((g, i) => {
+      const r = 5 + i;
+      wsMap.set({ r, c: 1 }, i + 1, st({ align: "center" })); wsMap.set({ r, c: 2 }, g.lab, st({}));
+      wsMap.set({ r, c: 3 }, glabel([g.a, g.b]), st({ align: "center", underline: true, color: LINK })); wsMap.link(`C${r}`, target([[g.a, g.b]]), "પાન ખોલો");
+      wsMap.set({ r, c: 4 }, g.b > g.a ? `બધા ${g.b - g.a + 1} પાન →` : "પાન →", st({ align: "center", underline: true, color: LINK })); wsMap.link(`D${r}`, target([[g.a, g.b]]), "બધા પાન ખોલો");
+      wsMap.set({ r, c: 5 }, `પાન ${g.a}`, st({ align: "center", underline: true, color: LINK })); wsMap.link(`E${r}`, target([[g.a, g.a]]), "પ્રથમ પાન");
+    });
+    wsMap.freeze = "A5";
+
+    // ---------- Result
+    const cl = (i) => XW.colName(2 + i), lastRC = 2 + cands.length;
+    title(wsRes, "બઢતી માટે લાયકાતનું પરિણામ", `${F.feeder || ""} → ${F.promotion || ""} – ${F.district || ""}. દરખાસ્ત ફાઈલ ${R.base || ""} (${n} પાન).`);
+    wsRes.width(1, 34); cands.forEach((_, i) => wsRes.width(2 + i, 36)); wsRes.width(lastRC, 20);
+    wsRes.set("A4", "", st({ fill: SUB }));
+    cands.forEach((c, i) => wsRes.set({ r: 4, c: 2 + i }, `${c.short || c.name} (ક્રમ ${c.seniority ?? "?"})`, st({ bold: true, fill: NAVY, color: WHITE, align: "center" })));
+    wsRes.set({ r: 4, c: lastRC }, "આધાર", st({ bold: true, fill: NAVY, color: WHITE, align: "center" }));
+    wsRes.set("A5", "પરિણામ", st({ bold: true, size: 13, fill: SUB })); wsRes.set("A6", "પૂર્ણ થયેલ માપદંડ", st({ bold: true }));
+    const RV = ["બઢતી માટે લાયક", "બઢતી માટે લાયક નથી", NRV];
+    cands.forEach((c, i) => {
+      const e = EL_[i];
+      wsRes.set({ r: 5, c: 2 + i }, { f: `=IF(${e.sh}F${e.vRow}="${EL}","${RV[0]}",IF(${e.sh}F${e.vRow}="${NEL}","${RV[1]}","${RV[2]}"))`, v: e.verdict === EL ? RV[0] : e.verdict === NEL ? RV[1] : RV[2] }, st({ bold: true, size: 12, align: "center" }));
+      wsRes.set({ r: 6, c: 2 + i }, { f: `=${e.sh}F${e.metRow}&" માપદંડ પૂર્ણ"`, v: e.met + " માપદંડ પૂર્ણ" }, st({ bold: true, align: "center" }));
+    });
+    if (cands.length) verdictCF(wsRes, `B5:${cl(cands.length - 1)}5`, RV);
+    wsRes.height(5, 30);
+    let rr = 8;
+    wsRes.set({ r: rr, c: 1 }, "ઉમેદવારની વિગત", st({ bold: true, fill: NAVY, color: WHITE })); wsRes.merge(`A${rr}:${XW.colName(lastRC)}${rr}`); rr++;
+    const det = [["નામ", (c) => c.name, "", ""], ["હાલનો હોદ્દો", (c) => c.present, "", ""], ["પ્રવરતા ક્રમ", (c) => num(c.seniority), "", ""], ["જાતિ", (c) => c.category, "", ""],
+      ["જન્મ તારીખ", (c) => D(c.dob) || c.dob, "", ""], ["ફીડર સંવર્ગમાં તારીખ", (c) => D(c.join) || c.join, "", ""],
+      ["સમિતિની તારીખે અનુભવ", (c, i) => EL_[i].sv ? `${EL_[i].sv.y} વર્ષ ${EL_[i].sv.m} માસ ${EL_[i].sv.d} દિવસ` : "—", "", ""],
+      ["લઘુત્તમ ઉપરાંતના દિવસ", (c, i) => EL_[i].margin, "", ""], ["ખાતાકીય પરીક્ષા", (c) => c.exam, "", ""],
+      ["ખાનગી અહેવાલના સરેરાશ ગુણ", (c, i) => aparRef[i].avg, "", ""], ["વયનિવૃત્તિ તારીખ", (c) => c.retirement, "", ""]];
+    for (const [lab, fn] of det) {
+      wsRes.set({ r: rr, c: 1 }, lab, st({ bold: true }));
+      cands.forEach((c, i) => wsRes.set({ r: rr, c: 2 + i }, fn(c, i) ?? "", st({})));
+      rr++;
+    }
+    rr++;
+    wsRes.set({ r: rr, c: 1 }, "લાયકાતના માપદંડ", st({ bold: true, fill: NAVY, color: WHITE })); wsRes.merge(`A${rr}:${XW.colName(lastRC)}${rr}`); rr++;
+    const cr1 = rr;
+    CRIT.forEach((name, k) => {
+      wsRes.set({ r: rr, c: 1 }, name, st({ bold: true }));
+      cands.forEach((c, i) => { const e = EL_[i]; wsRes.set({ r: rr, c: 2 + i }, { f: `=${e.sh}G${e.first + k}`, v: e.metVals[k] }, st({ bold: true, align: "center" })); });
+      rr++;
+    });
+    if (cands.length) statusCF(wsRes, `B${cr1}:${cl(cands.length - 1)}${rr - 1}`);
+    rr++;
+    const acts = OBS.filter((o) => /કાર્યવાહી/.test(o.type || ""));
+    wsRes.set({ r: rr, c: 1 }, "મંડળના અભિપ્રાય પહેલાં નિકાલ કરવાના મુદ્દા", st({ bold: true, fill: AMBER }));
+    wsRes.set({ r: rr, c: 2 }, acts.length ? acts.map((o, i) => `${i + 1}) ${o.text}`).join("\n") : "કોઈ મુદ્દો નથી.", st({}));
+    wsRes.merge(`B${rr}:${XW.colName(lastRC)}${rr}`); wsRes.height(rr, Math.min(400, 40 + acts.length * 45)); rr += 2;
+    wsRes.set({ r: rr, c: 1 }, "નિષ્કર્ષ", st({ bold: true, fill: SUB }));
+    wsRes.set({ r: rr, c: 2 }, X.conclusion || "", st({})); wsRes.merge(`B${rr}:${XW.colName(lastRC)}${rr}`); wsRes.height(rr, 100);
+    linkify(wsRes, [["B", false]], lastRC);
+
+    // ---------- Front page
+    const fp = wsFP; fp.landscape = false;
+    [6, 30, 18, 18, 18, 18, 18, 14].forEach((w, i) => fp.width(i + 1, w));
+    const lastFC = Math.max(8, 3 + cands.length);
+    const LC = XW.colName(lastFC);
+    fp.set("A1", "ગુજરાત પંચાયત સેવા પસંદગી મંડળ, ગાંધીનગર", st({ bold: true, size: 14, color: NAVY, align: "center" })); fp.merge(`A1:${LC}1`);
+    fp.set("A2", "બઢતી દરખાસ્ત – ચકાસણી પત્રક (ફાઈલનું આગળનું પાનું)", st({ bold: true, size: 12, align: "center" })); fp.merge(`A2:${LC}2`);
+    fp.set("A3", "પીળા ખાનામાં વિગત ભરવી; રાખોડી ખાના આપોઆપ ગણાય છે.", { size: 9, italic: true, color: MUTED, border: false });
+    let fr = 5;
+    const sec = (t) => { fp.set({ r: fr, c: 1 }, t, st({ bold: true, color: WHITE, fill: NAVY })); fp.merge(`A${fr}:${LC}${fr}`); fr++; };
+    const kv = (lab, v, o = {}) => { fp.set({ r: fr, c: 1 }, lab, st({ bold: true })); fp.merge(`A${fr}:B${fr}`); fp.set({ r: fr, c: 3 }, v ?? "", st({ fill: o.calc ? GREY : YEL, ...o })); fp.merge(`C${fr}:${LC}${fr}`); fr++; return fr - 1; };
+    sec("(ક) ફાઈલની વિગત");
+    kv("ફાઈલ નં. / દફતર", R.file_no || ""); kv("ઇનવર્ડ નં.", R.inward_no || "");
+    const inR = kv("ઇનવર્ડ તારીખ", D(R.inward_date) || "");
+    kv("પડતર દિવસ", { f: `=IF(C${inR}="","",TODAY()-C${inR})`, v: "" }, { calc: true });
+    kv("જિલ્લા પંચાયત", F.district); kv("દરખાસ્ત પત્ર નં. / તારીખ", F.letter); kv("ફીડર સંવર્ગ", F.feeder); kv("બઢતીનો સંવર્ગ", F.promotion);
+    kv("ભરતી નિયમો", F.rules_text); kv("આખરી પ્રવરતા યાદી", F.seniority_list); const dpcR = kv("ખાતાકીય બઢતી સમિતિની તારીખ", dpc || "");
+    kv("ખાલી જગ્યા (બઢતી ક્વોટા)", vval[12] ?? V.vacant_promotion ?? ""); kv("વિચારણા ક્ષેત્ર", F.zone_from ? `ક્રમ ${F.zone_from} થી ${F.zone_to}` : "");
+    kv("લઘુત્તમ અનુભવ (વર્ષ) / વયનિવૃત્તિ", `${F.min_years ?? 5} વર્ષ / ${F.retire_age ?? 58} વર્ષ`); kv("યોગ્ય / અયોગ્ય ઠરાવેલ", F.fit_unfit);
+    if (F.earlier_dpc) kv("અગાઉની દરખાસ્ત / મંડળનો અભિપ્રાય", F.earlier_dpc);
+    fr++; sec("(ખ) સામેલ દસ્તાવેજોની ચકાસણી (પંચાયત વિભાગનો પરિપત્ર તા.19-07-2021)");
+    ["ક્રમ", "દસ્તાવેજ", "મળેલ?", "પાન નં.", "નોંધ"].forEach((h, i) => fp.set({ r: fr, c: [1, 2, 3, 4, 5][i] }, h, st({ bold: true, fill: SUB, align: "center" })));
+    fp.merge(`E${fr}:${LC}${fr}`); fr++;
+    const d1 = fr; const docs = F.docs || [];
+    DOCS.forEach((d, i) => {
+      const x = docs[i] || {};
+      fp.set({ r: fr, c: 1 }, i + 1, st({ align: "center" })); fp.set({ r: fr, c: 2 }, d, st({}));
+      fp.set({ r: fr, c: 3 }, met(x.received) === C && !x.received ? "" : (MET.has(x.received) ? x.received : ""), st({ align: "center", fill: YEL }));
+      fp.set({ r: fr, c: 4 }, x.pages ? String(x.pages).replace(/^\s*(p\.|પાન)\s*/, "") : "", st({ align: "center", fill: YEL }));
+      fp.set({ r: fr, c: 5 }, x.remark || "", st({ size: 9, fill: YEL })); fp.merge(`E${fr}:${LC}${fr}`); fr++;
+    });
+    fp.dropdown(`C${d1}:C${fr - 1}`, [Y, N, PART, NA]); statusCF(fp, `C${d1}:C${fr - 1}`);
+    const dc = (v) => docs.filter((x) => x.received === v).length;
+    fp.set({ r: fr, c: 1 }, "દસ્તાવેજની સ્થિતિ", st({ bold: true, fill: SUB })); fp.merge(`A${fr}:B${fr}`);
+    fp.set({ r: fr, c: 3 }, { f: `=COUNTIF(C${d1}:C${fr - 1},"${Y}")&" મળેલ, "&COUNTIF(C${d1}:C${fr - 1},"${PART}")&" અંશતઃ, "&COUNTIF(C${d1}:C${fr - 1},"${N}")&" ખૂટતા, "&COUNTIF(C${d1}:C${fr - 1},"${NA}")&" લાગુ નથી"`, v: `${dc(Y)} મળેલ, ${dc(PART)} અંશતઃ, ${dc(N)} ખૂટતા, ${dc(NA)} લાગુ નથી` }, st({ bold: true, fill: GREY }));
+    fp.merge(`C${fr}:${LC}${fr}`); const docLast = fr - 1; fr += 2;
+    fp.breaks.push(fr - 1);
+    sec("(ગ) ઉમેદવારવાર લાયકાતની ચકાસણી");
+    fp.set({ r: fr, c: 1 }, "#", st({ bold: true, fill: SUB, align: "center" })); fp.set({ r: fr, c: 2 }, "વિગત / માપદંડ", st({ bold: true, fill: SUB }));
+    cands.forEach((c, i) => fp.set({ r: fr, c: 3 + i }, `ઉમેદવાર ${i + 1}`, st({ bold: true, fill: SUB, align: "center" })));
+    fr++;
+    const crow = (lab, fn, o = {}) => { fp.set({ r: fr, c: 1 }, o.k ?? "", st({ align: "center" })); fp.set({ r: fr, c: 2 }, lab, st({ bold: !o.k })); cands.forEach((c, i) => fp.set({ r: fr, c: 3 + i }, fn(c, i) ?? "", st({ align: "center", fill: o.fill }))); fr++; return fr - 1; };
+    const nmR = crow("નામ", (c) => c.short || c.name, { fill: YEL }); fp.height(nmR, 36);
+    crow("પ્રવરતા ક્રમ", (c) => num(c.seniority), { fill: YEL }); crow("જાતિ", (c) => c.category, { fill: YEL });
+    crow("જન્મ તારીખ", (c) => D(c.dob) || "", { fill: YEL }); crow("ફીડર સંવર્ગમાં તારીખ", (c) => D(c.join) || "", { fill: YEL });
+    crow("અનુભવ (સમિતિની તારીખે)", (c, i) => EL_[i].sv ? `${EL_[i].sv.y} વર્ષ ${EL_[i].sv.m} માસ` : "", { fill: GREY });
+    const fc1 = fr;
+    CRIT.forEach((name, k) => crow(name, (c, i) => ({ f: `=${EL_[i].sh}G${EL_[i].first + k}`, v: EL_[i].metVals[k] }), { k: k + 1, fill: GREY }));
+    if (cands.length) statusCF(fp, `C${fc1}:${XW.colName(2 + cands.length)}${fr - 1}`);
+    crow("પૂર્ણ થયેલ માપદંડ", (c, i) => ({ f: `=${EL_[i].sh}F${EL_[i].metRow}`, v: EL_[i].met }), { fill: GREY });
+    const vR = crow("પરિણામ", (c, i) => ({ f: `=${EL_[i].sh}F${EL_[i].vRow}`, v: EL_[i].verdict }), { fill: GREY });
+    if (cands.length) verdictCF(fp, `C${vR}:${XW.colName(2 + cands.length)}${vR}`);
+    const dR = crow("સમિતિનો નિર્ણય", (c) => c.dpc_decision || "", { fill: YEL });
+    if (cands.length) fp.dropdown(`C${dR}:${XW.colName(2 + cands.length)}${dR}`, ["યોગ્ય", "અયોગ્ય"]);
+    fr++; sec("(ઘ) ક્ષતિઓ / મુદ્દાઓ");
+    fp.set({ r: fr, c: 1 }, "#", st({ bold: true, fill: SUB, align: "center" })); fp.set({ r: fr, c: 2 }, "મુદ્દો (પાન સાથે)", st({ bold: true, fill: SUB }));
+    fp.merge(`B${fr}:${XW.colName(lastFC - 1)}${fr}`); fp.set({ r: fr, c: lastFC }, "પ્રકાર", st({ bold: true, fill: SUB, align: "center" })); fr++;
+    const o1 = fr; const top = [...OBS.filter((o) => /કાર્યવાહી/.test(o.type || "")), ...OBS.filter((o) => !/કાર્યવાહી/.test(o.type || ""))].slice(0, 8);
+    for (let i = 0; i < 8; i++) {
+      const o = top[i];
+      fp.set({ r: fr, c: 1 }, i + 1, st({ align: "center" }));
+      fp.set({ r: fr, c: 2 }, o ? `${o.text}${o.pages ? " (" + o.pages + ")" : ""}`.slice(0, 600) : "", st({ size: 9, fill: YEL })); fp.merge(`B${fr}:${XW.colName(lastFC - 1)}${fr}`);
+      fp.set({ r: fr, c: lastFC }, o ? (/કાર્યવાહી/.test(o.type || "") ? "જિ.વિ.અ.ને પૃચ્છા" : "નોંધ") : "", st({ align: "center", fill: YEL }));
+      fp.height(fr, o ? Math.max(30, 13 * (Math.floor((o.text || "").length / 110) + 2)) : 20); fr++;
+    }
+    fp.dropdown(`${LC}${o1}:${LC}${fr - 1}`, ["જિ.વિ.અ.ને પૃચ્છા", "નોંધ"]);
+    fp.cf(`${LC}${o1}:${LC}${fr - 1}`, [{ eq: "જિ.વિ.અ.ને પૃચ્છા", style: { fill: AMBER, bold: true, color: "FF7F5500" } }]);
+    fr++; fp.breaks.push(fr - 1);
+    sec("(ચ) સૂચિત કાર્યવાહી");
+    const ACTS = ["સંમત – બઢતીની ભલામણ", "શરતોને આધીન સંમત", "જિ.વિ.અ. પાસેથી ખુલાસો મંગાવવો", "દરખાસ્ત પરત કરવી"];
+    fp.set({ r: fr, c: 1 }, "સૂચિત કાર્યવાહી", st({ bold: true })); fp.merge(`A${fr}:B${fr}`);
+    fp.set({ r: fr, c: 3 }, ACTS.includes(X.action) ? X.action : (acts.length ? ACTS[2] : ACTS[0]), st({ bold: true, fill: YEL })); fp.merge(`C${fr}:E${fr}`);
+    fp.dropdown(`C${fr}`, ACTS);
+    fp.set({ r: fr, c: 6 }, "ખુલાસાના મુદ્દા", st({ bold: true })); fp.set({ r: fr, c: 7 }, { f: `=COUNTIF(${LC}${o1}:${LC}${o1 + 7},"જિ.વિ.અ.ને પૃચ્છા")`, v: top.filter((o) => /કાર્યવાહી/.test(o.type || "")).length }, st({ align: "center", fill: GREY }));
+    fr++;
+    fp.set({ r: fr, c: 1 }, "નોંધ", st({ bold: true, fill: SUB })); fp.merge(`A${fr}:${LC}${fr}`); fr++;
+    fp.set({ r: fr, c: 1 }, X.note || "", st({ fill: YEL })); fp.merge(`A${fr}:${LC}${fr}`); fp.height(fr, 190); fr += 2;
+    sec("(છ) રજૂઆત અને મંજૂરી");
+    [["A", "રજૂ કરનાર (ડીલીંગ ક્લાર્ક)"], ["C", "સેકશન અધિકારી"], ["E", "નાયબ સચિવ"], ["G", "સચિવ"]].forEach(([col, t]) => {
+      fp.set(`${col}${fr}`, t, st({ bold: true, align: "center", fill: SUB }));
+      fp.set(`${col}${fr + 1}`, "", st({})); fp.set(`${col}${fr + 2}`, "નામ:", st({ size: 9 })); fp.set(`${col}${fr + 3}`, "તારીખ:", st({ size: 9 }));
+    });
+    fp.height(fr + 1, 40);
+    fp.set({ r: fr + 5, c: 1 }, "પંચાયત, ગ્રામ ગૃહ નિર્માણ અને ગ્રામ વિકાસ વિભાગના પરિપત્ર નં. બઢત/152021/920/ખ તા.19-07-2021ના ચેકલીસ્ટના સંદર્ભમાં તૈયાર કરેલ.", { size: 8, italic: true, color: MUTED, border: false });
+    linkify(fp, [["D", true]], lastFC);
+    void docLast; void dpcR;
+
+    // ---------- Register row
+    title(wsReg, "રજીસ્ટર માટેની હાર", "આ હાર 'Promotion_Register_Gujarati.xlsx'ના રજીસ્ટર પત્રકમાં નકલ કરી શકાય.");
+    const RH = ["ફાઈલ નં.", "જિલ્લા પંચાયત", "ઉમેદવાર", "પ્રવરતા ક્રમ", "જાતિ", "ફીડર → બઢતીનો સંવર્ગ", "સમિતિની તારીખ", "દરખાસ્ત પત્ર નં.", "પૂર્ણ માપદંડ", "ચકાસણીનું પરિણામ", "નિકાલ કરવાના મુદ્દા", "સૂચિત કાર્યવાહી", "મંડળમાં સ્થિતિ"];
+    H(wsReg, 4, RH, [12, 16, 28, 10, 12, 30, 12, 22, 10, 14, 60, 22, 16]);
+    cands.forEach((c, i) => {
+      const r = 5 + i, e = EL_[i];
+      [R.file_no || R.base, F.district, c.name, num(c.seniority), c.category, `${F.feeder || ""} → ${F.promotion || ""}`, dpc || "", F.letter, e.met, e.verdict,
+        acts.map((o) => o.text).join(" ").slice(0, 900), ACTS.includes(X.action) ? X.action : ACTS[2], "ચકાસણી હેઠળ"].forEach((v, j) => wsReg.set({ r, c: j + 1 }, v ?? "", st({ size: 9 })));
+    });
+
+    return { wb, viewers };
+  }
+  return { build, refGroups, datedif, toDate, fmt, CRIT, DOCS, TYPE_GU, viewerHtml };
+})();
+
+
+</script>
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const Y = "હા", N = "ના", C = "ચકાસો", NA = "લાગુ નથી";
+const S = { file: null, pdf: null, n: 0, pages: [], cls: {}, txt: {}, fail: {}, fileJ: null, cands: [], extra: null, key: "", running: false, stop: false, ctrl: [], R: null, ready: false };
+let sample = null, downloads = null, limits = null;
+
+// ---------------------------------------------------------------- knowledge given to Claude
+const RULES = `Gujarat Panchayat Service (Class-3) promotion proposals sent by a District Panchayat (DDO) to the Gujarat Panchayat Service Selection Board (GPSSB).
+Check every candidate the DPC recommended against 12 criteria:
+1 Feeder post AND line (Administrative vs Accounts). Junior Clerk (Admin) -> Senior Clerk (Admin); Junior Clerk (Accounts)/Account Clerk -> Senior Clerk (Accounts)/Senior Account Clerk; Senior Clerk (Admin) or Store Keeper -> Deputy Chitnis; Senior Clerk (Accounts)/Senior Accounts Clerk -> Deputy Accountant. Prove the line from orders, service book and the designation printed on the GPSSB exam result; Patrak-A alone is not proof.
+2 Minimum service in the feeder cadre on the DPC date (usually 5 years; take it from the recruitment rules in the file). Count from the date of appointment/joining in the feeder cadre; note forenoon/afternoon joining when the margin is a day or two; fixed-pay service counts as appointment but note it.
+3 Prescribed departmental exam passed (Lower Level: Junior Clerk -> Senior Clerk; Higher Level: Senior Clerk (Accounts) -> Deputy Accountant; Deputy Chitnis exam for Deputy Chitnis). Record attempt, result date, seat no., marks, grace marks. Dept. Exam Rules 2022 (KP/40 of 2022 dt 23-08-2022): r.4(1) two years' service to appear, r.4(2) post-training exam passed, r.5 three chances; Second Amendment 2023 (dt 11-12-2023): a person eligible in all respects on 01-09-2022 is exempt.
+4 Training / post-training exam: for Junior Clerk the pre-service training exam (SPIPA); for Deputy Chitnis (RR 2014 r.9) and Deputy Accountant (RR 2018 r.7) training is a condition AFTER promotion -> mark "લાગુ નથી" and say so.
+5 CCC / CCC+ (Computer Competency Rules 2006) passed.
+6 Hindi/Gujarati exam passed or exempted (Hindi Rules 2020, KP/31/2020 dt 04-12-2020: r.3(b) SSC or higher with Hindi before joining; r.3(d) earlier exemptions saved; r.4 failure only withholds increment). Never make a candidate ineligible only for Hindi.
+7 APARs of the last 5 completed financial years before the DPC: continuous, no gap, certificates only for periods under 3 months (GAD resolution dt 18-03-1987) or another recorded reason, no adverse remark, integrity not doubtful. If a year is only certificates, the DPC may take the earlier year.
+8 No departmental inquiry / charge-sheet / criminal case pending (Patrak-A item 5, Patrak-B, certificate).
+9 No penalty in force (Patrak-A items 6, 8).
+10 Within the zone of consideration used by the DPC, from the final seniority list of the candidate's own line.
+11 Vacancy available in the promotion quota of that line.
+12 Below superannuation age (58) on the DPC date.
+Verdict: "લાયક નથી" if any criterion is "ના"; "ચકાસણી જરૂરી" if any is "ચકાસો"; else "લાયક".
+Known recruitment rules: Senior Clerk RR 1998 (KP/107/98 dt 19-11-1998: 5 yrs as Junior Clerk/Typist/Asst Storekeeper + dept exam; r.4 Hindi after selection). Senior Account Clerk RR 1998 (KP/111/98: 5 yrs as Account Clerk + dept exam). Deputy Chitnis RR 2013 (KP/01/2014/PRR/102013/1897-KH dt 04-01-2014: 5 yrs as Senior Clerk or Store Keeper Class III, dept exam, CCC; proviso two-thirds; ratio direct:promotion 1:3; r.9 training after promotion). Deputy Accountant RR 2018 (KP/22 of 2018/PRR/1194/589/KH dt 01-10-2018: 5 yrs as Senior Accounts Clerk, dept exam, CCC; proviso two-thirds; ratio 1:2; r.7 training after promotion). Board consultation (Amendment) Rules 2021 (KP/18/2021 dt 19-07-2021): Board must be consulted on promotions. Checklist circular બઢત/152021/920/ખ dt 19-07-2021 lists the documents to send.
+Always check: Admin/Accounts line of the seniority list and vacancies; minutes complete (page/item gaps); separate no-inquiry certificate present; reasons others were found unfit; discrepancies between checklist, Patrak-A/K, minutes, service book, orders; vacancy statement present and posts vacant over 3 years; roster point for each promotion; earlier DPC / Board advice; proposal date vs DPC date; typing errors in dates.
+Write all text in Gujarati (digits 0-9, dates dd-mm-yyyy). Cite PDF page numbers as "પાન 12" or "પાન 12, 45-47" (PDF page numbers, never the office's handwritten numbers).`;
+const TYPES = "forwarding_letter, index, checklist, patrak_a, patrak_b, patrak_k, patrak_d, seniority_list, recruitment_rules, dpc_minutes, apar, apar_certificate, roster, select_list, vacancy_statement, exam_result, service_book, order, certificate, marksheet, board_letter, other";
+const FILE_TYPES = new Set(["forwarding_letter", "index", "checklist", "patrak_k", "patrak_d", "seniority_list", "recruitment_rules", "dpc_minutes", "roster", "select_list", "vacancy_statement", "board_letter"]);
+
+// ---------------------------------------------------------------- small utils
+function log(msg, kind) {
+  const L = $("log"); if (L.firstElementChild?.classList.contains("muted")) L.innerHTML = "";
+  const d = document.createElement("div"); const t = new Date();
+  d.textContent = `${String(t.getHours()).padStart(2, "0")}:${String(t.getMinutes()).padStart(2, "0")}  ${msg}`;
+  if (kind === "err") d.style.color = "var(--bad)";
+  L.append(d); L.scrollTop = L.scrollHeight;
+}
+const bytes = (s) => new TextEncoder().encode(s).length;
+function setBar(id, frac) { $(id).querySelector("i").style.width = Math.max(0, Math.min(100, frac * 100)) + "%"; }
+const metClass = (m) => m === Y ? "c-ok" : m === N ? "c-bad" : m === NA || m === "બઢતી પછી" ? "c-na" : "c-warn";
+const verdictOf = (crit) => crit.includes(N) ? "લાયક નથી" : crit.includes(C) ? "ચકાસણી જરૂરી" : "લાયક";
+
+// ---------------------------------------------------------------- cache (per file, this browser only)
+const idb = {
+  db: null,
+  async open() { if (this.db !== null) return this.db; try { this.db = await new Promise((res, rej) => { const r = indexedDB.open("badhti-desk", 1); r.onupgradeneeded = () => r.result.createObjectStore("work"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); } catch { this.db = false; } return this.db; },
+  async get(k) { try { const db = await this.open(); if (!db) return null; return await new Promise((res) => { const q = db.transaction("work").objectStore("work").get(k); q.onsuccess = () => res(q.result || null); q.onerror = () => res(null); }); } catch { return null; } },
+  async set(k, v) { try { const db = await this.open(); if (!db) return; db.transaction("work", "readwrite").objectStore("work").put(v, k); } catch { /* ignore */ } },
+};
+const saveWork = () => idb.set(S.key, { cls: S.cls, txt: S.txt, fileJ: S.fileJ, cands: S.cands, extra: S.extra });
+
+// ---------------------------------------------------------------- PDF loading and rendering
+if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+async function loadPdf(file) {
+  if (!window.pdfjsLib) { $("rmsg").textContent = "PDF વાંચવાનું સાધન લોડ થયું નથી. પાનું ફરી ખોલો."; return; }
+  if (S.running) return;
+  S.pages.forEach((p) => URL.revokeObjectURL(p.url));
+  Object.assign(S, { file, pdf: null, n: 0, pages: [], cls: {}, txt: {}, fail: {}, fileJ: null, cands: [], extra: null, R: null, ready: false });
+  $("fname").textContent = file.name; $("filecard").hidden = false; $("rbar").hidden = false; setBar("rbar", 0);
+  $("rmsg").textContent = "PDF ખોલી રહ્યા છીએ…"; $("run").disabled = true; $("dlzip").disabled = true; $("dlxlsx").disabled = true;
+  try {
+    S.pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+  } catch (e) { $("rmsg").textContent = "આ PDF ખોલી શકાઈ નથી. ફાઈલ બરાબર છે કે નહીં તે તપાસો."; log("PDF ખોલવામાં ભૂલ: " + (e?.message || e), "err"); return; }
+  S.n = S.pdf.numPages; $("fpages").textContent = `${S.n} પાન`;
+  S.key = `${file.name}|${file.size}|${S.n}`;
+  log(`${file.name} – ${S.n} પાન મળ્યા. પાન તૈયાર કરી રહ્યા છીએ.`);
+  renderPagesGrid();
+  for (let p = 1; p <= S.n; p++) {
+    const page = await S.pdf.getPage(p);
+    const v1 = page.getViewport({ scale: 1 });
+    const scale = Math.min(1240 / v1.width, 1754 / v1.height, 2.4);
+    const vp = page.getViewport({ scale });
+    const cv = document.createElement("canvas"); cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
+    const ctx = cv.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, cv.width, cv.height);
+    await page.render({ canvasContext: ctx, viewport: vp }).promise;
+    const blob = await new Promise((res) => cv.toBlob(res, "image/jpeg", 0.62));
+    S.pages[p - 1] = { blob, url: URL.createObjectURL(blob), w: cv.width, h: cv.height };
+    page.cleanup();
+    const img = document.querySelector(`#v-pages [data-p="${p}"] img`); if (img) img.src = S.pages[p - 1].url;
+    setBar("rbar", p / S.n); $("rmsg").textContent = `પાન તૈયાર: ${p} / ${S.n}`;
+  }
+  $("rmsg").textContent = `${S.n} પાન તૈયાર. હવે 'ચકાસણી શરૂ કરો' દબાવો.`;
+  $("s1").classList.add("done");
+  const saved = await idb.get(S.key);
+  if (saved && saved.cls && Object.keys(saved.cls).length) {
+    Object.assign(S, { cls: saved.cls || {}, txt: saved.txt || {}, fileJ: saved.fileJ || null, cands: saved.cands || [], extra: saved.extra || null });
+    log("આ ફાઈલનું અગાઉનું કામ આ બ્રાઉઝરમાં મળ્યું; ત્યાંથી આગળ ચાલશે.");
+    renderPagesGrid();
+    if (S.fileJ && S.cands.length && S.cands.every(Boolean) && S.extra) finish();
+  }
+  S.ready = true; updateRunState(); estimate();
+}
+function renderPagesGrid() {
+  const box = $("v-pages");
+  if (!S.n) { box.innerHTML = '<div class="empty">PDF અપલોડ કર્યા પછી અહીં બધા પાન દેખાશે; પાન પર ક્લિક કરી મોટું જુઓ.</div>'; return; }
+  let h = '<div class="pages">';
+  for (let p = 1; p <= S.n; p++) {
+    const c = S.cls[p]; const lab = c ? (BUILD.TYPE_GU[c.t] || "અન્ય") + (c.who ? " – " + c.who : "") : "";
+    h += `<button class="pg" data-p="${p}" title="પાન ${p}"><img alt="પાન ${p}" loading="lazy" src="${S.pages[p - 1]?.url || ""}"><b>પાન ${p}</b><span>${esc(lab)}</span></button>`;
+  }
+  box.innerHTML = h + "</div>";
+}
+$("v-pages").addEventListener("click", (e) => { const b = e.target.closest(".pg"); if (b) openViewer([+b.dataset.p], 0); });
+
+// ---------------------------------------------------------------- viewer
+const V = { list: [], i: 0 };
+function openViewer(list, i) {
+  if (!S.n) return;
+  V.list = list.filter((p) => p >= 1 && p <= S.n); V.i = Math.max(0, Math.min(i, V.list.length - 1));
+  if (!V.list.length) return;
+  $("viewer").hidden = false; showPage(); $("vclose").focus();
+}
+function showPage() {
+  const p = V.list[V.i]; const pg = S.pages[p - 1]; const c = S.cls[p];
+  $("vimg").src = pg?.url || ""; $("vimg").alt = `પાન ${p}`;
+  $("vtitle").textContent = `પાન ${p} / ${S.n}` + (c ? ` – ${BUILD.TYPE_GU[c.t] || "અન્ય"}${c.who ? " – " + c.who : ""}` : "");
+  const multi = V.list.length > 1; $("vchips").hidden = !multi;
+  if (multi) $("vchips").innerHTML = V.list.map((q, k) => `<button data-k="${k}" aria-current="${k === V.i}">${q}</button>`).join("");
+  $("vprev").disabled = multi ? V.i === 0 : p === 1; $("vnext").disabled = multi ? V.i === V.list.length - 1 : p === S.n;
+}
+function step(d) {
+  if (V.list.length > 1) { V.i = Math.max(0, Math.min(V.list.length - 1, V.i + d)); }
+  else { const p = Math.max(1, Math.min(S.n, V.list[0] + d)); V.list = [p]; V.i = 0; }
+  showPage();
+}
+$("vprev").onclick = () => step(-1); $("vnext").onclick = () => step(1);
+$("vclose").onclick = () => { $("viewer").hidden = true; };
+$("vchips").onclick = (e) => { const b = e.target.closest("button"); if (b) { V.i = +b.dataset.k; showPage(); } };
+document.addEventListener("keydown", (e) => {
+  if ($("viewer").hidden) return;
+  if (e.key === "Escape") $("viewer").hidden = true; if (e.key === "ArrowRight") step(1); if (e.key === "ArrowLeft") step(-1);
+});
+function refButtons(text, raw) {
+  const gs = BUILD.refGroups(text || "", S.n || 999, raw);
+  if (!gs.length) return "";
+  return '<span class="refs">' + gs.map((g) => `<button class="ref" data-a="${g[0]}" data-b="${g[1]}" ${S.n ? "" : "disabled"}>પાન ${g[0] === g[1] ? g[0] : g[0] + "-" + g[1]}</button>`).join("") + "</span>";
+}
+document.addEventListener("click", (e) => {
+  const b = e.target.closest(".ref"); if (!b || b.disabled) return;
+  const a = +b.dataset.a, z = +b.dataset.b; const list = []; for (let p = a; p <= z; p++) list.push(p); openViewer(list, 0);
+});
+
+// ---------------------------------------------------------------- Claude calls
+const SOFT = new Set(["invalid_json", "empty_completion", "refused"]);
+async function ask(prompt, images, tier) {
+  if (S.stop) throw { code: "cancelled" };
+  if (bytes(prompt) > (limits?.maxPromptBytes || 262144) - 2048) throw { code: "prompt_too_large" };
+  const ac = new AbortController(); S.ctrl.push(ac);
+  try {
+    const opts = { signal: ac.signal, modelTier: tier || "default" };
+    if (images && images.length) opts.images = await Promise.all(images.map(fitImage));
+    return await sample.json(prompt, opts);
+  } finally { S.ctrl = S.ctrl.filter((x) => x !== ac); }
+}
+// Array answer; on a cut-off reply keep the complete objects; null when the reply is unusable.
+async function askArr(prompt, images, tier) {
+  try { const a = await ask(prompt, images, tier); return Array.isArray(a) ? a : Array.isArray(a?.pages) ? a.pages : null; }
+  catch (e) {
+    if (!SOFT.has(e?.code)) throw e;
+    const t = e.text || "", s = t.indexOf("[");
+    if (s >= 0) { let end = t.length; for (let k = 0; k < 40; k++) { end = t.lastIndexOf("}", end - 1); if (end < s) break; try { const a = JSON.parse(t.slice(s, end + 1) + "]"); if (Array.isArray(a)) return a; } catch { /* keep trimming */ } } }
+    log("એક જૂથનો જવાબ વાંચી ન શકાયો; બાકીનું કામ ચાલુ છે.", "err");
+    return null;
+  }
+}
+async function fitImage(b) {
+  const max = limits?.images?.maxInputBytes || 5e6;
+  if (b.size <= max) return b;
+  const bmp = await createImageBitmap(b); let s = Math.sqrt(max / b.size) * 0.9;
+  const cv = document.createElement("canvas"); cv.width = Math.round(bmp.width * s); cv.height = Math.round(bmp.height * s);
+  cv.getContext("2d").drawImage(bmp, 0, 0, cv.width, cv.height); bmp.close?.();
+  return new Promise((res) => cv.toBlob(res, "image/jpeg", 0.7));
+}
+async function pool(tasks, conc) {
+  let i = 0, failed = null;
+  async function worker() {
+    while (i < tasks.length && !failed && !S.stop) {
+      const t = tasks[i++];
+      try { await t(); } catch (e) { failed = e; }
+    }
+  }
+  await Promise.all(Array.from({ length: conc }, worker));
+  if (failed) throw failed;
+}
+async function contactSheet(pages) {
+  const W = 360, Hh = 510, cols = 3, rows = Math.ceil(pages.length / cols);
+  const cv = document.createElement("canvas"); cv.width = W * cols; cv.height = Hh * rows;
+  const ctx = cv.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, cv.width, cv.height);
+  for (let k = 0; k < pages.length; k++) {
+    const p = pages[k], pg = S.pages[p - 1]; if (!pg) continue;
+    const bmp = await createImageBitmap(pg.blob);
+    const s = Math.min((W - 8) / bmp.width, (Hh - 8) / bmp.height), w = bmp.width * s, h = bmp.height * s;
+    const x = (k % cols) * W + (W - w) / 2, y = Math.floor(k / cols) * Hh + (Hh - h) / 2;
+    ctx.drawImage(bmp, x, y, w, h); bmp.close?.();
+    ctx.strokeStyle = "#888"; ctx.strokeRect((k % cols) * W + 1, Math.floor(k / cols) * Hh + 1, W - 2, Hh - 2);
+    ctx.fillStyle = "#fff"; ctx.fillRect((k % cols) * W + 4, Math.floor(k / cols) * Hh + 4, 92, 34);
+    ctx.fillStyle = "#d00"; ctx.font = "bold 28px Arial"; ctx.fillText("p." + p, (k % cols) * W + 8, Math.floor(k / cols) * Hh + 32);
+  }
+  return new Promise((res) => cv.toBlob(res, "image/jpeg", 0.8));
+}
+const STAGES = [["cls", "પાન ઓળખવા (દસ્તાવેજનો પ્રકાર)"], ["read", "મહત્ત્વના પાન વાંચવા"], ["file", "ફાઈલની વિગત, વિચારણા ક્ષેત્ર, ખાલી જગ્યા"], ["cand", "ઉમેદવારવાર લાયકાત"], ["extra", "લાગુ નિયમો અને નોંધ"], ["xls", "એક્સેલ તૈયાર"]];
+const stageState = {};
+function setStage(k, state, info) {
+  stageState[k] = { state, info: info || "" };
+  $("stages").innerHTML = STAGES.map(([id, lab]) => { const s = stageState[id] || { state: "wait" }; const ic = { done: "✓", run: "…", err: "!", wait: "·" }[s.state]; return `<div class="st-${s.state}"><span>${ic} ${lab}</span><span>${esc(s.info)}</span></div>`; }).join("");
+}
+STAGES.forEach(([k]) => setStage(k, "wait"));
+function estimate() {
+  if (!S.n || !limits?.images) { $("estimate").textContent = ""; return; }
+  const sheetsPer = Math.min(limits.images.maxCount, 3), calls1 = Math.ceil(Math.ceil(S.n / 9) / sheetsPer);
+  const keyGuess = Math.round(S.n * 0.3), calls2 = Math.ceil(keyGuess / Math.min(limits.images.maxCount, 5));
+  const mins = Math.max(3, Math.round((calls1 + calls2) * 0.3 + 5));
+  $("estimate").textContent = `અંદાજે ${calls1 + calls2 + 3} વખત Claudeને પૂછાશે; આશરે ${mins}–${mins * 2} મિનિટ લાગશે. આ દરમ્યાન પાનું ખુલ્લું રાખો.`;
+}
+
+const trim = (s, n) => (s || "").length > n ? s.slice(0, n) + "…" : (s || "");
+function pageIndex() { return Object.keys(S.cls).map(Number).sort((a, b) => a - b).map((p) => `${p}:${S.cls[p].t}${S.cls[p].who ? ":" + S.cls[p].who : ""}`).join(" "); }
+function textsFor(pages, budget) {
+  pages = [...new Set(pages)].filter((p) => S.txt[p]).sort((a, b) => a - b);
+  let per = 1600, out;
+  for (let k = 0; k < 8; k++) {
+    out = pages.map((p) => `[પાન ${p} | ${S.cls[p]?.t || ""}${S.cls[p]?.who ? " | " + S.cls[p].who : ""}]\n${trim(S.txt[p], per)}`).join("\n\n");
+    if (bytes(out) <= budget) break; per = Math.floor(per * 0.75);
+  }
+  const b = new TextEncoder().encode(out);
+  return b.length <= budget ? out : new TextDecoder().decode(b.subarray(0, budget)) + "\n…(બાકીનું લખાણ જગ્યાના અભાવે છોડ્યું)";
+}
+const sameWho = (a, b) => { const x = (a || "").replace(/\s+/g, ""), y = (b || "").replace(/\s+/g, ""); return !!x && !!y && (x.includes(y) || y.includes(x)); };
+
+async function runPipeline() {
+  if (!sample || !limits?.images) return;
+  S.running = true; S.stop = false; $("run").disabled = true; $("stop").hidden = false; $("runnote").hidden = true;
+  const maxImg = limits.images.maxCount;
+  try {
+    // 1. classify pages via contact sheets
+    const missing = []; for (let p = 1; p <= S.n; p++) if (!S.cls[p]) missing.push(p);
+    if (missing.length) {
+      setStage("cls", "run", `0 / ${S.n}`);
+      const groups = []; for (let i = 0; i < missing.length; i += 9) groups.push(missing.slice(i, i + 9));
+      const per = Math.max(1, Math.min(maxImg, 3)); const calls = []; for (let i = 0; i < groups.length; i += per) calls.push(groups.slice(i, i + per));
+      let done = 0;
+      await pool(calls.map((gs) => async () => {
+        const imgs = []; for (const g of gs) imgs.push(await contactSheet(g));
+        const all = gs.flat();
+        const ans = await askArr(`These ${imgs.length} images are contact sheets of a scanned Gujarati promotion-proposal PDF (a District Panchayat proposal to the Gujarat Panchayat Service Selection Board). Each sheet shows up to 9 pages in a 3x3 grid; the red label "p.N" on each tile is that page's PDF page number. Pages in this call: ${all.join(", ")}.
+For EVERY one of those page numbers return one object {"p":N,"t":TYPE,"k":0|1|2,"who":""}.
+TYPE is one of: ${TYPES}.
+who = the candidate's surname in Gujarati when the page belongs to one candidate (Patrak-A/B, APARs, service book, orders, certificates, exam entries), otherwise "".
+k = 2 for pages to read in detail: forwarding letter, index, checklist, every patrak, seniority list, recruitment rules, DPC minutes, roster summary / tarij pages, select list, vacancy statement, board letters, promotion / appointment / joining / regularisation orders, service-book entries, exam results, Hindi / CCC / pre-service certificates and exemption orders. k = 1 for the first page of each APAR form or APAR certificate. k = 0 for inner pages of APAR forms, roster grids and blank pages.
+Reply with only a JSON array.`, imgs, "default");
+        if (Array.isArray(ans)) for (const o of ans) { const p = parseInt(String(o.p).replace(/\D/g, ""), 10); if (p >= 1 && p <= S.n) S.cls[p] = { t: String(o.t || "other"), k: +o.k || 0, who: String(o.who || "") }; }
+        all.forEach((p) => { if (!S.cls[p]) S.cls[p] = { t: "other", k: 2, who: "" }; });
+        done += all.length; setStage("cls", "run", `${Math.min(done, S.n)} / ${S.n}`); setBar("pbar", 0.15 * done / S.n); saveWork();
+      }), 2);
+      if (S.stop) throw { code: "cancelled" };
+      renderPagesGrid(); log(`પાન ઓળખ પૂરી: ${Object.values(S.cls).filter((c) => c.k === 2).length} મહત્ત્વના પાન.`);
+    }
+    setStage("cls", "done", `${S.n} પાન`);
+
+    // 2. read key pages
+    const key = Object.keys(S.cls).map(Number).filter((p) => S.cls[p].k === 2).sort((a, b) => a - b);
+    const todo = key.filter((p) => !S.txt[p]);
+    if (todo.length) {
+      const per = Math.max(1, Math.min(maxImg, 5)); const calls = []; for (let i = 0; i < todo.length; i += per) calls.push(todo.slice(i, i + per));
+      let done = key.length - todo.length; setStage("read", "run", `${done} / ${key.length}`);
+      await pool(calls.map((ps) => async () => {
+        const ans = await askArr(`These ${ps.length} images are pages ${ps.join(", ")} (in this order) of a scanned Gujarati promotion-proposal PDF of a District Panchayat in Gujarat. Some pages are rotated or handwritten.
+For each page transcribe the FACTS faithfully in Gujarati: names, designations, cadre (વહીવટ / હિસાબી), order and letter numbers, dates (write dd-mm-yyyy; handwritten ૮ looks like "<", ૬ looks like "S" – check carefully), marks, seat numbers, seniority numbers, table rows as "col | col | col", forenoon/afternoon joining, signatures and office. For a Patrak-A copy every APAR row (from, to, reporting marks, reviewing marks). Keep every number; mark unreadable text "(અસ્પષ્ટ)". At most 1200 characters per page.
+Reply with only a JSON array: [{"p":N,"t":"${TYPES.split(", ")[0]}|…","who":"surname or empty","text":"…"}].`, ps.map((p) => S.pages[p - 1].blob), "default");
+        if (Array.isArray(ans)) for (const o of ans) { const p = parseInt(String(o.p).replace(/\D/g, ""), 10); if (ps.includes(p)) { S.txt[p] = String(o.text || ""); if (o.who && !S.cls[p].who) S.cls[p].who = String(o.who); if (o.t) S.cls[p].t = String(o.t); } }
+        ps.forEach((p) => { if (!S.txt[p]) { S.fail[p] = (S.fail[p] || 0) + 1; if (S.fail[p] >= 2) S.txt[p] = "(વાંચી શકાયું નથી)"; } });
+        done += ps.length; setStage("read", "run", `${done} / ${key.length}`); setBar("pbar", 0.15 + 0.5 * done / key.length); saveWork();
+      }), 2);
+      if (S.stop) throw { code: "cancelled" };
+      const left = key.filter((p) => !S.txt[p]);
+      if (left.length) throw { code: "partial", message: `${left.length} પાન (${left.slice(0, 12).join(", ")}${left.length > 12 ? "…" : ""})` };
+    }
+    setStage("read", "done", `${key.length} પાન`);
+    renderPagesGrid();
+
+    // 3. file-level analysis
+    if (!S.fileJ) {
+      setStage("file", "run", "Claude વિચારે છે…");
+      const fpages = key.filter((p) => FILE_TYPES.has(S.cls[p].t) || S.cls[p].t === "patrak_a");
+      const prompt = `${RULES}
+
+TASK: From the transcribed pages of ONE promotion proposal below, give the file-level facts. Use the recruitment rules found in the file first.
+PAGE INDEX (page:type:candidate) – use it for page references:
+${pageIndex()}
+
+TRANSCRIBED PAGES:
+${textsFor(fpages, 170000)}
+
+Reply with only a JSON object (all text in Gujarati):
+{"district":"","letter":"letter no. and date of the DDO's proposal, or 'ફાઈલમાં નથી'","feeder":"feeder cadre","promotion":"promotion cadre","rules_text":"recruitment rules with notification no./date and pages",
+"seniority_list":"which list, as on, final date, pages","dpc_date":"dd-mm-yyyy","dpc_source":"minutes pages","zone_from":0,"zone_to":0,"min_years":5,"retire_age":58,
+"fit_unfit":"who was found fit / unfit","earlier_dpc":"earlier DPC and Board advice, or ''",
+"req":["12 strings: the requirement of each criterion 1-12 for THIS cadre with rule and notification"],
+"vac":{"sanctioned":0,"direct":0,"promotion":0,"filled_direct":0,"filled_promotion":0,"vacant_direct":0,"vacant_promotion":0,"considered":0,"statement":"what the vacancy statement says, with dates","notes":"roster / reservation remarks","pages":"પાન …"},
+"candidates":[{"short":"surname","name":"full name","seniority":0,"who":"surname as used in the page index"}],
+"zone":[{"no":0,"name":"","category":"","dob":"dd-mm-yyyy","in_cadre":"dd-mm-yyyy","status":"","group":"યોગ્ય – ભલામણ|અયોગ્ય|નિવૃત્ત|અગાઉ બઢતી|ક્ષેત્ર બહાર|અન્ય","remarks":""}],
+"docs":[16 objects {"received":"હા|ના|અંશતઃ|લાગુ નથી","pages":"12-14","remark":""} in this order: ${BUILD.DOCS.join("; ")}],
+"observations":[{"type":"મુખ્ય મુદ્દો|કાર્યવાહી|વિસંગતતા|નોંધ|સ્થિતિ","text":"","impact":"impact on eligibility","pages":"પાન …"}]}
+Use numbers (not strings) for counts; use null when a count is not in the file. "candidates" = only those the DPC recommended. "zone" = the zone of consideration rows of the seniority list plus a few around it. Observations: file-level points only (missing documents, discrepancies, roster, vacancies, minutes); type "કાર્યવાહી" for points to ask the DDO.`;
+      if (bytes(prompt) > 250000) throw { code: "prompt_too_large" };
+      const j = await ask(prompt, null, "complex");
+      if (!j || typeof j !== "object" || !Array.isArray(j.candidates)) throw { code: "invalid_json", message: "file" };
+      S.fileJ = j; S.cands = new Array(j.candidates.length).fill(null); saveWork();
+      log(`ફાઈલની વિગત તૈયાર: ${j.candidates.length} ઉમેદવાર (${j.candidates.map((c) => c.short).join(", ")}).`);
+    }
+    setStage("file", "done", `${S.fileJ.candidates.length} ઉમેદવાર`); setBar("pbar", 0.72);
+
+    // 4. candidates
+    if (S.cands.length !== S.fileJ.candidates.length) S.cands = new Array(S.fileJ.candidates.length).fill(null);
+    const fileBrief = JSON.stringify({ ...S.fileJ, zone: undefined, docs: undefined, observations: undefined });
+    for (let i = 0; i < S.fileJ.candidates.length; i++) {
+      if (S.cands[i]) continue; if (S.stop) throw { code: "cancelled" };
+      const fc = S.fileJ.candidates[i];
+      setStage("cand", "run", `${i + 1} / ${S.fileJ.candidates.length}: ${fc.short}`);
+      let mine = key.filter((p) => sameWho(S.cls[p].who, fc.who) || sameWho(S.cls[p].who, fc.short));
+      if (mine.length < 2) mine = mine.concat(key.filter((p) => ["patrak_a", "patrak_b", "service_book", "order", "exam_result", "certificate", "marksheet"].includes(S.cls[p].t)));
+      const common = key.filter((p) => ["dpc_minutes", "seniority_list", "recruitment_rules", "checklist", "patrak_k", "patrak_d", "exam_result"].includes(S.cls[p].t) || (["patrak_a", "patrak_b"].includes(S.cls[p].t) && !S.cls[p].who));
+      const prompt = `${RULES}
+
+TASK: Scrutinise ONE candidate: ${fc.name} (seniority no. ${fc.seniority}).
+FILE FACTS (already worked out): ${fileBrief}
+PAGE INDEX (page:type:candidate):
+${pageIndex()}
+
+TRANSCRIBED PAGES (this candidate first, then common pages):
+${textsFor([...mine, ...common], 165000)}
+
+Reply with only a JSON object (all text in Gujarati):
+{"short":"${fc.short}","name":"full name","seniority":${+fc.seniority || 0},"category":"","present":"present post and office","dob":"dd-mm-yyyy","dob_source":"પાન …",
+"join":"dd-mm-yyyy date of appointment/joining in the FEEDER cadre","join_source":"documents and pages; say forenoon/afternoon if shown","first_appt":"dd-mm-yyyy first appointment in service","first_appt_source":"",
+"retirement":"dd-mm-yyyy","exam":"short result of the departmental exam","dpc_decision":"યોગ્ય|અયોગ્ય",
+"criteria":[12 objects in the order of criteria 1-12: {"pos":"candidate's position from the file in 1-3 sentences","pages":"પાન …","value":"short value","met":"હા|ના|ચકાસો|લાગુ નથી"}],
+"apar":[{"year":"2021-22","from":"dd-mm-yyyy","to":"dd-mm-yyyy","rep":"reporting marks","rev":"reviewing marks","type":"ખાનગી અહેવાલ|પ્રમાણપત્ર","marks":82,"remark":"reason / pages"}],
+"apar_start":"dd-mm-yyyy","apar_end":"dd-mm-yyyy","apar_adverse":"","apar_note":"","apar_source":"Patrak-A page and copies pages",
+"obs":[{"type":"મુખ્ય મુદ્દો|કાર્યવાહી|વિસંગતતા|નોંધ","text":"","impact":"","pages":"પાન …"}]}
+APAR rows: every row of the Patrak-A APAR table for the period checked, final marks as a number (null for certificates). Use "ચકાસો" when the file does not prove a criterion. obs = points specific to this candidate.`;
+      let j = null;
+      try { j = await ask(prompt, null, "complex"); } catch (e) { if (!SOFT.has(e?.code)) throw e; }
+      if (!j || typeof j !== "object" || !Array.isArray(j.criteria)) throw { code: "invalid_json", message: "candidate " + fc.short };
+      S.cands[i] = j; saveWork(); log(`${fc.short}: ${verdictOf(j.criteria.map((c) => c.met))}`);
+      setBar("pbar", 0.72 + 0.2 * (i + 1) / S.fileJ.candidates.length);
+    }
+    setStage("cand", "done", `${S.cands.length} ઉમેદવાર`);
+
+    // 5. rules applied, action, note
+    if (!S.extra) {
+      setStage("extra", "run", "Claude વિચારે છે…");
+      const brief = { file: { ...S.fileJ, zone: undefined }, cands: S.cands.map((c) => ({ short: c.short, name: c.name, seniority: c.seniority, join: c.join, exam: c.exam, criteria: c.criteria.map((x) => ({ met: x.met, value: x.value, pages: x.pages })), obs: c.obs })) };
+      const j = await ask(`${RULES}
+
+TASK: Finish the scrutiny of this promotion proposal.
+DATA: ${JSON.stringify(brief)}
+
+Reply with only a JSON object (Gujarati):
+{"rules":[{"rule":"rule and clause","source":"notification no. and date","text":"what the rule says (paraphrase)","type":"પૂર્વશરત|કાર્યપદ્ધતિ|મુક્તિ|બઢતી પછી","applied":"how it applies to the candidates","met":"હા|ના|ચકાસો|લાગુ નથી|બઢતી પછી|અંશતઃ","pages":"12-14"}],
+"action":"one of: સંમત – બઢતીની ભલામણ | શરતોને આધીન સંમત | જિ.વિ.અ. પાસેથી ખુલાસો મંગાવવો | દરખાસ્ત પરત કરવી",
+"note":"office note in Gujarati for the file: proposal, DPC, each candidate's eligibility, then every point to be asked from the DDO numbered, ending with '...મંજૂરી અર્થે રજૂ.'",
+"conclusion":"2-3 sentence conclusion"}
+List 10-16 rules that govern this case (recruitment rules clauses, departmental exam rules, CCC, Hindi rules, superannuation, Board consultation, checklist circular).`, null, "complex");
+      if (!j || typeof j !== "object") throw { code: "invalid_json", message: "extra" };
+      S.extra = j; saveWork();
+    }
+    setStage("extra", "done", "");
+    finish();
+  } catch (e) {
+    const code = e?.code || "error";
+    const msg = {
+      cancelled: "ચકાસણી અટકાવી. 'ફરી ચાલુ કરો' દબાવતાં ત્યાંથી આગળ ચાલશે.",
+      rate_limited: "Claudeની ટૂંકા ગાળાની મર્યાદા આવી. 1-2 મિનિટ પછી 'ફરી ચાલુ કરો' દબાવો; થયેલું કામ સચવાયેલું છે.",
+      not_granted: "પ્રવેશ કોડ ખોટો છે. સાચો કોડ નાખી 'ફરી ચાલુ કરો' દબાવો.",
+      no_key: "સર્વર પર Anthropic API key સેટ નથી. ઍડમિનને જાણ કરો.",
+      bad_key: "સર્વર પરની Anthropic API key માન્ય નથી. ઍડમિનને જાણ કરો.",
+      no_credit: "Anthropic ખાતામાં ક્રેડિટ પૂરી થઈ છે. ઍડમિનને જાણ કરો.",
+      prompt_too_large: "ફાઈલનું લખાણ એક સાથે મોકલવા માટે ઘણું મોટું છે. 'ફરી ચાલુ કરો' દબાવો; ઓછું લખાણ મોકલાશે.",
+      partial: "કેટલાક પાન વંચાયા નહીં. 'ફરી ચાલુ કરો' દબાવતાં ફક્ત તે પાન ફરી વંચાશે.",
+      image_rejected: "કોઈ પાનની છબી સ્વીકારાઈ નહીં. PDF ફરી સ્કેન/સેવ કરી અપલોડ કરો.",
+      sampling_disabled: "આ ખાતા માટે આ પાનામાંથી Claude વાપરવાની સુવિધા બંધ છે.",
+      upstream_error: "Claude સાથે જોડાણ તૂટ્યું. 'ફરી ચાલુ કરો' દબાવો; થયેલું કામ સચવાયેલું છે.",
+      invalid_json: "Claudeનો જવાબ પૂરો વાંચી ન શકાયો. 'ફરી ચાલુ કરો' દબાવો.",
+      queue_overflow: "એક સાથે ઘણી વિનંતી થઈ. થોડી વાર પછી 'ફરી ચાલુ કરો' દબાવો.",
+    }[code] || "Claude સાથે જોડાણમાં ભૂલ આવી. થોડી વાર પછી 'ફરી ચાલુ કરો' દબાવો; થયેલું કામ સચવાયેલું છે.";
+    $("runnote").textContent = msg; $("runnote").hidden = false; log(msg + (e?.message ? ` (${e.code}: ${e.message})` : ""), "err");
+    for (const [k] of STAGES) if (stageState[k]?.state === "run") setStage(k, "err", "અટક્યું");
+    $("run").textContent = "ફરી ચાલુ કરો";
+  } finally {
+    S.running = false; S.stop = false; $("stop").hidden = true; updateRunState();
+  }
+}
+$("stop").onclick = () => { S.stop = true; S.ctrl.forEach((c) => c.abort()); };
+$("run").onclick = () => {
+  if (S.R) { // a finished file: redo the analysis from the pages already read
+    Object.assign(S, { fileJ: null, cands: [], extra: null, R: null });
+    ["file", "cand", "extra", "xls"].forEach((k) => setStage(k, "wait")); $("dlzip").disabled = true; $("dlxlsx").disabled = true;
+    log("વિશ્લેષણ ફરીથી શરૂ (વાંચેલા પાન ફરી વંચાશે નહીં).");
+  }
+  runPipeline();
+};
+
+// ---------------------------------------------------------------- results
+function collectR() {
+  return {
+    base: (S.file?.name || "PDF").replace(/\.pdf$/i, ""), n: S.n,
+    pages: Object.keys(S.cls).map(Number).map((p) => ({ p, t: S.cls[p].t, who: S.cls[p].who })),
+    file_no: $("fileno").value.trim(), inward_no: $("inwardno").value.trim(),
+    inward_date: $("inwarddate").value ? $("inwarddate").value.split("-").reverse().join("-") : "",
+    file: S.fileJ, cands: S.cands, extra: S.extra,
+  };
+}
+function finish() {
+  S.R = collectR();
+  setStage("xls", "done", "તૈયાર"); setBar("pbar", 1);
+  $("s3").classList.add("done"); $("run").textContent = "ફરીથી ચકાસો";
+  renderResults(S.R, false);
+  $("dlzip").disabled = !downloads; $("dlxlsx").disabled = !downloads;
+  log("ચકાસણી પૂરી. એક્સેલ ડાઉનલોડ કરી શકાય છે.");
+}
+function renderResults(R, example) {
+  const F = R.file || {}, box = $("v-res");
+  const vac = F.vac || {};
+  let h = `<div style="display:flex;flex-direction:column;gap:16px">`;
+  h += `<div><h2 style="font-size:20px">${esc(F.feeder || "")} → ${esc(F.promotion || "")}${example ? '<span class="example">નમૂનો – ઉદાહરણ માટે</span>' : ""}</h2>
+  <div class="muted">${esc(F.district || "")}${R.n ? ` · ${R.n} પાન` : ""}</div></div>`;
+  h += `<div class="sumgrid">
+    <div><b>ખાતાકીય બઢતી સમિતિ</b>${esc(F.dpc_date || "—")}</div>
+    <div><b>વિચારણા ક્ષેત્ર</b>${F.zone_from ? `ક્રમ ${esc(F.zone_from)} થી ${esc(F.zone_to)}` : "—"}</div>
+    <div><b>બઢતી ક્વોટામાં ખાલી જગ્યા</b>${vac.vacant_promotion ?? "—"}${vac.considered ? ` (વિચારણા ${vac.considered})` : ""}</div>
+    <div><b>ભરતી નિયમો</b>${esc(F.rules_text || "—")} ${refButtons(F.rules_text)}</div>
+    <div><b>પ્રવરતા યાદી</b>${esc(F.seniority_list || "—")} ${refButtons(F.seniority_list)}</div>
+    <div><b>દરખાસ્ત પત્ર</b>${esc(F.letter || "—")}</div>
+  </div>`;
+  h += `<div class="cands">`;
+  (R.cands || []).forEach((c) => {
+    if (!c) return;
+    const mets = (c.criteria || []).map((x) => x.met);
+    const v = verdictOf(mets), cls = v === "લાયક" ? "ok" : v === "લાયક નથી" ? "bad" : "warn";
+    h += `<article class="cand"><div class="cand-head"><div><h3>${esc(c.name || c.short)}</h3><div class="muted">પ્રવરતા ક્રમ ${esc(c.seniority)} · ${esc(c.category || "")} · ફીડરમાં ${esc(c.join || "—")}</div></div><span class="stamp ${cls}">${v}</span></div><div class="crit">`;
+    BUILD.CRIT.forEach((name, i) => {
+      const x = (c.criteria || [])[i] || {};
+      h += `<div><span class="muted">${i + 1}</span><span>${esc(name)}<small>${esc(x.value || "")}${x.pos ? " – " + esc(trim(x.pos, 160)) : ""}</small>${refButtons(x.pages)}</span><span class="chip ${metClass(x.met)}">${esc(x.met || C)}</span></div>`;
+    });
+    h += `</div></article>`;
+  });
+  h += `</div>`;
+  const obs = [...(F.observations || []), ...(R.cands || []).filter(Boolean).flatMap((c) => (c.obs || []).map((o) => ({ ...o, text: `${c.short}: ${o.text}` })))];
+  if (obs.length) {
+    h += `<div><h3 style="font-size:17px;margin-bottom:8px">અવલોકનો અને નિકાલ કરવાના મુદ્દા</h3><div class="obs">`;
+    for (const o of obs) {
+      const t = o.type || "નોંધ", k = /કાર્યવાહી/.test(t) ? "t-act" : /મુખ્ય/.test(t) ? "t-key" : /વિસંગત/.test(t) ? "t-dis" : "";
+      h += `<div class="${k}"><b>${esc(t)}</b>${esc(o.text)} ${refButtons(o.pages)}</div>`;
+    }
+    h += `</div></div>`;
+  }
+  if (R.extra?.note) h += `<div><h3 style="font-size:17px;margin-bottom:6px">ફાઈલ નોંધ (મુસદ્દો)</h3><div class="note info" style="white-space:pre-wrap">${esc(R.extra.note)}</div></div>`;
+  h += `</div>`;
+  box.innerHTML = h;
+}
+
+// ---------------------------------------------------------------- downloads
+async function makeXlsx(R) { const { wb, viewers } = BUILD.build(R, XW); const blob = await wb.toBlob(JSZip, "blob"); return { blob, viewers }; }
+async function save(filename, data) {
+  try { await downloads.save({ filename, data }); log(`${filename} સાચવી.`); }
+  catch (e) {
+    const m = { declined: "ડાઉનલોડ રદ કર્યું.", rate_limited: "થોડી વાર પછી ફરી દબાવો.", too_large: "ફાઈલ ઘણી મોટી છે; 'ફક્ત એક્સેલ' ડાઉનલોડ કરો." }[e?.code] || "ડાઉનલોડ થઈ શક્યું નથી.";
+    $("dlmsg").textContent = m; log(m, "err");
+  }
+}
+$("dlzip").onclick = async () => {
+  if (!S.R || !downloads) return;
+  const b = $("dlzip"); b.disabled = true; b.textContent = "ZIP તૈયાર થાય છે…";
+  try {
+    const R = collectR(); S.R = R;
+    const { blob, viewers } = await makeXlsx(R);
+    const z = new JSZip(), root = z.folder(`${R.base}_Scrutiny`);
+    root.file(`${R.base}_Scrutiny_Gujarati.xlsx`, blob);
+    const pf = root.folder("pages"); S.pages.forEach((pg, i) => pf.file(`p${String(i + 1).padStart(3, "0")}.jpg`, pg.blob));
+    const lf = root.folder("links"); for (const [f, html] of viewers) lf.file(f.replace(/^links\//, ""), html);
+    root.file("README.txt", "﻿આ ZIP આખી કાઢો (Extract All). પછી એક્સેલ ખોલો.\r\n'pages' અને 'links' ફોલ્ડર એક્સેલની બાજુમાં જ રાખવા; તો જ પાન નંબર પર ક્લિક કરતાં પાન ખુલશે.\r\nએક્સેલ લિંક પર ક્લિક કરતાં ચેતવણી આવે તો 'Yes' દબાવો.\r\n");
+    const zb = await z.generateAsync({ type: "blob", compression: "STORE" });
+    await save(`${R.base}_Scrutiny.zip`, zb);
+  } catch (e) { log("ZIP બનાવવામાં ભૂલ: " + (e?.message || e), "err"); $("dlmsg").textContent = "ZIP બની શકી નથી; 'ફક્ત એક્સેલ' અજમાવો."; }
+  finally { b.disabled = false; b.textContent = "ZIP: એક્સેલ + બધા પાન + લિંક"; }
+};
+$("dlxlsx").onclick = async () => {
+  if (!S.R || !downloads) return;
+  try { const R = collectR(); S.R = R; const { blob } = await makeXlsx(R); await save(`${R.base}_Scrutiny_Gujarati.xlsx`, blob); }
+  catch (e) { log("એક્સેલ બનાવવામાં ભૂલ: " + (e?.message || e), "err"); }
+};
+
+// ---------------------------------------------------------------- wiring
+const drop = $("drop"), inp = $("pdfin");
+drop.onclick = () => inp.click();
+drop.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); inp.click(); } };
+inp.onchange = () => { if (inp.files[0]) loadPdf(inp.files[0]); };
+drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("over"); });
+drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+drop.addEventListener("drop", (e) => { e.preventDefault(); drop.classList.remove("over"); const f = [...e.dataTransfer.files].find((x) => /pdf$/i.test(x.name) || x.type === "application/pdf"); if (f) loadPdf(f); });
+document.querySelectorAll(".tab").forEach((t) => t.onclick = () => {
+  document.querySelectorAll(".tab").forEach((x) => x.setAttribute("aria-selected", x === t));
+  ["res", "pages", "log"].forEach((k) => $("v-" + k).hidden = k !== t.dataset.tab);
+});
+function updateRunState() {
+  const can = !!(sample && limits?.images && HOST.ok);
+  $("run").disabled = !(S.ready && can) || S.running;
+}
+
+// Example shown until a file is processed (fictional data, marked as an example)
+const EXAMPLE = {
+  n: 0, file: { district: "જિલ્લા પંચાયત (ઉદાહરણ)", feeder: "સીનીયર ક્લાર્ક (હિસાબી)", promotion: "નાયબ હિસાબનીશ", dpc_date: "28-10-2026", zone_from: 10, zone_to: 11,
+    vac: { vacant_promotion: 6, considered: 2 }, rules_text: "નાયબ હિસાબનીશ ભરતી નિયમો-2018, પાન 16-19", seniority_list: "સીનીયર ક્લાર્ક (હિસાબી), 01-04-2026, પાન 15", letter: "ઉદાહરણ",
+    observations: [{ type: "કાર્યવાહી", text: "ખાલી જગ્યાનું પત્રક ફાઈલમાં નથી – જિ.વિ.અ. પાસેથી મંગાવવું.", pages: "પાન 2" }, { type: "નોંધ", text: "ઘણા ટૂંકા સમયગાળા માટે પ્રમાણપત્રો છે; દરેક 3 માસથી ઓછા.", pages: "પાન 7-9" }] },
+  cands: [
+    { name: "ઉમેદવાર ક (ઉદાહરણ)", short: "ક", seniority: 10, category: "બિન અનામત", join: "27-08-2021", criteria: BUILD.CRIT.map((_, i) => ({ met: i === 3 ? NA : Y, value: i === 1 ? "5 વર્ષ 2 માસ" : i === 2 ? "પાસ, પ્રથમ તક" : "", pages: i === 1 ? "પાન 7, 15" : "" })) },
+    { name: "ઉમેદવાર ખ (ઉદાહરણ)", short: "ખ", seniority: 11, category: "સા.શૈ.પ.વ.", join: "16-10-2021", criteria: BUILD.CRIT.map((_, i) => ({ met: i === 3 ? NA : i === 6 ? C : Y, value: i === 6 ? "2022-23નો અહેવાલ ખૂટે છે" : "", pages: "" })) },
+  ],
+};
+renderResults(EXAMPLE, true);
+
+// ---------------------------------------------------------------- server client (hosted version)
+function toB64(blob) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.onerror = () => rej(r.error); r.readAsDataURL(blob); }); }
+function parseJsonText(t) {
+  const s = t.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+  try { return JSON.parse(s); } catch { /* look for the JSON value inside */ }
+  const i = s.search(/[\[{]/);
+  if (i >= 0) { const j = s.lastIndexOf(s[i] === "[" ? "]" : "}"); if (j > i) { try { return JSON.parse(s.slice(i, j + 1)); } catch { /* fall through */ } } }
+  throw { code: "invalid_json", message: "no JSON in reply", text: t };
+}
+function hostedSample() {
+  const json = async (prompt, opts = {}) => {
+    const images = opts.images ? await Promise.all([...opts.images].map(toB64)) : [];
+    let res;
+    try {
+      res = await fetch("/api/claude", { method: "POST", signal: opts.signal, headers: { "content-type": "application/json", "x-access-code": HOST.code }, body: JSON.stringify({ prompt, tier: opts.modelTier || "default", images }) });
+    } catch (e) { if (opts.signal?.aborted) throw { code: "cancelled" }; throw { code: "upstream_error", message: String(e?.message || e) }; }
+    if (!res.ok) {
+      let j = {}; try { j = await res.json(); } catch { /* not json */ }
+      if (res.status === 401) { HOST.ok = false; showCode("✗ પ્રવેશ કોડ ખોટો છે.", true); }
+      throw { code: j.code || (res.status === 429 ? "rate_limited" : res.status === 413 ? "prompt_too_large" : "upstream_error"), message: j.message || "HTTP " + res.status };
+    }
+    const rd = res.body.getReader(), dec = new TextDecoder(); let buf = "", text = "", stop = null;
+    try {
+      for (;;) {
+        const { done, value } = await rd.read(); if (done) break;
+        buf += dec.decode(value, { stream: true });
+        let k;
+        while ((k = buf.indexOf("\n")) >= 0) {
+          const line = buf.slice(0, k).trim(); buf = buf.slice(k + 1);
+          if (!line) continue;
+          const ev = JSON.parse(line);
+          if (ev.d) text += ev.d; else if (ev.e) throw { ...ev.e, text }; else if (ev.done) stop = ev.stop || "";
+        }
+      }
+    } catch (e) { if (opts.signal?.aborted) throw { code: "cancelled" }; if (e?.code) throw e; throw { code: "upstream_error", message: String(e?.message || e), text }; }
+    if (stop === null) throw text ? { code: "invalid_json", message: "connection cut", text } : { code: "upstream_error", message: "connection cut" };
+    if (!text.trim()) throw { code: "empty_completion", message: "empty" };
+    return parseJsonText(text);
+  };
+  return Object.assign(async (p, o) => ({ text: JSON.stringify(await json(p, o)) }), { json, limits: async () => limits });
+}
+const HOST = { code: "", ok: false };
+function showCode(msg, bad) { $("codemsg").textContent = msg; $("codemsg").style.color = bad ? "var(--bad)" : "var(--ok)"; }
+async function checkCode() {
+  HOST.code = $("code").value.trim(); HOST.ok = false; updateRunState();
+  if (!HOST.code) { showCode("ચકાસણી માટે પ્રવેશ કોડ નાખો.", true); return; }
+  try {
+    const r = await fetch("/api/check", { headers: { "x-access-code": HOST.code } });
+    const j = await r.json().catch(() => ({}));
+    if (r.ok && j.key) { HOST.ok = true; showCode("✓ પ્રવેશ કોડ બરાબર છે.", false); try { localStorage.setItem("badhti-code", HOST.code); } catch { /* ignore */ } }
+    else if (r.ok) showCode("સર્વર પર Anthropic API key સેટ નથી. ઍડમિનને જાણ કરો.", true);
+    else if (r.status === 429) showCode("ઘણા ખોટા પ્રયત્નો થયા. 10 મિનિટ પછી ફરી પ્રયત્ન કરો.", true);
+    else showCode("✗ પ્રવેશ કોડ ખોટો છે.", true);
+  } catch { showCode("સર્વર સાથે જોડાણ થયું નહીં. ઇન્ટરનેટ તપાસો.", true); }
+  updateRunState();
+}
+sample = hostedSample();
+downloads = { save: async ({ filename, data }) => {
+  const blob = data instanceof Blob ? data : new Blob([data]); const u = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = u; a.download = filename; document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(u), 120000);
+} };
+limits = { maxPromptBytes: 262144, images: { maxCount: 5, maxInputBytes: 8e6, mediaTypes: ["image/jpeg"] } };
+$("code").addEventListener("change", checkCode);
+$("code").addEventListener("keydown", (e) => { if (e.key === "Enter") checkCode(); });
+try { $("code").value = localStorage.getItem("badhti-code") || ""; } catch { /* ignore */ }
+checkCode(); estimate();
+</script>
+
+</body>
+</html>
