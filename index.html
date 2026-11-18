@@ -724,7 +724,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
       const dd = D(s.date), posts = num(s.posts);
       wsVac.set({ r: vr, c: 2 }, s.reason || "", st({})); wsVac.set({ r: vr, c: 3 }, posts ?? "", st({ align: "center", color: BLUE }));
       wsVac.set({ r: vr, c: 4 }, dd || s.date || "", st({ align: "center", color: BLUE }));
-      if (dd && dpc) { const y = datedif(dd, dpc)?.y ?? 0; wsVac.set({ r: vr, c: 5 }, { f: `=DATEDIF(D${vr},$C$3,"y")`, v: y }, st({ align: "center" })); terms.push(`IF(E${vr}>3,C${vr},0)`); if (y > 3) old += posts || 0; }
+      if (dd && dpc) { const y = datedif(dd, dpc)?.y ?? 0; wsVac.set({ r: vr, c: 5 }, { f: `=DATEDIF(D${vr},$C$3,"y")`, v: y }, st({ align: "center" })); terms.push(`IF(EDATE(D${vr},36)<$C$3,C${vr},0)`); if (Date.UTC(dd.getUTCFullYear() + 3, dd.getUTCMonth(), dd.getUTCDate()) < dpc.getTime()) old += posts || 0; }
       else { const yt = s.years || (s.date ? "3થી વધુ" : ""); wsVac.set({ r: vr, c: 5 }, yt, st({ align: "center" })); if (/વધુ|>\s*3/.test(yt)) { terms.push(`C${vr}`); old += posts || 0; } else terms.push("0"); }
       wsVac.set({ r: vr, c: 6 }, s.note || "", st({ size: 9 }));
       tot += posts || 0; vr++;
