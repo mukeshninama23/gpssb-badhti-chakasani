@@ -527,7 +527,7 @@ const BUILD = (() => {
     "હિન્દી / ગુજરાતી પરીક્ષા", "સિદ્ધ ગુણવત્તા અને કાર્યક્ષમતા (ખાનગી અહેવાલ)", "ખાતાકીય તપાસ / આરોપનામું / ફોજદારી કેસ નથી", "શિક્ષા અમલમાં નથી",
     "વિચારણા ક્ષેત્રમાં", "ખાલી જગ્યા ઉપલબ્ધ", "ઉંમર / વયનિવૃત્તિ પહેલાં"];
   const FP_CRIT = ["ફીડર જગ્યા", "લઘુત્તમ અનુભવ", "ખાતાકીય પરીક્ષા", "તાલીમ / તાલીમાંત પરીક્ષા", "સીસીસી / સીસીસી+", "હિન્દી / ગુજરાતી પરીક્ષા કે મુક્તિ",
-    "ખાનગી અહેવાલ (5 વર્ષ, વિરુદ્ધ નોંધ નહિ)", "ખાતાકીય તપાસ / ફોજદારી કેસ નથી", "શિક્ષા અમલમાં નથી", "વિચારણા ક્ષેત્રમાં", "ખાલી જગ્યા ઉપલબ્ધ", "વયનિવૃત્તિ તારીખ"];
+    "ખાનગી અહેવાલ (5 વર્ષ, વિરુદ્ધ નોંધ નહિ)", "ખાતાકીય તપાસ / ફોજદારી કેસ નથી", "શિક્ષા અમલમાં નથી", "વિચારણા ક્ષેત્રમાં", "ખાલી જગ્યા ઉપલબ્ધ"]; // criterion 12 is shown as the retirement date, right after the age row
   const DOCS = ["જિ.વિ.અ.નો દરખાસ્ત પત્ર", "અનુક્રમણિકા", "ચેકલીસ્ટ", "પત્રક-અ", "પત્રક-બ", "પત્રક-ક", "આખરી પ્રવરતા યાદી (પ્રમાણિત)", "ભરતી નિયમોની નકલ",
     "ખાતાકીય બઢતી સમિતિની કાર્યવાહી નોંધ", "છેલ્લા પાંચ વર્ષના ખાનગી અહેવાલ", "રોસ્ટર રજીસ્ટર (પ્રમાણિત)", "સૂચિત પસંદગી યાદી", "ખાલી જગ્યાઓનું પત્રક",
     "પરીક્ષા પરિણામ / સેવાપોથી નોંધ", "તપાસ / લેણું ન હોવાનું પ્રમાણપત્ર", "બંધ કવર / એડહોક બઢતીની વિગત"];
@@ -1327,32 +1327,35 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     FC.forEach((col, i) => { const e = c4[i] ? EL_[i] : null; calc(`${col}47`, { f: `=IF(OR(${col}46="",$C$15=""),"",DATEDIF(${col}46,$C$15,"y")&" વર્ષ "&DATEDIF(${col}46,$C$15,"ym")&" માસ")`, v: e?.sv ? `${e.sv.y} વર્ષ ${e.sv.m} માસ` : "" }, { align: "center" }); });
     rowLab(48, "ઉંમર (સમિતિની તારીખે)");
     FC.forEach((col, i) => { const e = c4[i] ? EL_[i] : null; calc(`${col}48`, { f: `=IF(OR(${col}45="",$C$15=""),"",DATEDIF(${col}45,$C$15,"y")&" વર્ષ")`, v: e?.ag ? `${e.ag.y} વર્ષ` : "" }, { align: "center" }); });
+    // retirement date: last day of the birth month in the year of turning 58; green when on or after the DPC date (= criterion 12)
+    rowLab(49, "વયનિવૃત્તિ તારીખ");
+    FC.forEach((col, i) => { const c = c4[i]; calc(`${col}49`, { f: `=IF(OR(${col}45="",$E$17=""),"",EOMONTH(DATE(YEAR(${col}45)+$E$17,MONTH(${col}45),1),0))`, v: (c && retireDate(D(c.dob), retAge)) || "" }, { align: "center", date: true }); });
+    srcG(49, paP || pagesOf(c4.map((c) => c.dob_source)));
     const fpf = {
       2: (col, e) => ({ f: `=IF(OR(${col}46="",$C$15="",$C$17=""),"",IF(DATEDIF(${col}46,$C$15,"y")>=$C$17,"${Y}","${N}"))`, v: e?.sv ? (e.sv.y >= miny ? Y : N) : "" }),
       10: (col, e, c) => { const s = num(c?.seniority); return { f: `=IF(OR(${col}43="",$C$16="",$E$16=""),"",IF(AND(${col}43>=$C$16,${col}43<=$E$16),"${Y}","${N}"))`, v: s == null || zf == null || zt == null ? "" : (s >= zf && s <= zt ? Y : N) }; },
       11: (col, e, c) => ({ f: `=IF(OR(${col}42="",$E$15=""),"",IF($E$15>0,"${Y}","${N}"))`, v: !c || vv[12] == null ? "" : (vv[12] > 0 ? Y : N) }),
-      12: (col, e, c) => ({ f: `=IF(OR(${col}45="",$E$17=""),"",EOMONTH(DATE(YEAR(${col}45)+$E$17,MONTH(${col}45),1),0))`, v: (c && retireDate(D(c.dob), retAge)) || "" }),
     };
     FP_CRIT.forEach((name, k) => {
-      const r = 49 + k, kk = k + 1;
+      const r = 50 + k, kk = k + 1;
       rowLab(r, name, kk);
       FC.forEach((col, i) => {
         const c = c4[i], e = c ? EL_[i] : null;
-        if (fpf[kk]) calc(`${col}${r}`, fpf[kk](col, e, c), { align: "center", ...(kk === 12 ? { date: true } : {}) });
+        if (fpf[kk]) calc(`${col}${r}`, fpf[kk](col, e, c), { align: "center" });
         else inp(`${col}${r}`, e ? e.metVals[k] : "", { align: "center" });
       });
-      srcG(r, kk === 12 ? (paP || pagesOf(c4.map((c) => c.dob_source))) : pagesOf(c4.map((c) => (c.criteria || [])[k]?.pages || "")));
+      srcG(r, pagesOf(c4.map((c) => (c.criteria || [])[k]?.pages || "")));
     });
     for (let r = 43; r <= 61; r++) fp.height(r, 21);
-    rowLab(61, "મળેલ માપદંડ");
-    FC.forEach((col, i) => { const e = c4[i] ? EL_[i] : null; calc(`${col}61`, { f: `=IF(${col}42="","",(COUNTIF(${col}49:${col}59,"${Y}")+IF(AND(ISNUMBER(${col}60),ISNUMBER($C$15)),IF(${col}60>=$C$15,1,0),0))&" / "&(12-COUNTIF(${col}49:${col}59,"${NA}")))`, v: e ? e.met : "" }, { align: "center" }); });
+    rowLab(61, "મળેલ માપદંડ (વયનિવૃત્તિ તારીખ સહિત)");
+    FC.forEach((col, i) => { const e = c4[i] ? EL_[i] : null; calc(`${col}61`, { f: `=IF(${col}42="","",(COUNTIF(${col}50:${col}60,"${Y}")+IF(AND(ISNUMBER(${col}49),ISNUMBER($C$15)),IF(${col}49>=$C$15,1,0),0))&" / "&(12-COUNTIF(${col}50:${col}60,"${NA}")))`, v: e ? e.met : "" }, { align: "center" }); });
     rowLab(62, "પરિણામ");
-    FC.forEach((col, i) => { const e = c4[i] ? EL_[i] : null; calc(`${col}62`, { f: `=IF(${col}42="","",IF(OR(COUNTIF(${col}49:${col}59,"${N}")>0,AND(ISNUMBER(${col}60),ISNUMBER($C$15),${col}60<$C$15)),"${NEL}",IF(COUNTIF(${col}49:${col}59,"${C}")+COUNTBLANK(${col}49:${col}60)>0,"${NRV}","${EL}")))`, v: e ? e.verdict : "" }, { align: "center", bold: true }); });
+    FC.forEach((col, i) => { const e = c4[i] ? EL_[i] : null; calc(`${col}62`, { f: `=IF(${col}42="","",IF(OR(COUNTIF(${col}50:${col}60,"${N}")>0,AND(ISNUMBER(${col}49),ISNUMBER($C$15),${col}49<$C$15)),"${NEL}",IF(COUNTIF(${col}50:${col}60,"${C}")+COUNTBLANK(${col}49:${col}60)>0,"${NRV}","${EL}")))`, v: e ? e.verdict : "" }, { align: "center", bold: true }); });
     fp.height(62, 25.5);
     rowLab(63, "સમિતિનો નિર્ણય"); FC.forEach((col, i) => inp(`${col}63`, c4[i]?.dpc_decision || "", { align: "center" })); srcG(63, pagesOf(F.decision_source || F.dpc_source)); fp.height(63, 21);
-    fp.dropdown("C49:F49 C51:F57", [Y, N, C, NA]); fp.dropdown("C63:F63", ["યોગ્ય", "અયોગ્ય"]);
-    fp.cf("C49:F59", [{ eq: Y, style: { fill: GREEN, color: "FF006100" } }, { eq: N, style: { fill: RED, color: "FF9C0006" } }, { eq: C, style: { fill: AMBER, color: "FF7F5500" } }, { eq: NA, style: { fill: GREY } }]);
-    fp.cf("C60:F60", [{ expr: "AND(ISNUMBER(C60),ISNUMBER($C$15),C60>=$C$15)", style: { fill: GREEN, color: "FF006100" } }, { expr: "AND(ISNUMBER(C60),ISNUMBER($C$15),C60<$C$15)", style: { fill: RED, color: "FF9C0006" } }]);
+    fp.dropdown("C50:F50 C52:F58", [Y, N, C, NA]); fp.dropdown("C63:F63", ["યોગ્ય", "અયોગ્ય"]);
+    fp.cf("C50:F60", [{ eq: Y, style: { fill: GREEN, color: "FF006100" } }, { eq: N, style: { fill: RED, color: "FF9C0006" } }, { eq: C, style: { fill: AMBER, color: "FF7F5500" } }, { eq: NA, style: { fill: GREY } }]);
+    fp.cf("C49:F49", [{ expr: "AND(ISNUMBER(C49),ISNUMBER($C$15),C49>=$C$15)", style: { fill: GREEN, color: "FF006100" } }, { expr: "AND(ISNUMBER(C49),ISNUMBER($C$15),C49<$C$15)", style: { fill: RED, color: "FF9C0006" } }]);
     verdictCF(fp, "C62:F62");
     fset("A64", "4 થી વધુ ઉમેદવાર હોય તો આ પત્રકની વધારાની નકલ જોડવી.", { size: 8, color: FPMUTED }); fp.merge("A64:G64"); fp.height(64, 15);
     sec(66, "(ઘ) ક્ષતિઓ / મુદ્દાઓ");
