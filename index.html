@@ -149,6 +149,15 @@ button:focus-visible,.drop:focus-visible,a:focus-visible{outline:3px solid var(-
 .crit-r > span:last-child{text-align:right}
 @media (max-width:560px){.crit-h{display:none}.crit-h,.crit-r{grid-template-columns:24px minmax(0,1fr);padding:8px 12px}.crit-r > span:last-child{grid-column:2;text-align:left}}
 .chip{display:inline-block;font-size:12px;font-weight:600;border-radius:999px;padding:1px 10px;white-space:nowrap}
+.ckwrap{overflow-x:auto;border:1px solid var(--rule);border-radius:8px}
+.cktab{border-collapse:collapse;width:100%;min-width:560px;font-size:13px}
+.cktab th,.cktab td{padding:8px 12px;text-align:left;vertical-align:top;border-top:1px solid var(--rule)}
+.cktab thead th{border-top:0;font-size:12.5px;color:var(--muted);font-weight:600}
+.cktab tbody th{font-weight:500;width:30%}
+.cktab .n{font-family:var(--f-mono);color:var(--muted);margin-right:8px}
+.cktab td small{display:block;color:var(--muted);font-size:12.5px;line-height:1.45;margin-top:4px;overflow-wrap:anywhere}
+.cktab .cksum th,.cktab .cksum td{font-weight:600}
+.cknote{font-size:12.5px;color:var(--muted);margin:8px 0 0}
 .c-ok{background:var(--ok-bg);color:var(--ok)} .c-bad{background:var(--bad-bg);color:var(--bad)} .c-warn{background:var(--warn-bg);color:var(--warn)} .c-na{background:var(--na-bg);color:var(--na)}
 .refs{display:inline-flex;flex-wrap:wrap;gap:4px;margin-top:4px;vertical-align:middle}
 .ref{font-family:var(--f-mono);font-size:11.5px;padding:0 7px;border-radius:4px;border:1px solid var(--rule-strong);background:var(--surface);color:var(--accent);cursor:pointer;line-height:1.7}
@@ -582,6 +591,31 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
 </style></head><body><a id="top"></a><header><h1>${title} – ઉલ્લેખિત પાન: ${key}</h1><div class="sub">${pages.length} પાન. નંબર પર ક્લિક કરી તે પાન પર જાઓ.</div>${chips}</header><main>${blocks}</main></body></html>`;
   }
 
+  // ---------- the six compulsory checks, summarised for the page (the workbook sheet works them out with formulas)
+  const CKN = ["ચેકલીસ્ટના દરેક પાન પર જિ.વિ.અ.ની સહી / સિક્કો", "પત્રક-ડ (સીસીસી) સામેલ છે અને પૂરું છે", "ગયા વર્ષની આખરી પ્રવરતા યાદી – ખાતાકીય પરીક્ષા",
+    "સીસીસી પાસ કર્યાની તારીખ અને યુનિવર્સિટી / સંસ્થા", "હિન્દી / ગુજરાતી પરીક્ષા – પાસ કે મુક્તિ", "વયનિવૃત્તિ તારીખ"];
+  // last day of the month in which the employee completes `age` years (birthday on the 1st -> previous month)
+  const retireDate = (d, age) => { if (!d) return null; const t = new Date(Date.UTC(d.getUTCFullYear() + age, d.getUTCMonth(), d.getUTCDate()) - 86400000); return new Date(Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 0)); };
+  const pkRetire = (c) => { const r = (c.checks || {}).retirement || {}; const m = /પત્રક-ક[^\d]{0,12}(\d{1,2}-\d{1,2}-\d{4})/.exec(String(c.retirement || "")); return toDate(r.patrak_k) || toDate(m ? m[1] : c.retirement); };
+  function checkVals(R) {
+    const F = R.file || {}, K = F.checks || {}, age = num(F.retire_age) ?? 58;
+    const ok = (v) => [Y, N, C, NA].includes(v) ? v : C;
+    const j = (...xs) => xs.filter(Boolean).join(" – ");
+    return (R.cands || []).filter(Boolean).map((c) => {
+      const k = c.checks || {}, s = k.seniority_exam || {}, cc = k.ccc || {}, h = k.hindi || {}, r = k.retirement || {};
+      const cs = K.checklist_sign || {}, pd = K.patrak_d || {};
+      const a = retireDate(toDate(r.dob || c.dob), age), b = pkRetire(c);
+      return [
+        { v: ok(cs.ok), d: cs.note || "", p: cs.pages || "" },
+        { v: ok(pd.ok), d: pd.note || "", p: pd.pages || "" },
+        { v: ok(s.ok), d: j(s.last_year, s.note), p: s.pages || "" },
+        { v: ok(cc.ok), d: j(cc.date, cc.institution), p: cc.pages || "" },
+        { v: ok(h.ok), d: j(h.status || (c.criteria || [])[5]?.value, h.evidence), p: h.pages || "" },
+        { v: !a || !b ? C : a.getTime() === b.getTime() ? Y : N, d: `ગણતરી મુજબ ${fmt(a) || "—"}; પત્રક-ક મુજબ ${fmt(b) || "—"}`, p: r.pages || "", calc: fmt(a), pk: fmt(b) },
+      ];
+    });
+  }
+
   function build(R, XW) {
     const n = R.n, F = R.file || {}, cands = (R.cands || []).filter(Boolean), X = R.extra || {};
     const wb = new XW.Workbook("Nirmala UI");
@@ -664,8 +698,8 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     }
 
     const shorts = cands.map((c) => c.short || c.name || "ઉમેદવાર");
-    const SN = { fp: sheetName("આગળનું પાનું"), map: sheetName("ફાઈલ નકશો"), res: sheetName("પરિણામ"), el: shorts.map((s) => sheetName("લાયકાત-" + s)) };
-    const wsFP = wb.add(SN.fp), wsMap = wb.add(SN.map), wsRes = wb.add(SN.res);
+    const SN = { fp: sheetName("આગળનું પાનું"), chk: sheetName("ફરજિયાત ચકાસણી"), map: sheetName("ફાઈલ નકશો"), res: sheetName("પરિણામ"), el: shorts.map((s) => sheetName("લાયકાત-" + s)) };
+    const wsFP = wb.add(SN.fp), wsChk = wb.add(SN.chk), wsMap = wb.add(SN.map), wsRes = wb.add(SN.res);
     const wsEl = SN.el.map((s) => wb.add(s));
     SN.rules = sheetName("લાગુ નિયમો"); const wsRules = wb.add(SN.rules);
     SN.ap = shorts.map((s) => sheetName("ખાનગી અહેવાલ-" + s)); const wsAp = SN.ap.map((s) => wb.add(s));
@@ -1006,6 +1040,136 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     });
     wsMap.freeze = "A5"; wsMap.printCols = 5;
 
+    // ---------- Compulsory checks ('ફરજિયાત ચકાસણી'): six checks required on every file
+    // R.file.checks = { checklist_sign: {ok, note, pages}, patrak_d: {ok, note, pages} }
+    // cand.checks = { seniority_exam: {last_year, current, result, note, ok, pages}, ccc: {date, institution, marks, patrak_d, ok, pages},
+    //                 hindi: {status, evidence, patrak_k, ok, pages}, retirement: {dob, dob_source, patrak_k, note, pages} }
+    const CKF = F.checks || {}, nCk = Math.max(1, cands.length), LCK = 3 + nCk, LCKN = XW.colName(LCK), LCC = XW.colName(2 + nCk);
+    const ckOf = (c) => c.checks || {};
+    const okv = (v) => [Y, N, C, NA].includes(v) ? v : C;
+    const retireOn = (d) => retireDate(d, retAge);
+    const pkRet = (c) => { const m = /પત્રક-ક[^\d]{0,12}(\d{1,2}-\d{1,2}-\d{4})/.exec(String(c.retirement || "")); return D(m ? m[1] : c.retirement); };
+    title(wsChk, "ફરજિયાત ચકાસણી – દરેક ફાઈલમાં છ મુદ્દા",
+      "આધાર: મંડળના પત્રો તા.06-08-2021 (પત્રક-ક અને પુરાવા), 17-02-2025 અને 12-09-2025 (ચેકલીસ્ટના દરેક પાન પર જિ.વિ.અ.ની સહી / સિક્કો, પત્રક-ડ); સા.વ.વિ.નો ઠરાવ તા.22-01-2009 (દર વર્ષે 1 એપ્રિલની સ્થિતિએ આખરી પ્રવરતા યાદી). 'ના' હોય તે દરેક મુદ્દો જિ.વિ.અ.ને પૃચ્છા.",
+      { merge: LCKN, h2: 30 });
+    wsChk.width(1, 5); wsChk.width(2, 36); for (let i = 0; i < nCk; i++) wsChk.width(3 + i, 36); wsChk.width(LCK, 24);
+    H(wsChk, 4, ["#", "ચકાસણી", ...(cands.length ? cands.map((c) => `${nm(c)} (ક્રમ ${c.seniority ?? "?"})`) : ["ઉમેદવાર"]), "આધાર પાન"]);
+    wsChk.height(4, 30);
+    let kr = 5;
+    const ckRes = []; // [{name, refs: [cell per candidate], vals: [...]}]
+    const ckBlock = (no, name) => {
+      wsChk.set({ r: kr, c: 1 }, no, st({ bold: true, align: "center", fill: SUB }));
+      wsChk.set({ r: kr, c: 2 }, name, st({ bold: true, fill: SUB })); wsChk.merge(`B${kr}:${LCKN}${kr}`); wsChk.height(kr, 20); kr++;
+    };
+    const ckFile = (no, name, o = {}) => {
+      ckBlock(no, name);
+      wsChk.set({ r: kr, c: 2 }, "ફાઈલમાં શું છે", st({}));
+      wsChk.set({ r: kr, c: 3 }, o.note || "", st({ color: BLUE, valign: "top" })); if (nCk > 1) wsChk.merge(`C${kr}:${LCC}${kr}`);
+      wsChk.set({ r: kr, c: LCK }, o.pages || "", st({ size: 9 }));
+      wsChk.height(kr, Math.max(30, 13 * lines(o.note, 36 * nCk) + 8)); kr++;
+      const v = okv(o.ok);
+      wsChk.set({ r: kr, c: 2 }, "પરિણામ", st({ bold: true }));
+      wsChk.set({ r: kr, c: 3 }, v, st({ bold: true, align: "center" })); if (nCk > 1) wsChk.merge(`C${kr}:${LCC}${kr}`);
+      wsChk.set({ r: kr, c: LCK }, "", st({}));
+      statusCF(wsChk, `C${kr}:${LCC}${kr}`);
+      ckRes.push({ name, refs: cands.map(() => `$C$${kr}`), vals: cands.map(() => v) }); kr += 2;
+    };
+    // rows: [label, (c, i, check) => value, {pages: (check) => text}]
+    const ckCand = (no, name, key, rows) => {
+      ckBlock(no, name);
+      for (const [lab, get, o = {}] of rows) {
+        wsChk.set({ r: kr, c: 2 }, lab, st({ bold: !!o.bold }));
+        let mx = lines(lab, 34); const vs = [];
+        for (let i = 0; i < nCk; i++) {
+          const c = cands[i];
+          const v = c ? get(c, i, ckOf(c)[key] || {}, kr) : ""; if (typeof v === "string") vs.push(v);
+          wsChk.set({ r: kr, c: 3 + i }, v ?? "", st({ color: o.calc ? BLACK : BLUE, align: o.center || (v && typeof v === "object") || v instanceof Date ? "center" : "left", valign: "top" }));
+          if (typeof v === "string") mx = Math.max(mx, lines(v, 38));
+        }
+        wsChk.set({ r: kr, c: LCK }, pp(pagesOf(vs.map((x) => (x.match(PREF) || []).join(", ")))), st({ size: 9 }));
+        wsChk.height(kr, Math.max(18, 13 * mx + 6)); kr++;
+      }
+    };
+    const ckResult = (name, key, fn) => {
+      wsChk.set({ r: kr, c: 2 }, "પરિણામ", st({ bold: true }));
+      const vals = [], refs = [];
+      for (let i = 0; i < nCk; i++) {
+        const c = cands[i], col = XW.colName(3 + i);
+        const out = c ? fn(c, i, ckOf(c)[key] || {}, col) : "";
+        const v = out && typeof out === "object" ? out.v : out;
+        wsChk.set({ r: kr, c: 3 + i }, out ?? "", st({ bold: true, align: "center" }));
+        if (c) { vals.push(v); refs.push(`${col}${kr}`); }
+      }
+      const srcs = pagesOf(cands.map((c) => (ckOf(c)[key] || {}).pages || ""));
+      wsChk.set({ r: kr, c: LCK }, pp(srcs), st({ size: 9 }));
+      statusCF(wsChk, `C${kr}:${LCC}${kr}`);
+      ckRes.push({ name, refs, vals }); kr += 2;
+    };
+    const t = (k) => (c, i, o) => o[k] || "";
+    const CN = CKN;
+    ckFile(1, CN[0], CKF.checklist_sign || {});
+    ckFile(2, CN[1], CKF.patrak_d || {});
+    ckCand(3, CN[2], "seniority_exam", [
+      ["ગયા વર્ષની આખરી યાદીમાં શું છે", t("last_year")],
+      ["આ વર્ષની આખરી યાદીમાં શું છે", t("current")],
+      ["પરિણામ પત્રક મુજબ (તારીખ, તક)", (c, i, o) => o.result || c.exam || ""],
+      ["નોંધ", t("note")]]);
+    ckResult(CN[2], "seniority_exam", (c, i, o) => okv(o.ok));
+    ckCand(4, CN[3], "ccc", [
+      ["પાસ કર્યાની તારીખ", (c, i, o) => D(o.date) || o.date || ""],
+      ["યુનિવર્સિટી / સંસ્થા", t("institution")],
+      ["ગુણ (થિયરી / પ્રેક્ટિકલ)", t("marks"), { center: true }],
+      ["પત્રક-ડ સાથે મેળ અને માન્ય કેન્દ્ર", t("patrak_d")]]);
+    ckResult(CN[3], "ccc", (c, i, o) => okv(o.ok));
+    ckCand(5, CN[4], "hindi", [
+      ["પાસ કે મુક્તિ", (c, i, o) => o.status || (c.criteria || [])[5]?.value || "", { center: true }],
+      ["હુકમ / પરિણામ અને આધાર", t("evidence")],
+      ["પત્રક-ક મુજબ", t("patrak_k"), { center: true }]]);
+    ckResult(CN[4], "hindi", (c, i, o) => okv(o.ok));
+    const rD = kr + 1;
+    ckCand(6, CN[5], "retirement", [
+      ["જન્મ તારીખ (આધાર)", (c, i, o) => D(o.dob || c.dob) || ""],
+      ["જન્મ તારીખનો આધાર", (c, i, o) => o.dob_source || c.dob_source || ""],
+      [`ગણતરી મુજબ નિવૃત્તિ (${retAge} વર્ષ પૂરાં થાય તે માસનો છેલ્લો દિવસ)`, (c, i, o, r) => { const col = XW.colName(3 + i), d = D(o.dob || c.dob); return { f: `=IF(${col}${rD}="","",EOMONTH(DATE(YEAR(${col}${rD})+${retAge},MONTH(${col}${rD}),DAY(${col}${rD}))-1,0))`, v: retireOn(d) || "" }; }, { calc: true }],
+      ["પત્રક-ક મુજબ નિવૃત્તિ", (c, i, o) => D(o.patrak_k) || pkRet(c) || ""],
+      ["નોંધ", t("note")]]);
+    const rC = rD + 2, rP = rD + 3;
+    ckResult(CN[5], "retirement", (c, i, o, col) => {
+      const a = retireOn(D(o.dob || c.dob)), b = D(o.patrak_k) || pkRet(c);
+      const v = !a || !b ? C : a.getTime() === b.getTime() ? Y : N;
+      return { f: `=IF(OR(${col}${rC}="",${col}${rP}=""),"${C}",IF(${col}${rC}=${col}${rP},"${Y}","${N}"))`, v };
+    });
+    // summary
+    ckBlock("", "સારાંશ");
+    const s1 = kr;
+    ckRes.forEach((x, k) => {
+      wsChk.set({ r: kr, c: 1 }, k + 1, st({ align: "center" })); wsChk.set({ r: kr, c: 2 }, x.name, st({}));
+      cands.forEach((c, i) => wsChk.set({ r: kr, c: 3 + i }, { f: `=${x.refs[i]}`, v: x.vals[i] }, st({ bold: true, align: "center" })));
+      kr++;
+    });
+    const s2 = kr - 1;
+    if (cands.length) statusCF(wsChk, `C${s1}:${LCC}${s2}`);
+    const ckSum = [];
+    wsChk.set({ r: kr, c: 2 }, "છ ચકાસણીમાંથી પૂર્ણ", st({ bold: true }));
+    cands.forEach((c, i) => {
+      const col = XW.colName(3 + i), h = ckRes.filter((x) => x.vals[i] === Y).length, nn = ckRes.filter((x) => x.vals[i] === N).length;
+      const v = `${h} / 6 પૂર્ણ${nn ? `, ${nn} ના` : ""}`;
+      wsChk.set({ r: kr, c: 3 + i }, { f: `=COUNTIF(${col}${s1}:${col}${s2},"${Y}")&" / 6 પૂર્ણ"&IF(COUNTIF(${col}${s1}:${col}${s2},"${N}")>0,", "&COUNTIF(${col}${s1}:${col}${s2},"${N}")&" ના","")`, v }, st({ bold: true, align: "center" }));
+      ckSum.push({ ref: `${col}${kr}`, v });
+    });
+    kr++;
+    wsChk.set({ r: kr, c: 2 }, "જિ.વિ.અ.ને પૃચ્છા જરૂરી?", st({ bold: true }));
+    cands.forEach((c, i) => {
+      const col = XW.colName(3 + i), nn = ckRes.filter((x) => x.vals[i] === N).length;
+      wsChk.set({ r: kr, c: 3 + i }, { f: `=IF(COUNTIF(${col}${s1}:${col}${s2},"${N}")>0,"${Y}","${N}")`, v: nn ? Y : N }, st({ bold: true, align: "center" }));
+    });
+    wsChk.cf(`C${kr}:${LCC}${kr}`, [{ eq: Y, style: { fill: AMBER, color: "FF7F5500", bold: true } }]);
+    kr += 2;
+    wsChk.set({ r: kr, c: 1 }, "ચકાસણી 1 કે 2 'ના' હોય તો સૂચિત કાર્યવાહી 'સંમત – બઢતીની ભલામણ' રાખી શકાય નહિ. ચકાસણી 5 એકલી ઉમેદવારને અયોગ્ય ઠરાવતી નથી (ભરતી નિયમ મુજબ પસંદગી પછીની શરત).", { size: 9, color: MUTED, wrap: true, border: false });
+    wsChk.merge(`A${kr}:${LCKN}${kr}`); wsChk.height(kr, 28);
+    wsChk.freeze = "C5"; wsChk.landscape = true;
+    linkify(wsChk, [[LCKN, false]], LCK); // links only in the source column: long linked text does not wrap in LibreOffice
+
     // ---------- Result
     const cl = (i) => XW.colName(2 + i), lastRC = 2 + cands.length, LR = XW.colName(lastRC), LCAND = XW.colName(1 + Math.max(1, cands.length));
     title(wsRes, "બઢતી માટે લાયકાતનું પરિણામ", `${feederS ? feederS + "માંથી " : ""}${promoT}${dist ? " – " + dist : ""}. દરખાસ્ત ફાઈલ ${pdfName} (${n} પાન)નું વિશ્લેષણ.`, { size: 16, merge: LR, h2: 15 });
@@ -1056,7 +1220,10 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
       rr++;
     });
     if (cands.length) statusCF(wsRes, `B${cr1}:${cl(cands.length - 1)}${rr - 1}`);
-    rr++;
+    wsRes.set({ r: rr, c: 1 }, "ફરજિયાત છ ચકાસણી (વિગત 'ફરજિયાત ચકાસણી' પત્રકમાં)", st({ bold: true }));
+    cands.forEach((c, i) => wsRes.set({ r: rr, c: 2 + i }, { f: `=${q(SN.chk)}${ckSum[i].ref}`, v: ckSum[i].v }, st({ bold: true, align: "center" })));
+    wsRes.set({ r: rr, c: lastRC }, "ફરજિયાત ચકાસણી પત્રક", st({ size: 9 }));
+    rr += 2;
     const hist = (F.history || []).filter((h) => h && (h.step || h.text));
     if (hist.length) {
       wsRes.set({ r: rr, c: 1 }, "ફાઈલની કાર્યવાહીનો ક્રમ", st({ bold: true, fill: NAVY, color: WHITE })); wsRes.merge(`A${rr}:${LR}${rr}`); rr++;
@@ -1201,7 +1368,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
 
     return { wb, viewers };
   }
-  return { build, refGroups, datedif, toDate, fmt, CRIT, DOCS, TYPE_GU, viewerHtml };
+  return { build, refGroups, datedif, toDate, fmt, CRIT, DOCS, TYPE_GU, viewerHtml, CKN, checkVals };
 })();
 
 
@@ -1231,6 +1398,7 @@ Check every candidate the DPC recommended against 12 criteria:
 12 Below superannuation age (58) on the DPC date.
 Verdict: "લાયક નથી" if any criterion is "ના"; "ચકાસણી જરૂરી" if any is "ચકાસો"; else "લાયક".
 Known recruitment rules: Senior Clerk RR 1998 (KP/107/98 dt 19-11-1998: 5 yrs as Junior Clerk/Typist/Asst Storekeeper + dept exam; r.4 Hindi after selection). Senior Account Clerk RR 1998 (KP/111/98: 5 yrs as Account Clerk + dept exam). Deputy Chitnis RR 2013 (KP/01/2014/PRR/102013/1897-KH dt 04-01-2014: 5 yrs as Senior Clerk or Store Keeper Class III, dept exam, CCC; proviso two-thirds; ratio direct:promotion 1:3; r.9 training after promotion). Deputy Accountant RR 2018 (KP/22 of 2018/PRR/1194/589/KH dt 01-10-2018: 5 yrs as Senior Accounts Clerk, dept exam, CCC; proviso two-thirds; ratio 1:2; r.7 training after promotion). Board consultation (Amendment) Rules 2021 (KP/18/2021 dt 19-07-2021): Board must be consulted on promotions. Checklist circular બઢત/152021/920/ખ dt 19-07-2021 lists the documents to send.
+Compulsory checks on EVERY file (Board letters dt 06-08-2021, 17-02-2025 and 12-09-2025): (1) the DDO's signature / seal or e-sign on EVERY page of the checklist; (2) Annexure-D (પત્રક-ડ: CCC date, centre, recognised or not) enclosed and complete for each candidate; (3) the previous year's final seniority list (as on 1 April, GAD resolution dt 22-01-2009) shows the departmental-exam column correctly for each candidate – compare it with this year's list and the exam result (a blank column although the exam was passed is a "ના"); (4) CCC passing date and the university / institution, matching Patrak-D; (5) Hindi / Gujarati exam passed or exempted, with the order, matching Patrak-K; (6) retirement date = last day of the month in which the employee completes 58 years (birthday on the 1st: last day of the previous month), compared with the date written in Patrak-K. Every compulsory check that is not proved is a query to the DDO.
 Always check: Admin/Accounts line of the seniority list and vacancies; minutes complete (page/item gaps); separate no-inquiry certificate present; reasons others were found unfit; discrepancies between checklist, Patrak-A/K, minutes, service book, orders; vacancy statement present and posts vacant over 3 years; roster point for each promotion; earlier DPC / Board advice; proposal date vs DPC date; typing errors in dates.
 Write all text in Gujarati (digits 0-9, dates dd-mm-yyyy). Cite PDF page numbers as "પાન 12" or "પાન 12, 45-47" (PDF page numbers, never the office's handwritten numbers).`;
 const TYPES = "forwarding_letter, index, checklist, patrak_a, patrak_b, patrak_k, patrak_d, seniority_list, recruitment_rules, dpc_minutes, apar, apar_certificate, roster, select_list, vacancy_statement, exam_result, service_book, order, certificate, marksheet, board_letter, other";
@@ -1515,6 +1683,7 @@ Reply with only a JSON object (all text in Gujarati):
 "zone":[{"no":0,"name":"","category":"","dob":"dd-mm-yyyy","in_cadre":"dd-mm-yyyy","status":"status / reason with pages","group":"યોગ્ય – ભલામણ|અયોગ્ય|નિવૃત્ત|અગાઉ બઢતી|ક્ષેત્ર બહાર|અન્ય","remarks":"remarks column of the list"}],
 "zone_note":"one line: sources with pages and what happened to those senior to the zone",
 "recon":{"in_zone":{"n":0,"src":"where the papers state it, with page"},"fit":{"n":0,"src":""},"promoted_earlier":{"n":0,"src":""},"eligible_5yr":{"n":0,"src":""}},
+"checks":{"checklist_sign":{"ok":"હા|ના|ચકાસો","note":"which checklist pages carry the DDO's signature / seal or e-sign and which do not","pages":"પાન …"},"patrak_d":{"ok":"હા|ના|ચકાસો","note":"is Annexure-D (પત્રક-ડ) enclosed; letter no. and date; does it give CCC date, centre and recognition for every candidate","pages":"પાન …"}},
 "docs":[16 objects {"received":"હા|ના|અંશતઃ|લાગુ નથી","pages":"12-14","remark":"short"} in this order: ${BUILD.DOCS.join("; ")}]}
 Use numbers (not strings) for counts and null when not in the file. vac: n = the figure in the main source (roster register / minutes), check = the same figure from a second document or null; statement_total = posts vacant per the vacancy statement; roster_points = roster points used in the roster abstract; considered = posts the DPC considered. recon: the counts as stated in the checklist / minutes / Patrak-K. "candidates" = only those the DPC recommended. "zone" = the zone of consideration rows of the seniority list plus the few around it.`;
       const j = await ask(prompt, null, "complex");
@@ -1539,7 +1708,7 @@ Reply with only a JSON object (all text in Gujarati):
 {"observations":[{"type":"મુખ્ય મુદ્દો|કાર્યવાહી|વિસંગતતા|નોંધ|સ્થિતિ","text":"the point, with dates, numbers and pages","impact":"impact on eligibility","pages":"પાન …","ask_ddo":true}],
 "history":[{"step":"short label, e.g. સીનીયર ક્લાર્ક (હિસાબી)માં બઢતી or ખાતાકીય બઢતી સમિતિ – 28-10-2026","text":"what happened: orders, dates, numbers","pages":"પાન …"}],
 "file_map":[{"doc":"document description, naming the candidate where it belongs to one","pages":"1-6"}]}
-observations: file-level points (missing documents, discrepancies, roster, vacancies, minutes, checklist vs other papers), most important first; ask_ddo = true when the point must be asked from the DDO before the Board's advice. history: the case in order – first appointment, promotion to the feeder cadre, departmental examination, earlier DPC and Board advice, final seniority list, this DPC, proposal to the Board, Board advice ('આ ફાઈલમાં નથી' if absent). file_map: consecutive page ranges covering every PDF page from 1 to ${S.n} in order, 15-40 entries.`, null, "complex");
+observations: file-level points (missing documents, discrepancies, roster, vacancies, minutes, checklist vs other papers), most important first; a file-level compulsory check (checks.checklist_sign, checks.patrak_d) that is not "હા" must be an observation of type "કાર્યવાહી" with ask_ddo true; ask_ddo = true when the point must be asked from the DDO before the Board's advice. history: the case in order – first appointment, promotion to the feeder cadre, departmental examination, earlier DPC and Board advice, final seniority list, this DPC, proposal to the Board, Board advice ('આ ફાઈલમાં નથી' if absent). file_map: consecutive page ranges covering every PDF page from 1 to ${S.n} in order, 15-40 entries.`, null, "complex");
       if (!j || typeof j !== "object") throw { code: "invalid_json", message: "file 2" };
       Object.assign(S.fileJ, { observations: j.observations || [], history: j.history || [], file_map: j.file_map || [], _b: true }); saveWork();
     }
@@ -1574,11 +1743,19 @@ Reply with only a JSON object (all text in Gujarati):
 "criteria":[12 objects in the order of criteria 1-12: {"pos":"candidate's position from the file in 1-3 sentences","pages":"પાન …","value":"short value","met":"હા|ના|ચકાસો|લાગુ નથી"}],
 "apar":[{"year":"2021-22","from":"dd-mm-yyyy","to":"dd-mm-yyyy","rep":"reporting marks","rev":"reviewing marks","type":"ખાનગી અહેવાલ|પ્રમાણપત્ર","marks":82,"remark":"reason / pages"}],
 "apar_start":"dd-mm-yyyy","apar_end":"dd-mm-yyyy","apar_adverse":"'નથી' or the adverse remark, with source pages","apar_note":"corrections made or anything unusual in the APAR record","apar_source":"Patrak-A item 12 page and pages of the APAR copies",
+"checks":{"seniority_exam":{"last_year":"what the PREVIOUS year's final seniority list shows in the departmental-exam column for this candidate, with page","current":"what this year's list shows, with page","result":"exam result: date and attempt, with pages","note":"","ok":"હા|ના|ચકાસો","pages":"પાન …"},
+"ccc":{"date":"dd-mm-yyyy","institution":"university / institution, certificate no. and date","marks":"theory / practical","patrak_d":"entry in Patrak-D and whether the centre is recognised","ok":"હા|ના|ચકાસો","pages":"પાન …"},
+"hindi":{"status":"પાસ|મુક્તિ|બાકી","evidence":"order or result no. and date, and the basis","patrak_k":"what Patrak-K says","ok":"હા|ના|ચકાસો","pages":"પાન …"},
+"retirement":{"dob":"dd-mm-yyyy","dob_source":"documents with pages","patrak_k":"dd-mm-yyyy retirement date written in Patrak-K","note":"","pages":"પાન …"}},
 "obs":[{"type":"મુખ્ય મુદ્દો|કાર્યવાહી|વિસંગતતા|નોંધ","text":"","impact":"","pages":"પાન …","ask_ddo":false}]}
-APAR rows: every row of the Patrak-A APAR table for the period checked, final marks as a number (null for certificates). Use "ચકાસો" when the file does not prove a criterion. obs = points specific to this candidate.`;
+APAR rows: every row of the Patrak-A APAR table for the period checked, final marks as a number (null for certificates). Use "ચકાસો" when the file does not prove a criterion. checks = the compulsory checks 3-6 for this candidate: "હા" only when the file proves it, "ના" when the file contradicts it (e.g. the previous year's list leaves the exam column blank although the exam was passed, or Patrak-K differs from the order), "ચકાસો" when the evidence is missing. obs = points specific to this candidate; every compulsory check that is not "હા" must also be in obs as type "કાર્યવાહી" with ask_ddo true.`;
       let j = null;
       try { j = await ask(prompt, null, "complex"); } catch (e) { if (!SOFT.has(e?.code)) throw e; }
       if (!j || typeof j !== "object" || !Array.isArray(j.criteria)) throw { code: "invalid_json", message: "candidate " + fc.short };
+      // compulsory check 6 is worked out here from the date of birth, so a wrong Patrak-K date always becomes a DDO query
+      const rt = BUILD.checkVals({ file: S.fileJ, cands: [j] })[0][5];
+      if (!Array.isArray(j.obs)) j.obs = [];
+      if (rt.v === N && !j.obs.some((o) => /નિવૃત્તિ/.test(o.text || ""))) j.obs.push({ type: "કાર્યવાહી", text: `વયનિવૃત્તિ તારીખ: જન્મ તારીખ મુજબ ${rt.calc} થાય, જ્યારે પત્રક-કમાં ${rt.pk} લખેલ છે; પત્રક-ક સુધારી મોકલવા.`, impact: "લાયકાતને અસર નથી; પત્રક-ક સુધારવું.", pages: rt.p, ask_ddo: true });
       S.cands[i] = j; saveWork(); log(`${fc.short}: ${verdictOf(j.criteria.map((c) => c.met))}`);
       setBar("pbar", 0.72 + 0.2 * (i + 1) / S.fileJ.candidates.length);
     }
@@ -1587,7 +1764,8 @@ APAR rows: every row of the Patrak-A APAR table for the period checked, final ma
     // 5. rules applied, action, note
     if (!S.extra) {
       setStage("extra", "run", "Claude વિચારે છે…");
-      const brief = { file: { ...S.fileJ, zone: undefined, file_map: undefined, history: undefined, _b: undefined }, cands: S.cands.map((c) => ({ short: c.short, name: c.name, seniority: c.seniority, join: c.join, exam: c.exam, criteria: c.criteria.map((x) => ({ met: x.met, value: x.value, pages: x.pages })), obs: c.obs })) };
+      const CKV = BUILD.checkVals({ file: S.fileJ, cands: S.cands });
+      const brief = { file: { ...S.fileJ, zone: undefined, file_map: undefined, history: undefined, _b: undefined }, cands: S.cands.map((c, ci) => ({ short: c.short, name: c.name, seniority: c.seniority, join: c.join, exam: c.exam, criteria: c.criteria.map((x) => ({ met: x.met, value: x.value, pages: x.pages })), compulsory_checks: BUILD.CKN.map((nm, k) => `${k + 1}) ${nm}: ${CKV[ci][k].v}`).join("; "), obs: c.obs })) };
       const qs = [...(S.fileJ.observations || []), ...S.cands.flatMap((c) => (c.obs || []).map((o) => ({ ...o, text: `${c.short}: ${o.text}` })))]
         .filter((o) => o.ask_ddo === true || /કાર્યવાહી/.test(o.type || "")).slice(0, 8);
       const j = await ask(`${RULES}
@@ -1599,7 +1777,7 @@ DDO QUERIES (front page section (ઘ), in this order): ${qs.length ? qs.map((o, 
 Reply with only a JSON object (Gujarati):
 {"rules":[{"rule":"rule and clause","source":"notification no. and date","text":"what the rule says (paraphrase)","type":"પૂર્વશરત|કાર્યપદ્ધતિ|મુક્તિ|બઢતી પછી","applied":"how it applies to the candidates","met":"હા|ના|ચકાસો|લાગુ નથી|બઢતી પછી|અંશતઃ","pages":"12-14"}],
 "action":"one of: સંમત – બઢતીની ભલામણ | શરતોને આધીન સંમત | જિ.વિ.અ. પાસેથી ખુલાસો મંગાવવો | દરખાસ્ત પરત કરવી",
-"note":"office note in Gujarati for the file: the proposal (district, feeder → promotion cadre, candidates with seniority nos.), the DPC date and resolution, each candidate's eligibility under the recruitment rules; then, if there are DDO queries, 'પરંતુ ઉપર મુદ્દા (ઘ)-1 થી N મુજબ' and each query in one short clause numbered (1) (2) …, asking that the DDO's clarification be obtained; ending with '...મંજૂરી અર્થે રજૂ.'",
+"note":"office note in Gujarati for the file: the proposal (district, feeder → promotion cadre, candidates with seniority nos.), the DPC date and resolution, each candidate's eligibility under the recruitment rules, the result of the six compulsory checks for each candidate (e.g. 'ફરજિયાત છ ચકાસણીમાંથી 5 પૂર્ણ'); then, if there are DDO queries, 'પરંતુ ઉપર મુદ્દા (ઘ)-1 થી N મુજબ' and each query in one short clause numbered (1) (2) …, asking that the DDO's clarification be obtained; ending with '...મંજૂરી અર્થે રજૂ.'",
 "issues":"the points to settle before the Board's advice, numbered 1) 2) 3) …, or 'કોઈ મુદ્દો નથી.'","conclusion":"2-3 sentence conclusion naming each candidate's eligibility",
 "obs_note":"one sentence on whether any observation makes a candidate ineligible","rules_note":"one sentence on which rule texts were read from the file and which come from the rules library"}
 List 10-16 rules that govern this case (recruitment rules clauses, departmental exam rules, CCC, Hindi rules, superannuation, Board consultation, checklist circular).`, null, "complex");
@@ -1701,6 +1879,18 @@ function renderResults(R, savedName) {
     h += `</div></article>`;
   });
   h += `</div></section>`;
+  if (cands.length) {
+    const CK = BUILD.checkVals(R);
+    h += `<section class="sect"><h3>ફરજિયાત છ ચકાસણી</h3><div class="ckwrap"><table class="cktab"><thead><tr><th scope="col">ચકાસણી</th>${cands.map((c) => `<th scope="col">${esc(c.name_short || c.short || c.name)}</th>`).join("")}</tr></thead><tbody>`;
+    BUILD.CKN.forEach((name, k) => {
+      h += `<tr><th scope="row"><span class="n">${k + 1}</span>${esc(name)}</th>${CK.map((row, ci) => {
+        const x = row[k], showD = k > 1 || ci === 0; // file-level checks 1-2: details once
+        return `<td><span class="chip ${metClass(x.v)}">${esc(x.v)}</span>${showD && x.d ? `<small>${esc(trim(x.d, 160))}</small>` : ""}${showD ? refButtons(x.p) : ""}</td>`;
+      }).join("")}</tr>`;
+    });
+    h += `<tr class="cksum"><th scope="row">પૂર્ણ</th>${CK.map((row) => `<td><b class="mono">${row.filter((x) => x.v === Y).length} / 6</b></td>`).join("")}</tr></tbody></table></div>
+      <p class="cknote">'હા' ન હોય તે દરેક મુદ્દો જિ.વિ.અ.ને પૃચ્છા. વિગત અને ગણતરી એક્સેલના 'ફરજિયાત ચકાસણી' પત્રકમાં છે.</p></section>`;
+  }
   if (obs.length) {
     h += `<section class="sect"><h3>અવલોકનો અને નિકાલ કરવાના મુદ્દા <span class="count">${obs.length}</span></h3><ol class="obs">`;
     for (const o of obs) {
@@ -1757,13 +1947,13 @@ function caseId(key) {
 }
 const dmy = (d) => d ? `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}` : "";
 function caseSummary(R) {
-  const F = R.file || {}, cands = (R.cands || []).filter(Boolean), X = R.extra || {};
+  const F = R.file || {}, cands = (R.cands || []).filter(Boolean), X = R.extra || {}, CKV = BUILD.checkVals(R);
   const qs = [...(F.observations || []), ...cands.flatMap((c) => c.obs || [])].filter((o) => o.ask_ddo === true || /કાર્યવાહી/.test(o.type || ""));
   return {
     file_name: S.file?.name || `${R.base}.pdf`, pages: R.n || 0, file_no: R.file_no || F.file_no_text || "", inward_no: R.inward_no || "", inward_date: R.inward_date || "",
     district: F.district || "", feeder: F.feeder_short || F.feeder || "", promotion: F.promotion_short || F.promotion || "", dpc_date: F.dpc_date || "", letter: F.letter || "",
     action: X.action || "", queries: qs.length, issues: String(X.issues || qs.map((o, i) => `${i + 1}) ${o.text}`).join(" ")).slice(0, 3000),
-    cands: cands.map((c) => { const m = (c.criteria || []).map((x) => x.met); return { name: c.name || c.short || "", seniority: c.seniority ?? "", category: c.category || "", verdict: verdictOf(m), met: `${m.filter((x) => x === Y).length} / ${12 - m.filter((x) => x === NA).length}` }; }),
+    cands: cands.map((c, ci) => { const m = (c.criteria || []).map((x) => x.met); return { name: c.name || c.short || "", seniority: c.seniority ?? "", category: c.category || "", verdict: verdictOf(m), met: `${m.filter((x) => x === Y).length} / ${12 - m.filter((x) => x === NA).length}`, checks: `${CKV[ci].filter((x) => x.v === Y).length} / 6` }; }),
   };
 }
 let saving = Promise.resolve();
