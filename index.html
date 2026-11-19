@@ -525,9 +525,9 @@ const BUILD = (() => {
   const FPG = "FF17402F", FPH = "FFDDEBE4", FPIN = "FFFFF8E1", FPCALC = "FFF1F3F2", FPMUTED = "FF5F6B66";
   const CRIT = ["ફીડર જગ્યા અને શાખા", "ફીડર સંવર્ગમાં લઘુત્તમ અનુભવ", "ખાતાકીય પરીક્ષા", "તાલીમ / તાલીમાંત પરીક્ષા", "કમ્પ્યુટર પરીક્ષા (સીસીસી / સીસીસી+)",
     "હિન્દી / ગુજરાતી પરીક્ષા", "સિદ્ધ ગુણવત્તા અને કાર્યક્ષમતા (ખાનગી અહેવાલ)", "ખાતાકીય તપાસ / આરોપનામું / ફોજદારી કેસ નથી", "શિક્ષા અમલમાં નથી",
-    "વિચારણા ક્ષેત્રમાં", "ખાલી જગ્યા ઉપલબ્ધ", "ઉંમર / વયનિવૃત્તિ પહેલાં"];
+    "બઢતી માટે વિચારેલ પ્રવરતા ક્રમમાં", "ખાલી જગ્યા ઉપલબ્ધ", "ઉંમર / વયનિવૃત્તિ પહેલાં"];
   const FP_CRIT = ["ફીડર જગ્યા", "લઘુત્તમ અનુભવ", "ખાતાકીય પરીક્ષા", "તાલીમ / તાલીમાંત પરીક્ષા", "સીસીસી / સીસીસી+", "હિન્દી / ગુજરાતી પરીક્ષા કે મુક્તિ",
-    "ખાનગી અહેવાલ (5 વર્ષ, વિરુદ્ધ નોંધ નહિ)", "ખાતાકીય તપાસ / ફોજદારી કેસ નથી", "શિક્ષા અમલમાં નથી", "વિચારણા ક્ષેત્રમાં", "ખાલી જગ્યા ઉપલબ્ધ"]; // criterion 12 is shown as the retirement date, right after the age row
+    "ખાનગી અહેવાલ (5 વર્ષ, વિરુદ્ધ નોંધ નહિ)", "ખાતાકીય તપાસ / ફોજદારી કેસ નથી", "શિક્ષા અમલમાં નથી", "બઢતી માટે વિચારેલ પ્રવરતા ક્રમમાં", "ખાલી જગ્યા ઉપલબ્ધ"]; // criterion 12 is shown as the retirement date, right after the age row
   const DOCS = ["જિ.વિ.અ.નો દરખાસ્ત પત્ર", "અનુક્રમણિકા", "ચેકલીસ્ટ", "પત્રક-અ", "પત્રક-બ", "પત્રક-ક", "આખરી પ્રવરતા યાદી (પ્રમાણિત)", "ભરતી નિયમોની નકલ",
     "ખાતાકીય બઢતી સમિતિની કાર્યવાહી નોંધ", "છેલ્લા પાંચ વર્ષના ખાનગી અહેવાલ", "રોસ્ટર રજીસ્ટર (પ્રમાણિત)", "સૂચિત પસંદગી યાદી", "ખાલી જગ્યાઓનું પત્રક",
     "પરીક્ષા પરિણામ / સેવાપોથી નોંધ", "તપાસ / લેણું ન હોવાનું પ્રમાણપત્ર", "બંધ કવર / એડહોક બઢતીની વિગત"];
@@ -718,7 +718,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     const wsEl = SN.el.map((s) => wb.add(s));
     SN.rules = sheetName("લાગુ નિયમો"); const wsRules = wb.add(SN.rules);
     SN.ap = shorts.map((s) => sheetName("ખાનગી અહેવાલ-" + s)); const wsAp = SN.ap.map((s) => wb.add(s));
-    SN.zone = sheetName("વિચારણા ક્ષેત્ર"); const wsZone = wb.add(SN.zone);
+    SN.zone = sheetName("બઢતી માટે વિચારેલ પ્રવરતા ક્રમ"); const wsZone = wb.add(SN.zone);
     SN.vac = sheetName("ખાલી જગ્યા"); const wsVac = wb.add(SN.vac);
     SN.obs = sheetName("અવલોકનો"); const wsObs = wb.add(SN.obs);
     SN.reg = sheetName("રજીસ્ટરની હાર"); const wsReg = wb.add(SN.reg);
@@ -901,7 +901,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
         [`${critName(1)} (વર્ષ)`, miny, F.min_years_source || F.rules_text],
         ["વયનિવૃત્તિની ઉંમર (વર્ષ)", retAge, c.retirement_source || (c.retirement ? "નિવૃત્તિ તારીખ " + c.retirement : "")],
         ["પ્રવરતા ક્રમ", num(c.seniority), F.seniority_source || F.seniority_list],
-        ["વિચારણા ક્ષેત્ર – ક્રમથી", zf, F.zone_source], ["વિચારણા ક્ષેત્ર – ક્રમ સુધી", zt, F.zone_source]];
+        ["બઢતી માટે વિચારેલ પ્રવરતા ક્રમ – થી", zf, F.zone_source], ["બઢતી માટે વિચારેલ પ્રવરતા ક્રમ – સુધી", zt, F.zone_source]];
       inputs.forEach(([lab, v, src], i) => {
         const r = 5 + i; ws.set({ r, c: 2 }, lab, st({})); ws.set({ r, c: 3 }, v ?? "", st({ color: BLUE, align: "center" })); ws.set({ r, c: 4 }, src || "", st({ size: 9 }));
       });
@@ -921,7 +921,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
         2: [{ f: `=IF(OR($C$5="",$C$7=""),"તારીખ નથી",DATEDIF($C$5,$C$7,"y")&" વર્ષ "&DATEDIF($C$5,$C$7,"ym")&" માસ "&DATEDIF($C$5,$C$7,"md")&" દિવસ")`, v: sv ? `${sv.y} વર્ષ ${sv.m} માસ ${sv.d} દિવસ` : "તારીખ નથી" },
           { f: `=IF(OR($C$5="",$C$7=""),"${C}",IF(DATEDIF($C$5,$C$7,"y")>=$C$9,"${Y}","${N}"))`, v: !sv ? C : (sv.y >= miny ? Y : N) }],
         7: [{ f: "=" + aparRef[ci].sum, v: aparRef[ci].summ }, { f: "=" + aparRef[ci].ok, v: aparRef[ci].okv }],
-        10: [{ f: `="ક્રમ "&$C$11&", ક્ષેત્ર "&$C$12&"-"&$C$13`, v: `ક્રમ ${sen ?? ""}, ક્ષેત્ર ${zf ?? ""}-${zt ?? ""}` },
+        10: [{ f: `="ક્રમ "&$C$11&", વિચારેલ ક્રમ "&$C$12&"-"&$C$13`, v: `ક્રમ ${sen ?? ""}, વિચારેલ ક્રમ ${zf ?? ""}-${zt ?? ""}` },
           { f: `=IF(OR($C$11="",$C$12="",$C$13=""),"${C}",IF(AND($C$11>=$C$12,$C$11<=$C$13),"${Y}","${N}"))`, v: sen == null || zf == null || zt == null ? C : (sen >= zf && sen <= zt ? Y : N) }],
         11: [{ f: `=IF(${VAC}="","વિગત નથી",${VAC}&" ખાલી"&IF(${VCON}="","","; "&${VCON}&" વિચારણામાં"))`, v: vacN == null ? "વિગત નથી" : `${vacN} ખાલી${conN != null ? `; ${conN} વિચારણામાં` : ""}` },
           { f: `=IF(${VAC}="","${met(crit[10]?.met)}",IF(${VAC}>=MAX(1,N(${VCON})),"${Y}","${N}"))`, v: vacN == null ? met(crit[10]?.met) : (vacN >= Math.max(1, conN || 0) ? Y : N) }],
@@ -956,7 +956,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
 
     // ---------- Zone of consideration
     const zrows = F.zone || [];
-    title(wsZone, `વિચારણા ક્ષેત્ર – ${feederS ? feederS + "ની " : ""}આખરી પ્રવરતા યાદી${distS ? ", " + distS : ""}${F.seniority_as_on ? ` (તા.${F.seniority_as_on}ની સ્થિતિ)` : ""}`,
+    title(wsZone, `બઢતી માટે વિચારેલ પ્રવરતા ક્રમ – ${feederS ? feederS + "ની " : ""}આખરી પ્રવરતા યાદી${distS ? ", " + distS : ""}${F.seniority_as_on ? ` (તા.${F.seniority_as_on}ની સ્થિતિ)` : ""}`,
       F.zone_note || `આધાર: ${F.seniority_list || "પ્રવરતા યાદી"}.${zf ? ` સમિતિએ ક્રમ ${zf} થી ${zt}ની વિચારણા કરી.` : ""}`);
     wsZone.set("B3", "સમિતિની તારીખ", st({ bold: true })); wsZone.set("C3", dpc || "", st({ color: BLUE, align: "center" }));
     H(wsZone, 5, ["પ્રવરતા ક્રમ", "નામ", "જાતિ", "જન્મ તારીખ", `${feederS || "ફીડર"} સંવર્ગમાં`, "સમિતિની તારીખે સંવર્ગમાં વર્ષ", "સ્થિતિ / કારણ", "સ્થિતિ જૂથ", "નોંધ (પ્રવરતા યાદી)"], [10, 26, 14, 12, 14, 13, 44, 26, 36]);
@@ -1294,7 +1294,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     [[9, "જિલ્લા પંચાયત", dist], [10, "દરખાસ્તનો પત્ર નં. / તારીખ", F.letter], [11, "ફીડર સંવર્ગ (પગાર ધોરણ)", F.feeder], [12, "બઢતીનો સંવર્ગ (પગાર ધોરણ)", F.promotion],
       [13, "ભરતી નિયમો", F.rules_text], [14, "આખરી પ્રવરતા યાદી", F.seniority_list]].forEach(([r, t, v]) => { lab(r, t); inp(`C${r}`, v || ""); fp.merge(`C${r}:G${r}`); });
     lab(15, "ખાતાકીય બઢતી સમિતિની તારીખ"); inp("C15", dpc || "", { align: "center" }); lab(15, "ખાલી જગ્યા", "D"); inp("E15", vv[12] ?? "", { align: "center" }); fp.merge("E15:G15");
-    lab(16, "વિચારણા ક્ષેત્ર: પ્રવરતા ક્રમથી"); inp("C16", zf ?? "", { align: "center" }); lab(16, "સુધી", "D"); inp("E16", zt ?? "", { align: "center" }); fp.merge("E16:G16");
+    lab(16, "બઢતી માટે વિચારેલ પ્રવરતા ક્રમથી"); inp("C16", zf ?? "", { align: "center" }); lab(16, "સુધી", "D"); inp("E16", zt ?? "", { align: "center" }); fp.merge("E16:G16");
     lab(17, "લઘુત્તમ અનુભવ (વર્ષ)"); inp("C17", miny, { align: "center" }); lab(17, "વયનિવૃત્તિ", "D"); inp("E17", retAge, { align: "center" }); fp.merge("E17:G17");
     lab(18, "યોગ્ય / અયોગ્ય ઠરાવેલ"); inp("C18", F.fit_unfit || ""); fp.merge("C18:G18");
     for (let r = 7; r <= 18; r++) fp.height(r, 25.5);
@@ -1615,7 +1615,7 @@ async function contactSheet(pages) {
   }
   return new Promise((res) => cv.toBlob(res, "image/jpeg", 0.8));
 }
-const STAGES = [["cls", "પાન ઓળખવા (દસ્તાવેજનો પ્રકાર)"], ["read", "મહત્ત્વના પાન વાંચવા"], ["file", "ફાઈલની વિગત, વિચારણા ક્ષેત્ર, ખાલી જગ્યા"], ["cand", "ઉમેદવારવાર લાયકાત"], ["extra", "લાગુ નિયમો અને નોંધ"], ["xls", "એક્સેલ તૈયાર"]];
+const STAGES = [["cls", "પાન ઓળખવા (દસ્તાવેજનો પ્રકાર)"], ["read", "મહત્ત્વના પાન વાંચવા"], ["file", "ફાઈલની વિગત, બઢતી માટે વિચારેલ પ્રવરતા ક્રમ, ખાલી જગ્યા"], ["cand", "ઉમેદવારવાર લાયકાત"], ["extra", "લાગુ નિયમો અને નોંધ"], ["xls", "એક્સેલ તૈયાર"]];
 const stageState = {};
 function setStage(k, state, info) {
   stageState[k] = { state, info: info || "" };
@@ -1939,7 +1939,7 @@ function renderResults(R, savedName) {
     <div role="listitem"><span>જિ.વિ.અ.ને પૃચ્છા</span><b>${obs.filter((o) => /કાર્યવાહી/.test(o.type || "")).length}</b></div></div>`;
   const parts = [
     ["ખાતાકીય બઢતી સમિતિ", F.dpc_date, F.dpc_source],
-    ["વિચારણા ક્ષેત્ર", F.zone_from ? `પ્રવરતા ક્રમ ${F.zone_from} થી ${F.zone_to}` : "", ""],
+    ["બઢતી માટે વિચારેલ પ્રવરતા ક્રમ", F.zone_from ? `${F.zone_from} થી ${F.zone_to}` : "", ""],
     ["બઢતી ક્વોટામાં ખાલી જગ્યા", vn(vac.vacant_promotion) != null ? `${vn(vac.vacant_promotion)}${vn(vac.considered) ? ` (વિચારણા ${vn(vac.considered)})` : ""}` : "", vac.pages],
     ["ભરતી નિયમો", F.rules_text, F.rules_text],
     ["પ્રવરતા યાદી", F.seniority_list, F.seniority_list],
