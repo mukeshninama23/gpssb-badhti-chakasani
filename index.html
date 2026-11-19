@@ -268,7 +268,8 @@ input.rm{font-size:13px;padding:5px 8px;min-width:150px}
               <label class="f">ઇનવર્ડ નં.<input type="text" id="inwardno"></label>
               <label class="f">ઇનવર્ડ તારીખ<input type="date" id="inwarddate"></label>
             </div>
-            <div class="muted" id="esnote" hidden>ઇનવર્ડ નં. અને ઇનવર્ડ તારીખમાં 'e-Sarkar' લખાશે; ફાઈલ નં. 'e-Sarkar – ઈ-ફાઈલ નં.' તરીકે. ઈ-ફાઈલ નં. ખાલી રાખશો તો PDFમાંથી લેવાશે.</div>
+            <label class="f" id="dispbox" hidden>ડિસ્પેચ તારીખ (e-Sarkar)<input type="date" id="dispatchdate"></label>
+            <div class="muted" id="esnote" hidden>ઇનવર્ડ નં. અને ઇનવર્ડ તારીખમાં 'e-Sarkar' લખાશે; ફાઈલ નં. 'e-Sarkar – ઈ-ફાઈલ નં.' તરીકે. ઈ-ફાઈલ નં. અને ડિસ્પેચ તારીખ ખાલી રાખશો તો PDFના e-Sarkar પાના પરથી લેવાશે.</div>
           </div>
         </li>
 
@@ -610,14 +611,16 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
   }
 
   // ---------- file no. / inward no. / inward date. A proposal received on e-Sarkar has no paper inward:
-  // file no. = "e-Sarkar – <e-file no.>", inward no. and inward date = "e-Sarkar"; days pending count from the e-sign date.
+  // file no. = "e-Sarkar – <e-file no.>", inward no. and inward date = "e-Sarkar"; the dispatch date printed on the e-Sarkar
+  // pages ("Dispatch Date", else the header's "Approved Date") is shown beside it, and days pending count from it (else the e-sign date).
   const ESK = "e-Sarkar";
   function fileIds(R) {
     const F = R.file || {};
     const es = R.esarkar === true || (R.esarkar == null && F.esarkar === true);
     if (!es) return { es: false, file_no: R.file_no || F.file_no_text || "", inward_no: R.inward_no || "", inward_date: R.inward_date || "", from: null };
     const raw = String(R.file_no || F.efile_no || "").trim().replace(/^e-?\s?sarkar\s*[–-]?\s*/i, "");
-    return { es: true, file_no: raw ? `${ESK} – ${raw}` : ESK, inward_no: ESK, inward_date: ESK, from: toDate(F.esarkar_date) };
+    const dispatch = toDate(R.dispatch_date) || toDate(F.dispatch_date);
+    return { es: true, file_no: raw ? `${ESK} – ${raw}` : ESK, inward_no: ESK, inward_date: ESK, dispatch, dispatch_date: dispatch ? fmt(dispatch) : "", from: dispatch || toDate(F.esarkar_date) };
   }
 
   // ---------- the six compulsory checks, summarised for the page (the workbook sheet works them out with formulas)
@@ -1303,8 +1306,16 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     const ids = fileIds(R), inDate = ids.es ? null : D(ids.inward_date), since = inDate || ids.from;
     const todayU = new Date(Date.UTC(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()));
     lab(7, "ફાઈલ નં. / દફતર"); inp("C7", ids.file_no); lab(7, "ઇનવર્ડ નં.", "D"); inp("E7", ids.inward_no, ids.es ? { align: "center" } : {}); fp.merge("E7:G7");
-    lab(8, "ઇનવર્ડ તારીખ"); inp("C8", ids.es ? ESK : inDate || "", { align: "center" }); lab(8, ids.es && ids.from ? "પડતર દિવસ (ઈ-સહીથી)" : "પડતર દિવસ", "D");
-    calc("E8", { f: ids.es && ids.from ? `=IF(ISNUMBER(C8),TODAY()-C8,TODAY()-${DT(ids.from)})` : `=IF(ISNUMBER(C8),TODAY()-C8,"")`, v: since ? days(since, todayU) : "" }); fp.merge("E8:G8");
+    lab(8, "ઇનવર્ડ તારીખ"); inp("C8", ids.es ? ESK : inDate || "", { align: "center" });
+    if (ids.es) { // e-Sarkar: dispatch date from the e-Sarkar pages beside the inward date; days pending count from it
+      const esign = toDate(F.esarkar_date);
+      lab(8, "ડિસ્પેચ તારીખ (e-Sarkar)", "D"); inp("E8", ids.dispatch || "", { align: "center" });
+      lab(8, ids.dispatch || !esign ? "પડતર દિવસ (ડિસ્પેચથી)" : "પડતર દિવસ (ઈ-સહીથી)", "F");
+      calc("G8", { f: `=IF(ISNUMBER(E8),TODAY()-E8,${esign ? `TODAY()-${DT(esign)}` : '""'})`, v: since ? days(since, todayU) : "" }, { align: "center" });
+    } else {
+      lab(8, "પડતર દિવસ", "D");
+      calc("E8", { f: `=IF(ISNUMBER(C8),TODAY()-C8,"")`, v: since ? days(since, todayU) : "" }); fp.merge("E8:G8");
+    }
     [[9, "જિલ્લા પંચાયત", dist], [10, "દરખાસ્તનો પત્ર નં. / તારીખ", F.letter], [11, "ફીડર સંવર્ગ (પગાર ધોરણ)", F.feeder], [12, "બઢતીનો સંવર્ગ (પગાર ધોરણ)", F.promotion],
       [13, "ભરતી નિયમો", F.rules_text], [14, "આખરી પ્રવરતા યાદી", F.seniority_list]].forEach(([r, t, v]) => { lab(r, t); inp(`C${r}`, v || ""); fp.merge(`C${r}:G${r}`); });
     lab(15, "ખાતાકીય બઢતી સમિતિની તારીખ"); inp("C15", dpc || "", { align: "center" }); lab(15, "ખાલી જગ્યા", "D"); inp("E15", vv[12] ?? "", { align: "center" }); fp.merge("E15:G15");
@@ -1800,7 +1811,7 @@ TRANSCRIBED PAGES:
 ${textsFor(fpages, 165000)}
 
 Reply with only a JSON object (all text in Gujarati):
-{"esarkar":true,"efile_no":"the e-Sarkar file number exactly as printed on the pages (e.g. 'File No: DPSBRKN/est/e-file/4413/2026/4309/Establishment' -> DPSBRKN/est/e-file/4413/2026/4309/Establishment), else ''","esarkar_date":"dd-mm-yyyy date of the DDO's e-signature on the forwarding letter, else ''",
+{"esarkar":true,"efile_no":"the e-Sarkar file number exactly as printed on the pages (e.g. 'File No: DPSBRKN/est/e-file/4413/2026/4309/Establishment' -> DPSBRKN/est/e-file/4413/2026/4309/Establishment), else ''","esarkar_date":"dd-mm-yyyy date of the DDO's e-signature on the forwarding letter, else ''","dispatch_date":"dd-mm-yyyy dispatch date printed on the e-Sarkar pages of this proposal: the 'Dispatch Date' if printed; if not, the 'Approved Date' in the e-Sarkar header line ('Letter No: … Approved Date: dd-mm-yyyy hh:mm') of the forwarding letter or of the proposal's own index / checklist / patrak pages (the latest such date; ignore older letters quoted in the file); else ''","dispatch_label":"'Dispatch Date' or 'Approved Date', whichever the dispatch_date was read from, else ''",
 "district":"જિલ્લા પંચાયત …","letter":"letter no. and date of the DDO's proposal, or 'ફાઈલમાં નથી' with what is there instead","file_no_text":"Board file no. / desk if written on the file, else ''",
 "feeder":"feeder cadre, class and pay scale / level","feeder_short":"feeder cadre name only, e.g. સીનીયર ક્લાર્ક (હિસાબી)","promotion":"promotion cadre, class, pay scale / level; direct : promotion ratio","promotion_short":"promotion cadre name only, e.g. નાયબ હિસાબનીશ",
 "post":"promotion post with class and pay level","post_source":"પાના નં. …","exam_name":"name of the prescribed departmental examination, e.g. ઉચ્ચ શ્રેણી ખાતાકીય પરીક્ષા",
@@ -1965,6 +1976,7 @@ function collectR() {
     pages: Object.keys(S.cls).map(Number).map((p) => ({ p, t: S.cls[p].t, who: S.cls[p].who })),
     file_no: $("fileno").value.trim(), inward_no: $("inwardno").value.trim(), esarkar: $("esarkar").checked,
     inward_date: $("inwarddate").value ? $("inwarddate").value.split("-").reverse().join("-") : "",
+    dispatch_date: $("esarkar").checked && $("dispatchdate").value ? $("dispatchdate").value.split("-").reverse().join("-") : "",
     file: S.fileJ, cands: S.cands, extra: S.extra,
   };
 }
@@ -2090,7 +2102,7 @@ function caseSummary(R) {
   const F = R.file || {}, cands = (R.cands || []).filter(Boolean), X = R.extra || {}, CKV = BUILD.checkVals(R);
   const qs = [...(F.observations || []), ...cands.flatMap((c) => c.obs || [])].filter((o) => o.ask_ddo === true || /કાર્યવાહી/.test(o.type || ""));
   return {
-    file_name: S.file?.name || `${R.base}.pdf`, pages: R.n || 0, ...(({ file_no, inward_no, inward_date }) => ({ file_no, inward_no, inward_date }))(BUILD.fileIds(R)),
+    file_name: S.file?.name || `${R.base}.pdf`, pages: R.n || 0, ...(({ file_no, inward_no, inward_date, dispatch_date }) => ({ file_no, inward_no, inward_date, dispatch_date: dispatch_date || "" }))(BUILD.fileIds(R)),
     district: F.district || "", feeder: F.feeder_short || F.feeder || "", promotion: F.promotion_short || F.promotion || "", dpc_date: F.dpc_date || "", letter: F.letter || "",
     action: X.action || "", queries: qs.length, issues: String(X.issues || qs.map((o, i) => `${i + 1}) ${o.text}`).join(" ")).slice(0, 3000),
     cands: cands.map((c, ci) => { const m = (c.criteria || []).map((x) => x.met); return { name: c.name || c.short || "", seniority: c.seniority ?? "", category: c.category || "", verdict: verdictOf(m), met: `${m.filter((x) => x === Y).length} / ${12 - m.filter((x) => x === NA).length}`, checks: `${CKV[ci].filter((x) => x.v === Y).length} / 6` }; }),
@@ -2138,7 +2150,7 @@ function renderRegister() {
   for (const r of rows) {
     h += `<tr data-id="${esc(r.id)}">
       <td class="mono">${dmy(r.updated ? new Date(r.updated) : null)}</td>
-      <td><b>${esc(r.file_no || "—")}</b><small>${esc(r.district || "")}</small><small>${esc(r.file_name || "")}${r.pages ? ` · ${r.pages} પાના` : ""}</small>${r.inward_no || r.inward_date ? `<small>ઇનવર્ડ ${r.inward_no === BUILD.ESK && r.inward_date === BUILD.ESK ? BUILD.ESK : esc(`${r.inward_no || ""} ${r.inward_date || ""}`)}</small>` : ""}</td>
+      <td><b>${esc(r.file_no || "—")}</b><small>${esc(r.district || "")}</small><small>${esc(r.file_name || "")}${r.pages ? ` · ${r.pages} પાના` : ""}</small>${r.inward_no || r.inward_date ? `<small>ઇનવર્ડ ${r.inward_no === BUILD.ESK && r.inward_date === BUILD.ESK ? BUILD.ESK + (r.dispatch_date ? ` · ડિસ્પેચ ${esc(r.dispatch_date)}` : "") : esc(`${r.inward_no || ""} ${r.inward_date || ""}`)}</small>` : ""}</td>
       <td>${esc(r.feeder || "")} → ${esc(r.promotion || "")}<small>સમિતિ ${esc(r.dpc_date || "—")}</small></td>
       <td><div class="cl">${(r.cands || []).map((c) => `<div><span class="chip ${c.verdict === "લાયક" ? "c-ok" : c.verdict === "લાયક નથી" ? "c-bad" : "c-warn"}">${esc(c.verdict)}</span>${esc(c.name)} <span class="muted">(ક્રમ ${esc(c.seniority)})</span></div>`).join("")}</div></td>
       <td>${esc(r.action || "—")}${r.queries ? `<small>${r.queries} પૃચ્છા</small>` : ""}</td>
@@ -2157,20 +2169,20 @@ async function exportRegister() {
   const wb = new XW.Workbook("Nirmala UI"), ws = wb.add("રજીસ્ટર"), today = new Date();
   ws.set("A1", "બઢતી દરખાસ્ત રજીસ્ટર", { bold: true, size: 14, color: "FF1F3864", wrap: false });
   ws.set("A2", `તા. ${dmy(today)} સુધી · ${REG.rows.length} ફાઈલ`, { size: 9, color: "FF595959", wrap: false });
-  const HD = ["ક્રમ", "ચકાસણી તારીખ", "ફાઈલ નં.", "ઇનવર્ડ નં.", "ઇનવર્ડ તારીખ", "જિલ્લા પંચાયત", "ઉમેદવાર", "પ્રવરતા ક્રમ", "જાતિ", "ફીડર → બઢતીનો સંવર્ગ", "સમિતિની તારીખ", "દરખાસ્ત પત્ર", "પૂર્ણ માપદંડ", "પરિણામ", "સૂચિત કાર્યવાહી", "નિકાલ કરવાના મુદ્દા", "મંડળમાં સ્થિતિ", "નોંધ", "PDF ફાઈલ"];
-  const WD = [6, 12, 12, 12, 12, 16, 30, 10, 12, 30, 12, 24, 10, 14, 24, 70, 22, 30, 28];
+  const HD = ["ક્રમ", "ચકાસણી તારીખ", "ફાઈલ નં.", "ઇનવર્ડ નં.", "ઇનવર્ડ તારીખ", "ડિસ્પેચ તારીખ (e-Sarkar)", "જિલ્લા પંચાયત", "ઉમેદવાર", "પ્રવરતા ક્રમ", "જાતિ", "ફીડર → બઢતીનો સંવર્ગ", "સમિતિની તારીખ", "દરખાસ્ત પત્ર", "પૂર્ણ માપદંડ", "પરિણામ", "સૂચિત કાર્યવાહી", "નિકાલ કરવાના મુદ્દા", "મંડળમાં સ્થિતિ", "નોંધ", "PDF ફાઈલ"];
+  const WD = [6, 12, 12, 12, 12, 12, 16, 30, 10, 12, 30, 12, 24, 10, 14, 24, 70, 22, 30, 28];
   HD.forEach((t, i) => { ws.set({ r: 4, c: i + 1 }, t, { bold: true, color: "FFFFFFFF", fill: "FF1F3864", align: "center", valign: "center", border: true }); ws.width(i + 1, WD[i]); });
   const nn = (v) => v === "" || v == null || isNaN(+v) ? (v ?? "") : +v;
   let r = 5, k = 1;
   for (const row of REG.rows) for (const c of (row.cands && row.cands.length ? row.cands : [{}])) {
     const d = row.updated ? new Date(row.updated) : null;
-    [k++, d ? new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())) : "", row.file_no, row.inward_no, BUILD.toDate(row.inward_date) || row.inward_date, row.district, c.name, nn(c.seniority), c.category,
+    [k++, d ? new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())) : "", row.file_no, row.inward_no, BUILD.toDate(row.inward_date) || row.inward_date, BUILD.toDate(row.dispatch_date) || row.dispatch_date || "", row.district, c.name, nn(c.seniority), c.category,
       `${row.feeder || ""} → ${row.promotion || ""}`, BUILD.toDate(row.dpc_date) || row.dpc_date, row.letter, c.met, c.verdict, row.action, row.issues, row.status || STATUSES[0], row.remarks, row.file_name]
-      .forEach((v, j) => ws.set({ r, c: j + 1 }, v ?? "", { size: 9, border: true, align: [0, 1, 4, 7, 10, 12, 13].includes(j) ? "center" : "left" }));
+      .forEach((v, j) => ws.set({ r, c: j + 1 }, v ?? "", { size: 9, border: true, align: [0, 1, 4, 5, 8, 11, 13, 14].includes(j) ? "center" : "left" }));
     r++;
   }
-  ws.cf(`N5:N${r - 1}`, [{ eq: "લાયક", style: { fill: "FFC6EFCE", color: "FF006100", bold: true } }, { eq: "લાયક નથી", style: { fill: "FFFFC7CE", color: "FF9C0006", bold: true } }, { eq: "ચકાસણી જરૂરી", style: { fill: "FFFFEB9C", color: "FF7F5500", bold: true } }]);
-  ws.dropdown(`Q5:Q${r - 1}`, STATUSES); ws.freeze = "D5";
+  ws.cf(`O5:O${r - 1}`, [{ eq: "લાયક", style: { fill: "FFC6EFCE", color: "FF006100", bold: true } }, { eq: "લાયક નથી", style: { fill: "FFFFC7CE", color: "FF9C0006", bold: true } }, { eq: "ચકાસણી જરૂરી", style: { fill: "FFFFEB9C", color: "FF7F5500", bold: true } }]);
+  ws.dropdown(`R5:R${r - 1}`, STATUSES); ws.freeze = "D5";
   await save(`Promotion_Register_Gujarati_${dmy(today)}.xlsx`, await wb.toBlob(JSZip, "blob"));
 }
 $("v-reg").addEventListener("input", (e) => { if (e.target.id === "regq") { REG.filter = e.target.value; renderRegister(); } });
@@ -2238,7 +2250,7 @@ let esTouched = false;
 function esUI() {
   const on = $("esarkar").checked;
   $("inwardno").disabled = on; $("inwarddate").disabled = on; $("inwardbox").style.opacity = on ? 0.45 : "";
-  $("esnote").hidden = !on; $("filenolab").textContent = on ? "e-Sarkar ઈ-ફાઈલ નં." : "મંડળનો ફાઈલ નં. / દફતર";
+  $("esnote").hidden = !on; $("dispbox").hidden = !on; $("filenolab").textContent = on ? "e-Sarkar ઈ-ફાઈલ નં." : "મંડળનો ફાઈલ નં. / દફતર";
   stepState();
 }
 $("esarkar").addEventListener("change", () => { esTouched = true; esUI(); if (S.R) { S.R = collectR(); saveCase(S.R); } });
