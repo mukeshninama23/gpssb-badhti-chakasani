@@ -792,13 +792,14 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     cands.forEach((c, ci) => {
       const ws = wsAp[ci];
       title(ws, `ખાનગી અહેવાલની વિગત – ${nm(c)} (પ્રવરતા ક્રમ ${c.seniority ?? "?"})`, c.apar_source ? "આધાર: " + String(c.apar_source).replace(/^આધાર:\s*/, "") : "આધાર: પત્રક-અ મુદ્દો 12 અને ખાનગી અહેવાલની નકલો");
-      H(ws, 4, ["વર્ષ", "તારીખથી", "તારીખ સુધી", "દિવસ", "અહેવાલ લખનાર", "સમીક્ષક", "પ્રકાર", "આખરી ગુણ", "આગલા સમયગાળા સાથે સળંગ?", "પ્રમાણપત્ર માન્ય?", "નોંધ / પાન"],
-        [9, 12, 12, 7, 11, 11, 15, 10, 17, 12, 54]);
+      H(ws, 4, ["વર્ષ", "તારીખથી", "તારીખ સુધી", "દિવસ", "અહેવાલ લખનાર", "સમીક્ષક", "પ્રકાર", "આખરી ગુણ", "આગલા સમયગાળા સાથે સળંગ?", "પ્રમાણપત્ર માન્ય?", "અહેવાલ લખનારની સહી", "સમીક્ષકની સહી", "સહીની વિગત", "નોંધ / પાન"],
+        [9, 12, 12, 7, 11, 11, 15, 10, 17, 12, 12, 12, 34, 44]);
+      ws.height(4, 30);
       let endD = D(c.apar_end), startD = D(c.apar_start);
       if (!endD && dpc) endD = new Date(Date.UTC(dpc.getUTCMonth() >= 3 ? dpc.getUTCFullYear() : dpc.getUTCFullYear() - 1, 2, 31));
       if (!startD && endD) startD = new Date(Date.UTC(endD.getUTCFullYear() - 5, 3, 1));
       const rows = (c.apar || []).map((a) => ({ ...a, f: D(a.from), t: D(a.to) })).filter((a) => a.f && a.t).sort((a, b) => a.f - b.f);
-      let r = 5, prev = null, gaps = 0, ovl = 0, bad = 0, certDays = 0, certN = 0, total = 0; const marks = [];
+      let r = 5, prev = null, gaps = 0, ovl = 0, bad = 0, certDays = 0, certN = 0, total = 0, sigSeen = 0; const marks = [], sigBad = [0, 0];
       for (const a of rows) {
         const isCert = /પ્રમાણ|cert/i.test(a.type || "");
         const dd = days(a.f, a.t) + 1; total += dd;
@@ -821,12 +822,20 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
         }
         if (isCert) { certN++; certDays += dd; if (dd > 90) bad++; }
         ws.set({ r, c: 10 }, { f: `=IF(G${r}="${CERT}",IF(D${r}<=90,"${Y}","${N}"),"–")`, v: isCert ? (dd <= 90 ? Y : N) : "–" }, st({ align: "center" }));
-        ws.set({ r, c: 11 }, a.remark || "", st({ size: 9 }));
+        // signatures of the reporting and reviewing officers on the copy in the file (online PARs: submission dates)
+        const sg = (v) => [Y, N, C, NA].includes(v) ? v : "";
+        const repS = sg(a.rep_sign), revS = sg(a.rev_sign) || (isCert && a.rep_sign ? NA : "");
+        if (repS === N || repS === C) sigBad[0]++; if (revS === N || revS === C) sigBad[1]++; if (repS || revS) sigSeen++;
+        ws.set({ r, c: 11 }, repS, st({ align: "center" })); ws.set({ r, c: 12 }, revS, st({ align: "center" }));
+        ws.set({ r, c: 13 }, a.sign_note || "", st({ size: 9 })); // not linked, so long text wraps
+        ws.set({ r, c: 14 }, a.remark || "", st({ size: 9 }));
+        const hl = Math.max(lines(a.sign_note, 40), lines(a.remark, 52));
+        if (hl > 1) ws.height(r, Math.min(80, 12 * hl + 4));
         prev = a; r++;
       }
       const a1 = 5, a2 = Math.max(5, r - 1), RG = (col) => `${col}${a1}:${col}${a2}`;
       ws.cf(RG("I"), [{ eq: "ખૂટતો ગાળો", style: { fill: RED } }, { eq: "બેવડો દિવસ", style: { fill: AMBER } }]);
-      statusCF(ws, RG("J"));
+      statusCF(ws, RG("J")); statusCF(ws, `K${a1}:L${a2}`);
       r += 1;
       const covOk = rows.length && startD && endD && rows[0].f.getTime() === startD.getTime() && rows[rows.length - 1].t.getTime() >= endD.getTime() && gaps === 0;
       const avg = marks.length ? Math.round(marks.reduce((x, y) => x + y, 0) / marks.length * 10) / 10 : "";
@@ -842,7 +851,8 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
         ["bad", "3 માસથી વધુના પ્રમાણપત્ર", rows.length ? { f: `=COUNTIF(${RG("J")},"${N}")`, v: bad } : 0],
         ["avg", "સરેરાશ આખરી ગુણ", marks.length ? { f: `=ROUND(AVERAGE(${RG("H")}),1)`, v: avg } : "—"],
         ["lohi", "ઓછામાં ઓછા / વધુમાં વધુ ગુણ", marks.length ? { f: `=MIN(${RG("H")})&" / "&MAX(${RG("H")})`, v: lohi } : "—"],
-        ["adv", "પ્રતિકૂળ નોંધ", adverse]];
+        ["adv", "પ્રતિકૂળ નોંધ", adverse],
+        ["sig", "સહી ન હોય / ચકાસવાની (અહેવાલ લખનાર / સમીક્ષક)", rows.length && sigSeen ? { f: `=(COUNTIF(${RG("K")},"${N}")+COUNTIF(${RG("K")},"${C}"))&" / "&(COUNTIF(${RG("L")},"${N}")+COUNTIF(${RG("L")},"${C}"))`, v: `${sigBad[0]} / ${sigBad[1]}` } : "ચકાસેલ નથી"]];
       const R0 = {};
       for (const [k, lab, val] of sum) {
         ws.set({ r, c: 1 }, lab, st({ bold: true, fill: SUB })); ws.merge(`A${r}:D${r}`);
@@ -857,16 +867,17 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
       const yrs = fy.length ? `${fy.length}માંથી ${fy.filter((y) => have.has(y)).length} વર્ષ પૂર્ણ (${fy[0]} થી ${fy[fy.length - 1]})` : `${rows.length} હાર`;
       const adv = /^\s*(નથી|—|-)?\s*(\(|$)/.test(adverse) ? "પ્રતિકૂળ નોંધ નથી" : "પ્રતિકૂળ નોંધ: " + String(adverse).slice(0, 80);
       const sr = r, okr = r + 1;
-      const okv = rows.length ? (covOk && bad === 0 ? Y : N) : C;
-      const summ = rows.length ? `${yrs}; સરેરાશ ${avg || "—"}, ગુણ ${lohi || "—"}; ${adv}` : "ખાનગી અહેવાલની વિગત મળી નથી – ચકાસો";
+      const sigTxt = !sigSeen ? "" : sigBad[0] + sigBad[1] ? `; સહી ખૂટે/ચકાસવી: અહેવાલ લખનાર ${sigBad[0]}, સમીક્ષક ${sigBad[1]}` : "; દરેક અહેવાલ પર અહેવાલ લખનાર અને સમીક્ષકની સહી";
+      const okv = rows.length ? (covOk && bad === 0 ? (sigBad[0] + sigBad[1] ? C : Y) : N) : C;
+      const summ = rows.length ? `${yrs}; સરેરાશ ${avg || "—"}, ગુણ ${lohi || "—"}; ${adv}${sigTxt}` : "ખાનગી અહેવાલની વિગત મળી નથી – ચકાસો";
       ws.set({ r: sr, c: 1 }, "સારાંશ", st({ bold: true, fill: SUB })); ws.merge(`A${sr}:B${sr}`);
-      ws.set({ r: sr, c: 3 }, rows.length && marks.length ? { f: `="${qt(yrs)}; સરેરાશ "&E${R0.avg}&", ગુણ "&E${R0.lohi}&"; ${qt(adv)}"`, v: summ } : summ, st({ align: "center" })); ws.merge(`C${sr}:H${sr}`);
+      ws.set({ r: sr, c: 3 }, rows.length && marks.length ? { f: `="${qt(yrs)}; સરેરાશ "&E${R0.avg}&", ગુણ "&E${R0.lohi}&"; ${qt(adv)}${qt(sigTxt)}"`, v: summ } : summ, st({ align: "center" })); ws.merge(`C${sr}:H${sr}`);
       ws.set({ r: okr, c: 1 }, "ખાનગી અહેવાલ 'સિદ્ધ ગુણવત્તા અને કાર્યક્ષમતા' દર્શાવે છે?", st({ bold: true, fill: SUB })); ws.merge(`A${okr}:B${okr}`);
-      ws.set({ r: okr, c: 3 }, rows.length ? { f: `=IF(AND(E${R0.cov}="${Y}",E${R0.gap}=0,E${R0.bad}=0),"${Y}","${N}")`, v: okv } : C, st({ bold: true, align: "center" }));
+      ws.set({ r: okr, c: 3 }, rows.length ? { f: sigSeen ? `=IF(AND(E${R0.cov}="${Y}",E${R0.gap}=0,E${R0.bad}=0),IF(COUNTIF(K${a1}:L${a2},"${N}")+COUNTIF(K${a1}:L${a2},"${C}")>0,"${C}","${Y}"),"${N}")` : `=IF(AND(E${R0.cov}="${Y}",E${R0.gap}=0,E${R0.bad}=0),"${Y}","${N}")`, v: okv } : C, st({ bold: true, align: "center" }));
       ws.merge(`C${okr}:H${okr}`); statusCF(ws, `C${okr}`);
-      if (c.apar_note) { ws.set({ r: okr + 1, c: 1 }, c.apar_note, st({ size: 9 })); ws.merge(`A${okr + 1}:K${okr + 1}`); ws.height(okr + 1, Math.max(30, 13 * lines(c.apar_note, 150))); }
+      if (c.apar_note) { ws.set({ r: okr + 1, c: 1 }, c.apar_note, st({ size: 9 })); ws.merge(`A${okr + 1}:N${okr + 1}`); ws.height(okr + 1, Math.max(30, 13 * lines(c.apar_note, 170))); }
       ws.freeze = "A5";
-      linkify(ws, [["K", false]], 11, true);
+      linkify(ws, [["N", false]], 14, true);
       aparRef.push({ sum: q(ws.name) + `C${sr}`, ok: q(ws.name) + `C${okr}`, avgCell: q(ws.name) + `E${R0.avg}`, okv, summ, avg });
     });
 
@@ -1396,7 +1407,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const Y = "હા", N = "ના", C = "ચકાસો", NA = "લાગુ નથી";
-const S = { file: null, pdf: null, n: 0, pages: [], cls: {}, txt: {}, fail: {}, fileJ: null, cands: [], extra: null, key: "", running: false, stop: false, ctrl: [], R: null, ready: false };
+const S = { file: null, pdf: null, n: 0, pages: [], cls: {}, txt: {}, sig: {}, fail: {}, fileJ: null, cands: [], extra: null, key: "", running: false, stop: false, ctrl: [], R: null, ready: false };
 let sample = null, downloads = null, limits = null;
 
 // ---------------------------------------------------------------- knowledge given to Claude
@@ -1408,7 +1419,7 @@ Check every candidate the DPC recommended against 12 criteria:
 4 Training / post-training exam: for Junior Clerk the pre-service training exam (SPIPA); for Deputy Chitnis (RR 2014 r.9) and Deputy Accountant (RR 2018 r.7) training is a condition AFTER promotion -> mark "લાગુ નથી" and say so.
 5 CCC / CCC+ (Computer Competency Rules 2006) passed.
 6 Hindi/Gujarati exam passed or exempted (Hindi Rules 2020, KP/31/2020 dt 04-12-2020: r.3(b) SSC or higher with Hindi before joining; r.3(d) earlier exemptions saved; r.4 failure only withholds increment). Never make a candidate ineligible only for Hindi.
-7 APARs of the last 5 completed financial years before the DPC: continuous, no gap, certificates only for periods under 3 months (GAD resolution dt 18-03-1987) or another recorded reason, no adverse remark, integrity not doubtful. If a year is only certificates, the DPC may take the earlier year.
+7 APARs of the last 5 completed financial years before the DPC: each signed by the reporting officer (અહેવાલ લખનાર) and the reviewing officer (સમીક્ષક) – online PARs by their submission dates, a short-period certificate by the reporting officer; continuous, no gap, certificates only for periods under 3 months (GAD resolution dt 18-03-1987) or another recorded reason, no adverse remark, integrity not doubtful. If a year is only certificates, the DPC may take the earlier year.
 8 No departmental inquiry / charge-sheet / criminal case pending (Patrak-A item 5, Patrak-B, certificate).
 9 No penalty in force (Patrak-A items 6, 8).
 10 Within the zone of consideration used by the DPC, from the final seniority list of the candidate's own line.
@@ -1442,7 +1453,7 @@ const idb = {
   async get(k) { try { const db = await this.open(); if (!db) return null; return await new Promise((res) => { const q = db.transaction("work").objectStore("work").get(k); q.onsuccess = () => res(q.result || null); q.onerror = () => res(null); }); } catch { return null; } },
   async set(k, v) { try { const db = await this.open(); if (!db) return; db.transaction("work", "readwrite").objectStore("work").put(v, k); } catch { /* ignore */ } },
 };
-const saveWork = () => idb.set(S.key, { cls: S.cls, txt: S.txt, fileJ: S.fileJ, cands: S.cands, extra: S.extra });
+const saveWork = () => idb.set(S.key, { cls: S.cls, txt: S.txt, sig: S.sig, fileJ: S.fileJ, cands: S.cands, extra: S.extra });
 
 // ---------------------------------------------------------------- PDF loading and rendering
 if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
@@ -1451,7 +1462,7 @@ async function loadPdf(file) {
   if (S.running) return;
   S.pages.forEach((p) => URL.revokeObjectURL(p.url));
   if (!esTouched && $("esarkar").checked) { $("esarkar").checked = false; esUI(); }
-  Object.assign(S, { file, pdf: null, n: 0, pages: [], cls: {}, txt: {}, fail: {}, fileJ: null, cands: [], extra: null, R: null, ready: false });
+  Object.assign(S, { file, pdf: null, n: 0, pages: [], cls: {}, txt: {}, sig: {}, fail: {}, fileJ: null, cands: [], extra: null, R: null, ready: false });
   $("drop").classList.add("compact"); $("drop").querySelector("strong").textContent = "બીજી PDF પસંદ કરો"; $("fname").textContent = file.name; $("fsize").textContent = (file.size / 1048576).toFixed(1) + " MB"; $("fpages").textContent = "…"; $("filecard").hidden = false; $("rbar").hidden = false; setBar("rbar", 0);
   renderEmpty(); $("rmsg").textContent = "PDF ખોલી રહ્યા છીએ…"; $("run").disabled = true; $("dlzip").disabled = true; $("dlxlsx").disabled = true; stepState();
   try {
@@ -1478,7 +1489,7 @@ async function loadPdf(file) {
   $("rmsg").textContent = `${S.n} પાન તૈયાર. હવે 'ચકાસણી શરૂ કરો' દબાવો.`;
   const saved = await idb.get(S.key);
   if (saved && saved.cls && Object.keys(saved.cls).length) {
-    Object.assign(S, { cls: saved.cls || {}, txt: saved.txt || {}, fileJ: saved.fileJ || null, cands: saved.cands || [], extra: saved.extra || null });
+    Object.assign(S, { cls: saved.cls || {}, txt: saved.txt || {}, sig: saved.sig || {}, fileJ: saved.fileJ || null, cands: saved.cands || [], extra: saved.extra || null });
     log("આ ફાઈલનું અગાઉનું કામ આ બ્રાઉઝરમાં મળ્યું; ત્યાંથી આગળ ચાલશે.");
     renderPagesGrid();
     esFromFile(S.fileJ);
@@ -1604,12 +1615,24 @@ STAGES.forEach(([k]) => setStage(k, "wait"));
 function estimate() {
   if (!S.n || !limits?.images) { $("estimate").textContent = ""; return; }
   const sheetsPer = Math.min(limits.images.maxCount, 3), calls1 = Math.ceil(Math.ceil(S.n / 9) / sheetsPer);
-  const keyGuess = Math.round(S.n * 0.3), calls2 = Math.ceil(keyGuess / Math.min(limits.images.maxCount, 5));
+  const keyGuess = Math.round(S.n * 0.42), calls2 = Math.ceil(keyGuess / Math.min(limits.images.maxCount, 5)); // key pages + APAR signature pages
   const mins = Math.max(3, Math.round((calls1 + calls2) * 0.3 + 5));
   $("estimate").textContent = `અંદાજે ${calls1 + calls2 + 3} વખત Claudeને પૂછાશે; આશરે ${mins}–${mins * 2} મિનિટ લાગશે. આ દરમ્યાન પાનું ખુલ્લું રાખો.`;
 }
 
 const trim = (s, n) => (s || "").length > n ? s.slice(0, n) + "…" : (s || "");
+// last two pages of every APAR form (and page 2 of long online PARs, which holds the submission-status table) and every APAR certificate
+function aparSignPages() {
+  const out = new Set(); let g = [];
+  const flush = () => { if (!g.length) return; g.slice(-2).forEach((p) => out.add(p)); if (g.length >= 7) out.add(g[1]); g = []; };
+  for (let p = 1; p <= S.n; p++) {
+    const c = S.cls[p];
+    if (c && c.t === "apar") { if (g.length && (c.k === 1 || (S.cls[g[g.length - 1]].who || "") !== (c.who || ""))) flush(); g.push(p); }
+    else { flush(); if (c && c.t === "apar_certificate") out.add(p); }
+  }
+  flush();
+  return [...out].sort((a, b) => a - b);
+}
 function pageIndex() { return Object.keys(S.cls).map(Number).sort((a, b) => a - b).map((p) => `${p}:${S.cls[p].t}${S.cls[p].who ? ":" + S.cls[p].who : ""}`).join(" "); }
 function textsFor(pages, budget) {
   pages = [...new Set(pages)].filter((p) => S.txt[p]).sort((a, b) => a - b);
@@ -1670,6 +1693,21 @@ Reply with only a JSON array: [{"p":N,"t":"${TYPES.split(", ")[0]}|…","who":"s
       if (S.stop) throw { code: "cancelled" };
       const left = key.filter((p) => !S.txt[p]);
       if (left.length) throw { code: "partial", message: `${left.length} પાન (${left.slice(0, 12).join(", ")}${left.length > 12 ? "…" : ""})` };
+    }
+    // 2b. signatures of the reporting and reviewing officers on every APAR and APAR certificate
+    const sigTodo = aparSignPages().filter((p) => !S.sig[p]);
+    if (sigTodo.length) {
+      const per = Math.max(1, Math.min(maxImg, 5)); const calls = []; for (let i = 0; i < sigTodo.length; i += per) calls.push(sigTodo.slice(i, i + per));
+      let done = 0; setStage("read", "run", `સહી ચકાસણી 0 / ${sigTodo.length}`);
+      await pool(calls.map((ps) => async () => {
+        const ans = await askArr(`These ${ps.length} images are pages ${ps.join(", ")} (in this order) of APARs (annual performance appraisal reports, ખાનગી અહેવાલ), fixed-pay appraisal forms (પત્રક-3) and APAR certificates (પ્રમાણપત્ર) in a scanned Gujarati promotion proposal.
+For EACH page say whether the reporting officer (અહેવાલ લખનાર) and the reviewing officer (સમીક્ષક) have SIGNED in their signature place on that page: a handwritten signature or initials counts; a rubber seal alone does not. On an online / system-generated PAR, the "Appraisal document submission status" table giving the reporting and reviewing officers' names and dates counts as signed. A system-generated "NO PAR" certificate needs no signature (લાગુ નથી). A short-period certificate needs only the reporting officer's signature (reviewing: લાગુ નથી).
+Reply with only a JSON array: [{"p":N,"who":"employee surname in Gujarati","period":"dd-mm-yyyy થી dd-mm-yyyy if shown","rep":"હા|ના|લાગુ નથી|પાન પર નથી","rev":"હા|ના|લાગુ નથી|પાન પર નથી","note":"who signed (designation), dates, online submission dates, or what is missing"}]. Use "પાન પર નથી" when that officer's signature place is not on this page.`, ps.map((p) => S.pages[p - 1].blob), "default");
+        if (Array.isArray(ans)) for (const o of ans) { const p = parseInt(String(o.p).replace(/\D/g, ""), 10); if (ps.includes(p)) S.sig[p] = { rep: String(o.rep || ""), rev: String(o.rev || ""), note: String(o.note || ""), period: String(o.period || "") }; }
+        ps.forEach((p) => { if (!S.sig[p]) S.sig[p] = { rep: "", rev: "", note: "(વાંચી શકાયું નથી)", period: "" }; });
+        done += ps.length; setStage("read", "run", `સહી ચકાસણી ${done} / ${sigTodo.length}`); saveWork();
+      }), 2);
+      if (S.stop) throw { code: "cancelled" };
     }
     setStage("read", "done", `${key.length} પાન`);
     renderPagesGrid();
@@ -1753,7 +1791,10 @@ PAGE INDEX (page:type:candidate):
 ${pageIndex()}
 
 TRANSCRIBED PAGES (this candidate first, then common pages):
-${textsFor([...mine, ...common], 165000)}
+${textsFor([...mine, ...common], 160000)}
+
+APAR SIGNATURE CHECK (read from the page images of this candidate's APARs and certificates; page: reporting / reviewing – note):
+${Object.keys(S.sig).map(Number).sort((a, b) => a - b).filter((p) => sameWho(S.cls[p]?.who, fc.who) || sameWho(S.cls[p]?.who, fc.short)).map((p) => `પાન ${p}${S.sig[p].period ? " (" + S.sig[p].period + ")" : ""}: અહેવાલ લખનાર ${S.sig[p].rep || "?"} / સમીક્ષક ${S.sig[p].rev || "?"}${S.sig[p].note ? " – " + S.sig[p].note : ""}`).join("\n") || "none checked"}
 
 Reply with only a JSON object (all text in Gujarati):
 {"short":"${fc.short}","name":"full name with શ્રી / કુ. / શ્રીમતી","name_short":"title, initials and surname, e.g. શ્રી બી.જે. છૈયા","seniority":${+fc.seniority || 0},"category":"","present":"present post, branch and office","pa_pages":"this candidate's Patrak-A page(s), e.g. પાન 7",
@@ -1762,14 +1803,14 @@ Reply with only a JSON object (all text in Gujarati):
 "first_appt":"dd-mm-yyyy first appointment in service","first_appt_post":"post of first appointment, e.g. જુનિયર ક્લાર્ક (હિસાબી)","first_appt_source":"documents with pages","first_appt_note":"e.g. fixed-pay years; whether it counts for this promotion",
 "retirement":"dd-mm-yyyy","retirement_source":"e.g. પત્રક-ક નિવૃત્તિ 30-05-2052 (પાન 13)","exam":"short result of the departmental exam: date, attempt, marks","exam_pages":"પાન …","dpc_decision":"યોગ્ય|અયોગ્ય",
 "criteria":[12 objects in the order of criteria 1-12: {"pos":"candidate's position from the file in 1-3 sentences","pages":"પાન …","value":"short value","met":"હા|ના|ચકાસો|લાગુ નથી"}],
-"apar":[{"year":"2021-22","from":"dd-mm-yyyy","to":"dd-mm-yyyy","rep":"reporting marks","rev":"reviewing marks","type":"ખાનગી અહેવાલ|પ્રમાણપત્ર","marks":82,"remark":"reason / pages"}],
+"apar":[{"year":"2021-22","from":"dd-mm-yyyy","to":"dd-mm-yyyy","rep":"reporting marks","rev":"reviewing marks","type":"ખાનગી અહેવાલ|પ્રમાણપત્ર","marks":82,"remark":"reason / pages","rep_sign":"હા|ના|ચકાસો|લાગુ નથી","rev_sign":"હા|ના|ચકાસો|લાગુ નથી","sign_note":"who signed and on which page, online submission dates, or what is missing"}],
 "apar_start":"dd-mm-yyyy","apar_end":"dd-mm-yyyy","apar_adverse":"'નથી' or the adverse remark, with source pages","apar_note":"corrections made or anything unusual in the APAR record","apar_source":"Patrak-A item 12 page and pages of the APAR copies",
 "checks":{"seniority_exam":{"last_year":"what the PREVIOUS year's final seniority list shows in the departmental-exam column for this candidate, with page","current":"what this year's list shows, with page","result":"exam result: date and attempt, with pages","note":"","ok":"હા|ના|ચકાસો","pages":"પાન …"},
 "ccc":{"date":"dd-mm-yyyy","institution":"university / institution, certificate no. and date","marks":"theory / practical","patrak_d":"entry in Patrak-D and whether the centre is recognised","ok":"હા|ના|ચકાસો","pages":"પાન …"},
 "hindi":{"status":"પાસ|મુક્તિ|બાકી","evidence":"order or result no. and date, and the basis","patrak_k":"what Patrak-K says","ok":"હા|ના|ચકાસો","pages":"પાન …"},
 "retirement":{"dob":"dd-mm-yyyy","dob_source":"documents with pages","patrak_k":"dd-mm-yyyy retirement date written in Patrak-K","note":"","pages":"પાન …"}},
 "obs":[{"type":"મુખ્ય મુદ્દો|કાર્યવાહી|વિસંગતતા|નોંધ","text":"","impact":"","pages":"પાન …","ask_ddo":false}]}
-APAR rows: every row of the Patrak-A APAR table for the period checked, final marks as a number (null for certificates). Use "ચકાસો" when the file does not prove a criterion. checks = the compulsory checks 3-6 for this candidate: "હા" only when the file proves it, "ના" when the file contradicts it (e.g. the previous year's list leaves the exam column blank although the exam was passed, or Patrak-K differs from the order), "ચકાસો" when the evidence is missing. obs = points specific to this candidate; every compulsory check that is not "હા" must also be in obs as type "કાર્યવાહી" with ask_ddo true.`;
+APAR rows: every row of the Patrak-A APAR table for the period checked, final marks as a number (null for certificates). rep_sign / rev_sign: from the APAR SIGNATURE CHECK for that form's pages (online PAR: હા, with the submission dates in sign_note; certificate: rev_sign લાગુ નથી; ચકાસો when its pages were not checked or are not in the file). An APAR without the reporting or reviewing officer's signature is a query to the DDO (obs, type કાર્યવાહી, ask_ddo true). Use "ચકાસો" when the file does not prove a criterion. checks = the compulsory checks 3-6 for this candidate: "હા" only when the file proves it, "ના" when the file contradicts it (e.g. the previous year's list leaves the exam column blank although the exam was passed, or Patrak-K differs from the order), "ચકાસો" when the evidence is missing. obs = points specific to this candidate; every compulsory check that is not "હા" must also be in obs as type "કાર્યવાહી" with ask_ddo true.`;
       let j = null;
       try { j = await ask(prompt, null, "complex"); } catch (e) { if (!SOFT.has(e?.code)) throw e; }
       if (!j || typeof j !== "object" || !Array.isArray(j.criteria)) throw { code: "invalid_json", message: "candidate " + fc.short };
