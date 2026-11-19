@@ -609,8 +609,8 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
   // ---------- the six compulsory checks, summarised for the page (the workbook sheet works them out with formulas)
   const CKN = ["ચેકલીસ્ટના દરેક પાન પર જિ.વિ.અ.ની સહી / સિક્કો", "પત્રક-ડ (સીસીસી) સામેલ છે અને પૂરું છે", "ગયા વર્ષની આખરી પ્રવરતા યાદી – ખાતાકીય પરીક્ષા",
     "સીસીસી પાસ કર્યાની તારીખ અને યુનિવર્સિટી / સંસ્થા", "હિન્દી / ગુજરાતી પરીક્ષા – પાસ કે મુક્તિ", "વયનિવૃત્તિ તારીખ"];
-  // last day of the month in which the employee completes `age` years (birthday on the 1st -> previous month)
-  const retireDate = (d, age) => { if (!d) return null; const t = new Date(Date.UTC(d.getUTCFullYear() + age, d.getUTCMonth(), d.getUTCDate()) - 86400000); return new Date(Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 0)); };
+  // retirement = last day of the birth month in the year the employee completes `age` years (also for a birthday on the 1st)
+  const retireDate = (d, age) => d ? new Date(Date.UTC(d.getUTCFullYear() + age, d.getUTCMonth() + 1, 0)) : null;
   const pkRetire = (c) => { const r = (c.checks || {}).retirement || {}; const m = /પત્રક-ક[^\d]{0,12}(\d{1,2}-\d{1,2}-\d{4})/.exec(String(c.retirement || "")); return toDate(r.patrak_k) || toDate(m ? m[1] : c.retirement); };
   function checkVals(R) {
     const F = R.file || {}, K = F.checks || {}, age = num(F.retire_age) ?? 58;
@@ -1145,7 +1145,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     ckCand(6, CN[5], "retirement", [
       ["જન્મ તારીખ (આધાર)", (c, i, o) => D(o.dob || c.dob) || ""],
       ["જન્મ તારીખનો આધાર", (c, i, o) => o.dob_source || c.dob_source || ""],
-      [`ગણતરી મુજબ નિવૃત્તિ (${retAge} વર્ષ પૂરાં થાય તે માસનો છેલ્લો દિવસ)`, (c, i, o, r) => { const col = XW.colName(3 + i), d = D(o.dob || c.dob); return { f: `=IF(${col}${rD}="","",EOMONTH(DATE(YEAR(${col}${rD})+${retAge},MONTH(${col}${rD}),DAY(${col}${rD}))-1,0))`, v: retireOn(d) || "" }; }, { calc: true, date: true }],
+      [`ગણતરી મુજબ નિવૃત્તિ (${retAge} વર્ષ પૂરાં થાય તે વર્ષના જન્મ માસનો છેલ્લો દિવસ)`, (c, i, o, r) => { const col = XW.colName(3 + i), d = D(o.dob || c.dob); return { f: `=IF(${col}${rD}="","",EOMONTH(DATE(YEAR(${col}${rD})+${retAge},MONTH(${col}${rD}),1),0))`, v: retireOn(d) || "" }; }, { calc: true, date: true }],
       ["પત્રક-ક મુજબ નિવૃત્તિ", (c, i, o) => D(o.patrak_k) || pkRet(c) || ""],
       ["નોંધ", t("note")]]);
     const rC = rD + 2, rP = rD + 3;
@@ -1320,7 +1320,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
       2: (col, e) => ({ f: `=IF(OR(${col}46="",$C$15="",$C$17=""),"",IF(DATEDIF(${col}46,$C$15,"y")>=$C$17,"${Y}","${N}"))`, v: e?.sv ? (e.sv.y >= miny ? Y : N) : "" }),
       10: (col, e, c) => { const s = num(c?.seniority); return { f: `=IF(OR(${col}43="",$C$16="",$E$16=""),"",IF(AND(${col}43>=$C$16,${col}43<=$E$16),"${Y}","${N}"))`, v: s == null || zf == null || zt == null ? "" : (s >= zf && s <= zt ? Y : N) }; },
       11: (col, e, c) => ({ f: `=IF(OR(${col}42="",$E$15=""),"",IF($E$15>0,"${Y}","${N}"))`, v: !c || vv[12] == null ? "" : (vv[12] > 0 ? Y : N) }),
-      12: (col, e, c) => ({ f: `=IF(OR(${col}45="",$E$17=""),"",EOMONTH(DATE(YEAR(${col}45)+$E$17,MONTH(${col}45),DAY(${col}45))-1,0))`, v: (c && retireDate(D(c.dob), retAge)) || "" }),
+      12: (col, e, c) => ({ f: `=IF(OR(${col}45="",$E$17=""),"",EOMONTH(DATE(YEAR(${col}45)+$E$17,MONTH(${col}45),1),0))`, v: (c && retireDate(D(c.dob), retAge)) || "" }),
     };
     FP_CRIT.forEach((name, k) => {
       const r = 49 + k, kk = k + 1;
@@ -1416,7 +1416,7 @@ Check every candidate the DPC recommended against 12 criteria:
 12 Below superannuation age (58) on the DPC date.
 Verdict: "લાયક નથી" if any criterion is "ના"; "ચકાસણી જરૂરી" if any is "ચકાસો"; else "લાયક".
 Known recruitment rules: Senior Clerk RR 1998 (KP/107/98 dt 19-11-1998: 5 yrs as Junior Clerk/Typist/Asst Storekeeper + dept exam; r.4 Hindi after selection). Senior Account Clerk RR 1998 (KP/111/98: 5 yrs as Account Clerk + dept exam). Deputy Chitnis RR 2013 (KP/01/2014/PRR/102013/1897-KH dt 04-01-2014: 5 yrs as Senior Clerk or Store Keeper Class III, dept exam, CCC; proviso two-thirds; ratio direct:promotion 1:3; r.9 training after promotion). Deputy Accountant RR 2018 (KP/22 of 2018/PRR/1194/589/KH dt 01-10-2018: 5 yrs as Senior Accounts Clerk, dept exam, CCC; proviso two-thirds; ratio 1:2; r.7 training after promotion). Board consultation (Amendment) Rules 2021 (KP/18/2021 dt 19-07-2021): Board must be consulted on promotions. Checklist circular બઢત/152021/920/ખ dt 19-07-2021 lists the documents to send.
-Compulsory checks on EVERY file (Board letters dt 06-08-2021, 17-02-2025 and 12-09-2025): (1) the DDO's signature / seal or e-sign on EVERY page of the checklist; (2) Annexure-D (પત્રક-ડ: CCC date, centre, recognised or not) enclosed and complete for each candidate; (3) the previous year's final seniority list (as on 1 April, GAD resolution dt 22-01-2009) shows the departmental-exam column correctly for each candidate – compare it with this year's list and the exam result (a blank column although the exam was passed is a "ના"); (4) CCC passing date and the university / institution, matching Patrak-D; (5) Hindi / Gujarati exam passed or exempted, with the order, matching Patrak-K; (6) retirement date = last day of the month in which the employee completes 58 years (birthday on the 1st: last day of the previous month), compared with the date written in Patrak-K. Every compulsory check that is not proved is a query to the DDO.
+Compulsory checks on EVERY file (Board letters dt 06-08-2021, 17-02-2025 and 12-09-2025): (1) the DDO's signature / seal or e-sign on EVERY page of the checklist; (2) Annexure-D (પત્રક-ડ: CCC date, centre, recognised or not) enclosed and complete for each candidate; (3) the previous year's final seniority list (as on 1 April, GAD resolution dt 22-01-2009) shows the departmental-exam column correctly for each candidate – compare it with this year's list and the exam result (a blank column although the exam was passed is a "ના"); (4) CCC passing date and the university / institution, matching Patrak-D; (5) Hindi / Gujarati exam passed or exempted, with the order, matching Patrak-K; (6) retirement date = last day of the BIRTH MONTH in the year the employee completes 58 years (also when born on the 1st, e.g. born 01-06-1994 -> 30-06-2052), compared with the date written in Patrak-K. Every compulsory check that is not proved is a query to the DDO.
 Always check: Admin/Accounts line of the seniority list and vacancies; minutes complete (page/item gaps); separate no-inquiry certificate present; reasons others were found unfit; discrepancies between checklist, Patrak-A/K, minutes, service book, orders; vacancy statement present and posts vacant over 3 years; roster point for each promotion; earlier DPC / Board advice; proposal date vs DPC date; typing errors in dates.
 Write all text in Gujarati (digits 0-9, dates dd-mm-yyyy). Cite PDF page numbers as "પાન 12" or "પાન 12, 45-47" (PDF page numbers, never the office's handwritten numbers).`;
 const TYPES = "forwarding_letter, index, checklist, patrak_a, patrak_b, patrak_k, patrak_d, seniority_list, recruitment_rules, dpc_minutes, apar, apar_certificate, roster, select_list, vacancy_statement, exam_result, service_book, order, certificate, marksheet, board_letter, other";
