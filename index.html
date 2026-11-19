@@ -735,7 +735,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     SN.zone = sheetName("બઢતી માટે વિચારેલ પ્રવરતા ક્રમ"); const wsZone = wb.add(SN.zone);
     SN.vac = sheetName("ખાલી જગ્યા"); const wsVac = wb.add(SN.vac);
     SN.obs = sheetName("અવલોકનો"); const wsObs = wb.add(SN.obs);
-    SN.reg = sheetName("રજીસ્ટરની હાર"); const wsReg = wb.add(SN.reg);
+    SN.reg = sheetName("બઢતી રજીસ્ટર"); const wsReg = wb.add(SN.reg);
     const q = (s) => `'${s}'!`;
     const OBS = [...(F.observations || []), ...cands.flatMap((c) => (c.obs || []).map((o) => ({ ...o, text: `${c.short || c.name}: ${o.text}` })))];
     const isQ = (o) => o.ask_ddo === true || /કાર્યવાહી/.test(o.type || "");
@@ -1456,15 +1456,12 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     }
     linkify(fp, [["E", "auto"], ["F", true, 68, 75], ["G", "auto"]], 7);
 
-    // ---------- Register row (to copy into Promotion_Register_Gujarati.xlsx)
-    title(wsReg, "રજીસ્ટર માટેની હાર", "આ હાર 'Promotion_Register_Gujarati.xlsx'ના રજીસ્ટર પત્રકમાં નકલ કરી શકાય.");
-    const RH = ["ફાઈલ નં.", "જિલ્લા પંચાયત", "ઉમેદવાર", "પ્રવરતા ક્રમ", "જાતિ", "ફીડર → બઢતીનો સંવર્ગ", "સમિતિની તારીખ", "દરખાસ્ત પત્ર નં.", "પૂર્ણ માપદંડ", "ચકાસણીનું પરિણામ", "નિકાલ કરવાના મુદ્દા", "સૂચિત કાર્યવાહી", "મંડળમાં સ્થિતિ"];
-    H(wsReg, 4, RH, [12, 16, 28, 10, 12, 30, 12, 22, 10, 14, 60, 22, 16]); wsReg.printCols = 13;
-    cands.forEach((c, i) => {
-      const r = 5 + i, e = EL_[i];
-      [fileIds(R).file_no || R.base, dist, c.name, num(c.seniority), c.category, `${feederS} → ${promoS}`, dpc || "", F.letter, e.met, e.verdict,
-        acts.map((o) => o.text).join(" ").slice(0, 900), ACTS.includes(X.action) ? X.action : ACTS[2], "ચકાસણી હેઠળ"].forEach((v, j) => wsReg.set({ r, c: j + 1 }, v ?? "", st({ size: 9 })));
-    });
+    // ---------- Promotion register: one row for this proposal
+    title(wsReg, "બઢતી રજીસ્ટર", "આ દરખાસ્તની રજીસ્ટર માટેની હાર.");
+    const RH = ["ફાઈલ નં.", "જિલ્લા પંચાયત", "ફીડર સંવર્ગ", "બઢતીનો સંવર્ગ", "ઉમેદવારોની સંખ્યા", "સમિતિની તારીખ", "દરખાસ્ત પત્ર નં.", "મંડળમાં સ્થિતિ"];
+    H(wsReg, 4, RH, [24, 18, 22, 22, 15, 12, 30, 14]); wsReg.printCols = 8;
+    [fileIds(R).file_no || R.base, dist, feederS, promoS, cands.length, dpc || "", F.letter, "ચકાસણી હેઠળ"]
+      .forEach((v, j) => wsReg.set({ r: 5, c: j + 1 }, v ?? "", st({ size: 9, ...(j === 4 ? { align: "center" } : {}) })));
 
     return { wb, viewers };
   }
