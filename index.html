@@ -727,7 +727,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     }
 
     const shorts = cands.map((c) => c.short || c.name || "ઉમેદવાર");
-    const SN = { fp: sheetName("આગળનું પાનું"), chk: sheetName("ફરજિયાત ચકાસણી"), map: sheetName("ફાઈલ નકશો"), res: sheetName("પરિણામ"), el: shorts.map((s) => sheetName("લાયકાત-" + s)) };
+    const SN = { fp: sheetName("Summary Sheet"), chk: sheetName("ફરજિયાત ચકાસણી"), map: sheetName("ફાઈલ નકશો"), res: sheetName("પરિણામ"), el: shorts.map((s) => sheetName("લાયકાત-" + s)) };
     const wsFP = wb.add(SN.fp), wsChk = wb.add(SN.chk), wsMap = wb.add(SN.map), wsRes = wb.add(SN.res);
     const wsEl = SN.el.map((s) => wb.add(s));
     SN.rules = sheetName("લાગુ નિયમો"); const wsRules = wb.add(SN.rules);
@@ -1294,7 +1294,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     const sec = (r, t) => { fset(`A${r}`, t, { bold: true, size: 10, color: WHITE, fill: FPG }); fp.merge(`A${r}:G${r}`); fp.height(r, 19.5); };
     fset("A1", "ગુજરાત પંચાયત સેવા પસંદગી મંડળ, ગાંધીનગર", { bold: true, size: 14, color: FPG, align: "center" }); fp.merge("A1:G1"); fp.height(1, 24);
     fp.merge("A2:G2");
-    fset("A3", "બઢતી દરખાસ્ત – ચકાસણી પત્રક (ફાઈલનું આગળનું પાનું)", { bold: true, size: 10, fill: FPH, align: "center" }); fp.merge("A3:G3"); fp.height(3, 21.75);
+    fset("A3", "બઢતી દરખાસ્ત – ચકાસણી પત્રક (Summary Sheet)", { bold: true, size: 10, fill: FPH, align: "center" }); fp.merge("A3:G3"); fp.height(3, 21.75);
     fset("A4", "પીળા ખાનામાં વિગત ભરવી; રાખોડી ખાના આપોઆપ ગણાય છે. પરિણામ: હા / ના / ચકાસો / લાગુ નથી.", { size: 8, color: FPMUTED }); fp.merge("A4:G4");
     sec(6, "(ક) ફાઈલની વિગત");
     const lab = (r, t, col = "A") => { fset(`${col}${r}`, t, { bold: true }); if (col === "A") fp.merge(`A${r}:B${r}`); };
