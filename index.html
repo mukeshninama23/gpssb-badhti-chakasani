@@ -527,7 +527,7 @@ const BUILD = (() => {
     "હિન્દી / ગુજરાતી પરીક્ષા", "સિદ્ધ ગુણવત્તા અને કાર્યક્ષમતા (ખાનગી અહેવાલ)", "ખાતાકીય તપાસ / આરોપનામું / ફોજદારી કેસ નથી", "શિક્ષા અમલમાં નથી",
     "વિચારણા ક્ષેત્રમાં", "ખાલી જગ્યા ઉપલબ્ધ", "ઉંમર / વયનિવૃત્તિ પહેલાં"];
   const FP_CRIT = ["ફીડર જગ્યા", "લઘુત્તમ અનુભવ", "ખાતાકીય પરીક્ષા", "તાલીમ / તાલીમાંત પરીક્ષા", "સીસીસી / સીસીસી+", "હિન્દી / ગુજરાતી પરીક્ષા કે મુક્તિ",
-    "ખાનગી અહેવાલ (5 વર્ષ, વિરુદ્ધ નોંધ નહિ)", "ખાતાકીય તપાસ / ફોજદારી કેસ નથી", "શિક્ષા અમલમાં નથી", "વિચારણા ક્ષેત્રમાં", "ખાલી જગ્યા ઉપલબ્ધ", "વયનિવૃત્તિ પહેલાં"];
+    "ખાનગી અહેવાલ (5 વર્ષ, વિરુદ્ધ નોંધ નહિ)", "ખાતાકીય તપાસ / ફોજદારી કેસ નથી", "શિક્ષા અમલમાં નથી", "વિચારણા ક્ષેત્રમાં", "ખાલી જગ્યા ઉપલબ્ધ", "વયનિવૃત્તિ તારીખ"];
   const DOCS = ["જિ.વિ.અ.નો દરખાસ્ત પત્ર", "અનુક્રમણિકા", "ચેકલીસ્ટ", "પત્રક-અ", "પત્રક-બ", "પત્રક-ક", "આખરી પ્રવરતા યાદી (પ્રમાણિત)", "ભરતી નિયમોની નકલ",
     "ખાતાકીય બઢતી સમિતિની કાર્યવાહી નોંધ", "છેલ્લા પાંચ વર્ષના ખાનગી અહેવાલ", "રોસ્ટર રજીસ્ટર (પ્રમાણિત)", "સૂચિત પસંદગી યાદી", "ખાલી જગ્યાઓનું પત્રક",
     "પરીક્ષા પરિણામ / સેવાપોથી નોંધ", "તપાસ / લેણું ન હોવાનું પ્રમાણપત્ર", "બંધ કવર / એડહોક બઢતીની વિગત"];
@@ -1098,7 +1098,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
         for (let i = 0; i < nCk; i++) {
           const c = cands[i];
           const v = c ? get(c, i, ckOf(c)[key] || {}, kr) : ""; if (typeof v === "string") vs.push(v);
-          wsChk.set({ r: kr, c: 3 + i }, v ?? "", st({ color: o.calc ? BLACK : BLUE, align: o.center || (v && typeof v === "object") || v instanceof Date ? "center" : "left", valign: "top" }));
+          wsChk.set({ r: kr, c: 3 + i }, v ?? "", st({ color: o.calc ? BLACK : BLUE, align: o.center || (v && typeof v === "object") || v instanceof Date ? "center" : "left", valign: "top", ...(o.date ? { date: true } : {}) }));
           if (typeof v === "string") mx = Math.max(mx, lines(v, 38));
         }
         wsChk.set({ r: kr, c: LCK }, pp(pagesOf(vs.map((x) => (x.match(PREF) || []).join(", ")))), st({ size: 9 }));
@@ -1145,7 +1145,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     ckCand(6, CN[5], "retirement", [
       ["જન્મ તારીખ (આધાર)", (c, i, o) => D(o.dob || c.dob) || ""],
       ["જન્મ તારીખનો આધાર", (c, i, o) => o.dob_source || c.dob_source || ""],
-      [`ગણતરી મુજબ નિવૃત્તિ (${retAge} વર્ષ પૂરાં થાય તે માસનો છેલ્લો દિવસ)`, (c, i, o, r) => { const col = XW.colName(3 + i), d = D(o.dob || c.dob); return { f: `=IF(${col}${rD}="","",EOMONTH(DATE(YEAR(${col}${rD})+${retAge},MONTH(${col}${rD}),DAY(${col}${rD}))-1,0))`, v: retireOn(d) || "" }; }, { calc: true }],
+      [`ગણતરી મુજબ નિવૃત્તિ (${retAge} વર્ષ પૂરાં થાય તે માસનો છેલ્લો દિવસ)`, (c, i, o, r) => { const col = XW.colName(3 + i), d = D(o.dob || c.dob); return { f: `=IF(${col}${rD}="","",EOMONTH(DATE(YEAR(${col}${rD})+${retAge},MONTH(${col}${rD}),DAY(${col}${rD}))-1,0))`, v: retireOn(d) || "" }; }, { calc: true, date: true }],
       ["પત્રક-ક મુજબ નિવૃત્તિ", (c, i, o) => D(o.patrak_k) || pkRet(c) || ""],
       ["નોંધ", t("note")]]);
     const rC = rD + 2, rP = rD + 3;
@@ -1320,27 +1320,28 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
       2: (col, e) => ({ f: `=IF(OR(${col}46="",$C$15="",$C$17=""),"",IF(DATEDIF(${col}46,$C$15,"y")>=$C$17,"${Y}","${N}"))`, v: e?.sv ? (e.sv.y >= miny ? Y : N) : "" }),
       10: (col, e, c) => { const s = num(c?.seniority); return { f: `=IF(OR(${col}43="",$C$16="",$E$16=""),"",IF(AND(${col}43>=$C$16,${col}43<=$E$16),"${Y}","${N}"))`, v: s == null || zf == null || zt == null ? "" : (s >= zf && s <= zt ? Y : N) }; },
       11: (col, e, c) => ({ f: `=IF(OR(${col}42="",$E$15=""),"",IF($E$15>0,"${Y}","${N}"))`, v: !c || vv[12] == null ? "" : (vv[12] > 0 ? Y : N) }),
-      12: (col, e) => ({ f: `=IF(OR(${col}45="",$C$15="",$E$17=""),"",IF(DATEDIF(${col}45,$C$15,"y")<$E$17,"${Y}","${N}"))`, v: e?.ag ? (e.ag.y < retAge ? Y : N) : "" }),
+      12: (col, e, c) => ({ f: `=IF(OR(${col}45="",$E$17=""),"",EOMONTH(DATE(YEAR(${col}45)+$E$17,MONTH(${col}45),DAY(${col}45))-1,0))`, v: (c && retireDate(D(c.dob), retAge)) || "" }),
     };
     FP_CRIT.forEach((name, k) => {
       const r = 49 + k, kk = k + 1;
       rowLab(r, name, kk);
       FC.forEach((col, i) => {
         const c = c4[i], e = c ? EL_[i] : null;
-        if (fpf[kk]) calc(`${col}${r}`, fpf[kk](col, e, c), { align: "center" });
+        if (fpf[kk]) calc(`${col}${r}`, fpf[kk](col, e, c), { align: "center", ...(kk === 12 ? { date: true } : {}) });
         else inp(`${col}${r}`, e ? e.metVals[k] : "", { align: "center" });
       });
-      srcG(r, pagesOf(c4.map((c) => (c.criteria || [])[k]?.pages || "")));
+      srcG(r, kk === 12 ? (paP || pagesOf(c4.map((c) => c.dob_source))) : pagesOf(c4.map((c) => (c.criteria || [])[k]?.pages || "")));
     });
     for (let r = 43; r <= 61; r++) fp.height(r, 21);
     rowLab(61, "મળેલ માપદંડ");
-    FC.forEach((col, i) => { const e = c4[i] ? EL_[i] : null; calc(`${col}61`, { f: `=IF(${col}42="","",COUNTIF(${col}49:${col}60,"${Y}")&" / "&(12-COUNTIF(${col}49:${col}60,"${NA}")))`, v: e ? e.met : "" }, { align: "center" }); });
+    FC.forEach((col, i) => { const e = c4[i] ? EL_[i] : null; calc(`${col}61`, { f: `=IF(${col}42="","",(COUNTIF(${col}49:${col}59,"${Y}")+IF(AND(ISNUMBER(${col}60),ISNUMBER($C$15)),IF(${col}60>=$C$15,1,0),0))&" / "&(12-COUNTIF(${col}49:${col}59,"${NA}")))`, v: e ? e.met : "" }, { align: "center" }); });
     rowLab(62, "પરિણામ");
-    FC.forEach((col, i) => { const e = c4[i] ? EL_[i] : null; calc(`${col}62`, { f: `=IF(${col}42="","",IF(COUNTIF(${col}49:${col}60,"${N}")>0,"${NEL}",IF(COUNTIF(${col}49:${col}60,"${C}")+COUNTBLANK(${col}49:${col}60)>0,"${NRV}","${EL}")))`, v: e ? e.verdict : "" }, { align: "center", bold: true }); });
+    FC.forEach((col, i) => { const e = c4[i] ? EL_[i] : null; calc(`${col}62`, { f: `=IF(${col}42="","",IF(OR(COUNTIF(${col}49:${col}59,"${N}")>0,AND(ISNUMBER(${col}60),ISNUMBER($C$15),${col}60<$C$15)),"${NEL}",IF(COUNTIF(${col}49:${col}59,"${C}")+COUNTBLANK(${col}49:${col}60)>0,"${NRV}","${EL}")))`, v: e ? e.verdict : "" }, { align: "center", bold: true }); });
     fp.height(62, 25.5);
     rowLab(63, "સમિતિનો નિર્ણય"); FC.forEach((col, i) => inp(`${col}63`, c4[i]?.dpc_decision || "", { align: "center" })); srcG(63, pagesOf(F.decision_source || F.dpc_source)); fp.height(63, 21);
     fp.dropdown("C49:F49 C51:F57", [Y, N, C, NA]); fp.dropdown("C63:F63", ["યોગ્ય", "અયોગ્ય"]);
-    fp.cf("C49:F60", [{ eq: Y, style: { fill: GREEN, color: "FF006100" } }, { eq: N, style: { fill: RED, color: "FF9C0006" } }, { eq: C, style: { fill: AMBER, color: "FF7F5500" } }, { eq: NA, style: { fill: GREY } }]);
+    fp.cf("C49:F59", [{ eq: Y, style: { fill: GREEN, color: "FF006100" } }, { eq: N, style: { fill: RED, color: "FF9C0006" } }, { eq: C, style: { fill: AMBER, color: "FF7F5500" } }, { eq: NA, style: { fill: GREY } }]);
+    fp.cf("C60:F60", [{ expr: "AND(ISNUMBER(C60),ISNUMBER($C$15),C60>=$C$15)", style: { fill: GREEN, color: "FF006100" } }, { expr: "AND(ISNUMBER(C60),ISNUMBER($C$15),C60<$C$15)", style: { fill: RED, color: "FF9C0006" } }]);
     verdictCF(fp, "C62:F62");
     fset("A64", "4 થી વધુ ઉમેદવાર હોય તો આ પત્રકની વધારાની નકલ જોડવી.", { size: 8, color: FPMUTED }); fp.merge("A64:G64"); fp.height(64, 15);
     sec(66, "(ઘ) ક્ષતિઓ / મુદ્દાઓ");
@@ -1864,6 +1865,8 @@ function renderResults(R, savedName) {
   const F = R.file || {}, box = $("v-res"), vac = F.vac || {};
   const cands = (R.cands || []).filter(Boolean);
   const verdicts = cands.map((c) => verdictOf((c.criteria || []).map((x) => x.met)));
+  const CKA = BUILD.checkVals(R);
+  const vn = (x) => (x && typeof x === "object" ? x.n ?? x.check : x) ?? null; // vacancy figures come as {n, check, src}
   const cnt = (v) => verdicts.filter((x) => x === v).length;
   const obs = [...(F.observations || []), ...cands.flatMap((c) => (c.obs || []).map((o) => ({ ...o, text: `${c.short}: ${o.text}` })))];
   const meta = [F.district, R.n ? `${R.n} પાન` : "", F.dpc_date ? `સમિતિ તા. ${F.dpc_date}` : ""].filter(Boolean).map(esc).join(" · ");
@@ -1878,7 +1881,7 @@ function renderResults(R, savedName) {
   const parts = [
     ["ખાતાકીય બઢતી સમિતિ", F.dpc_date, F.dpc_source],
     ["વિચારણા ક્ષેત્ર", F.zone_from ? `પ્રવરતા ક્રમ ${F.zone_from} થી ${F.zone_to}` : "", ""],
-    ["બઢતી ક્વોટામાં ખાલી જગ્યા", vac.vacant_promotion != null ? `${vac.vacant_promotion}${vac.considered ? ` (વિચારણા ${vac.considered})` : ""}` : "", vac.pages],
+    ["બઢતી ક્વોટામાં ખાલી જગ્યા", vn(vac.vacant_promotion) != null ? `${vn(vac.vacant_promotion)}${vn(vac.considered) ? ` (વિચારણા ${vn(vac.considered)})` : ""}` : "", vac.pages],
     ["ભરતી નિયમો", F.rules_text, F.rules_text],
     ["પ્રવરતા યાદી", F.seniority_list, F.seniority_list],
     ["દરખાસ્ત પત્ર", F.letter, ""],
@@ -1889,7 +1892,7 @@ function renderResults(R, savedName) {
     const mets = (c.criteria || []).map((x) => x.met), v = verdicts[ci];
     const cls = v === "લાયક" ? "ok" : v === "લાયક નથી" ? "bad" : "warn";
     const applicable = BUILD.CRIT.length - mets.filter((m) => m === NA || m === "બઢતી પછી").length;
-    h += `<article class="cand"><header class="cand-head"><div><h4>${esc(c.name || c.short)}</h4><div class="tags"><span>પ્રવરતા ક્રમ <b class="mono">${esc(c.seniority ?? "—")}</b></span>${c.category ? `<span>${esc(c.category)}</span>` : ""}<span>ફીડર સંવર્ગમાં <b class="mono">${esc(c.join || "—")}</b></span></div></div>
+    h += `<article class="cand"><header class="cand-head"><div><h4>${esc(c.name || c.short)}</h4><div class="tags"><span>પ્રવરતા ક્રમ <b class="mono">${esc(c.seniority ?? "—")}</b></span>${c.category ? `<span>${esc(c.category)}</span>` : ""}<span>ફીડર સંવર્ગમાં <b class="mono">${esc(c.join || "—")}</b></span>${CKA[ci]?.[5]?.calc ? `<span>વયનિવૃત્તિ <b class="mono">${esc(CKA[ci][5].calc)}</b></span>` : ""}</div></div>
       <div class="cand-v"><span class="stamp ${cls}">${v}</span><small>${mets.filter((m) => m === Y).length} / ${applicable} માપદંડ પૂર્ણ</small></div></header>
       <div class="crit"><div class="crit-h"><span>ક્રમ</span><span>માપદંડ અને ઉમેદવારની સ્થિતિ</span><span style="text-align:right">પરિણામ</span></div>`;
     BUILD.CRIT.forEach((name, i) => {
