@@ -2164,23 +2164,23 @@ function renderRegister() {
 async function exportRegister() {
   if (!REG.rows.length) return;
   if (!downloads) { log("ડાઉનલોડ અહીં ઉપલબ્ધ નથી.", "err"); return; }
-  const wb = new XW.Workbook("Nirmala UI"), ws = wb.add("રજીસ્ટર"), today = new Date();
-  ws.set("A1", "બઢતી દરખાસ્ત રજીસ્ટર", { bold: true, size: 14, color: "FF1F3864", wrap: false });
+  // one row per proposal, in the columns of the workbook's 'બઢતી રજીસ્ટર' sheet and the master register
+  const wb = new XW.Workbook("Nirmala UI"), ws = wb.add("બઢતી રજીસ્ટર"), today = new Date();
+  ws.set("A1", "બઢતી રજીસ્ટર", { bold: true, size: 14, color: "FF1F3864", wrap: false });
   ws.set("A2", `તા. ${dmy(today)} સુધી · ${REG.rows.length} ફાઈલ`, { size: 9, color: "FF595959", wrap: false });
-  const HD = ["ક્રમ", "ચકાસણી તારીખ", "ફાઈલ નં.", "ઇનવર્ડ નં.", "ઇનવર્ડ તારીખ/ડિસ્પેચ તારીખ (e-Sarkar)", "જિલ્લા પંચાયત", "ઉમેદવાર", "પ્રવરતા ક્રમ", "જાતિ", "ફીડર → બઢતીનો સંવર્ગ", "સમિતિની તારીખ", "દરખાસ્ત પત્ર", "પૂર્ણ માપદંડ", "પરિણામ", "સૂચિત કાર્યવાહી", "નિકાલ કરવાના મુદ્દા", "મંડળમાં સ્થિતિ", "નોંધ", "PDF ફાઈલ"];
-  const WD = [6, 12, 12, 12, 16, 16, 30, 10, 12, 30, 12, 24, 10, 14, 24, 70, 22, 30, 28];
+  const HD = ["ક્રમ", "ફાઈલ નં.", "જિલ્લા પંચાયત", "ફીડર સંવર્ગ", "બઢતીનો સંવર્ગ", "ઉમેદવારોની સંખ્યા", "સમિતિની તારીખ", "દરખાસ્ત પત્ર નં.", "ઇનવર્ડ નં.", "ઇનવર્ડ તારીખ/ડિસ્પેચ તારીખ (e-Sarkar)", "મંડળમાં સ્થિતિ", "ચકાસણી તારીખ", "નોંધ", "PDF ફાઈલ"];
+  const WD = [6, 24, 16, 22, 22, 12, 12, 30, 12, 16, 22, 12, 30, 28];
   HD.forEach((t, i) => { ws.set({ r: 4, c: i + 1 }, t, { bold: true, color: "FFFFFFFF", fill: "FF1F3864", align: "center", valign: "center", border: true }); ws.width(i + 1, WD[i]); });
-  const nn = (v) => v === "" || v == null || isNaN(+v) ? (v ?? "") : +v;
   let r = 5, k = 1;
-  for (const row of REG.rows) for (const c of (row.cands && row.cands.length ? row.cands : [{}])) {
+  for (const row of REG.rows) {
     const d = row.updated ? new Date(row.updated) : null;
-    [k++, d ? new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())) : "", row.file_no, row.inward_no, row.inward_no === BUILD.ESK ? (row.dispatch_date ? `${row.dispatch_date} (${BUILD.ESK})` : BUILD.ESK) : BUILD.toDate(row.inward_date) || row.inward_date, row.district, c.name, nn(c.seniority), c.category,
-      `${row.feeder || ""} → ${row.promotion || ""}`, BUILD.toDate(row.dpc_date) || row.dpc_date, row.letter, c.met, c.verdict, row.action, row.issues, row.status || STATUSES[0], row.remarks, row.file_name]
-      .forEach((v, j) => ws.set({ r, c: j + 1 }, v ?? "", { size: 9, border: true, align: [0, 1, 4, 7, 10, 12, 13].includes(j) ? "center" : "left" }));
+    [k++, row.file_no, row.district, row.feeder, row.promotion, (row.cands || []).length, BUILD.toDate(row.dpc_date) || row.dpc_date, row.letter, row.inward_no,
+      row.inward_no === BUILD.ESK ? (row.dispatch_date ? `${row.dispatch_date} (${BUILD.ESK})` : BUILD.ESK) : BUILD.toDate(row.inward_date) || row.inward_date,
+      row.status || STATUSES[0], d ? new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())) : "", row.remarks, row.file_name]
+      .forEach((v, j) => ws.set({ r, c: j + 1 }, v ?? "", { size: 9, border: true, align: [0, 5, 6, 8, 9, 11].includes(j) ? "center" : "left" }));
     r++;
   }
-  ws.cf(`N5:N${r - 1}`, [{ eq: "લાયક", style: { fill: "FFC6EFCE", color: "FF006100", bold: true } }, { eq: "લાયક નથી", style: { fill: "FFFFC7CE", color: "FF9C0006", bold: true } }, { eq: "ચકાસણી જરૂરી", style: { fill: "FFFFEB9C", color: "FF7F5500", bold: true } }]);
-  ws.dropdown(`Q5:Q${r - 1}`, STATUSES); ws.freeze = "D5";
+  ws.dropdown(`K5:K${r - 1}`, STATUSES); ws.freeze = "C5";
   await save(`Promotion_Register_Gujarati_${dmy(today)}.xlsx`, await wb.toBlob(JSZip, "blob"));
 }
 $("v-reg").addEventListener("input", (e) => { if (e.target.id === "regq") { REG.filter = e.target.value; renderRegister(); } });
