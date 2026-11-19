@@ -76,6 +76,8 @@ main.desk{padding-block:22px 28px}
 .filecard b{font-weight:500;font-size:14px;overflow-wrap:anywhere}
 .filecard span{font-size:12.5px;color:var(--muted)}
 label.f{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted)}
+label.chk{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--ink);margin-bottom:10px;cursor:pointer}
+label.chk input{width:16px;height:16px;accent-color:var(--accent);margin:0}
 input[type=text],input[type=date],input[type=password]{font:inherit;font-size:14.5px;color:var(--ink);background:var(--surface);border:1px solid var(--rule-strong);border-radius:6px;padding:8px 10px;width:100%}
 input:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -260,11 +262,13 @@ input.rm{font-size:13px;padding:5px 8px;min-width:150px}
           <span class="num">2</span>
           <div class="step-h"><h2>ફાઈલની વિગત</h2><span class="state">મરજિયાત</span></div>
           <div class="step-b">
-            <label class="f">મંડળનો ફાઈલ નં. / દફતર<input type="text" id="fileno"></label>
-            <div class="grid2">
+            <label class="chk"><input type="checkbox" id="esarkar"> ફાઈલ e-Sarkar પર આવેલ છે</label>
+            <label class="f"><span id="filenolab">મંડળનો ફાઈલ નં. / દફતર</span><input type="text" id="fileno"></label>
+            <div class="grid2" id="inwardbox">
               <label class="f">ઇનવર્ડ નં.<input type="text" id="inwardno"></label>
               <label class="f">ઇનવર્ડ તારીખ<input type="date" id="inwarddate"></label>
             </div>
+            <div class="muted" id="esnote" hidden>ઇનવર્ડ નં. અને ઇનવર્ડ તારીખમાં 'e-Sarkar' લખાશે; ફાઈલ નં. 'e-Sarkar – ઈ-ફાઈલ નં.' તરીકે. ઈ-ફાઈલ નં. ખાલી રાખશો તો PDFમાંથી લેવાશે.</div>
           </div>
         </li>
 
@@ -589,6 +593,17 @@ h1{font-size:16px;margin:0 0 6px}.sub{color:var(--muted);font-size:12px;margin-b
 main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:var(--card);border:1px solid var(--line);border-radius:6px;margin:14px 0;padding:8px;scroll-margin-top:110px}
 .bar{display:flex;gap:16px;align-items:center;font-size:13px;margin-bottom:6px;flex-wrap:wrap}.bar a{color:var(--acc)}img{width:100%;height:auto;display:block;background:#fff}
 </style></head><body><a id="top"></a><header><h1>${title} – ઉલ્લેખિત પાન: ${key}</h1><div class="sub">${pages.length} પાન. નંબર પર ક્લિક કરી તે પાન પર જાઓ.</div>${chips}</header><main>${blocks}</main></body></html>`;
+  }
+
+  // ---------- file no. / inward no. / inward date. A proposal received on e-Sarkar has no paper inward:
+  // file no. = "e-Sarkar – <e-file no.>", inward no. and inward date = "e-Sarkar"; days pending count from the e-sign date.
+  const ESK = "e-Sarkar";
+  function fileIds(R) {
+    const F = R.file || {};
+    const es = R.esarkar === true || (R.esarkar == null && F.esarkar === true);
+    if (!es) return { es: false, file_no: R.file_no || F.file_no_text || "", inward_no: R.inward_no || "", inward_date: R.inward_date || "", from: null };
+    const raw = String(R.file_no || F.efile_no || "").trim().replace(/^e-?\s?sarkar\s*[–-]?\s*/i, "");
+    return { es: true, file_no: raw ? `${ESK} – ${raw}` : ESK, inward_no: ESK, inward_date: ESK, from: toDate(F.esarkar_date) };
   }
 
   // ---------- the six compulsory checks, summarised for the page (the workbook sheet works them out with formulas)
@@ -1256,10 +1271,11 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     const lab = (r, t, col = "A") => { fset(`${col}${r}`, t, { bold: true }); if (col === "A") fp.merge(`A${r}:B${r}`); };
     const inp = (ref, v, o = {}) => fset(ref, v ?? "", { fill: FPIN, ...o });
     const calc = (ref, v, o = {}) => fset(ref, v, { fill: FPCALC, ...o });
-    const inDate = D(R.inward_date);
-    lab(7, "ફાઈલ નં. / દફતર"); inp("C7", R.file_no || F.file_no_text || ""); lab(7, "ઇનવર્ડ નં.", "D"); inp("E7", R.inward_no || ""); fp.merge("E7:G7");
-    lab(8, "ઇનવર્ડ તારીખ"); inp("C8", inDate || "", { align: "center" }); lab(8, "પડતર દિવસ", "D");
-    calc("E8", { f: `=IF(C8="","",TODAY()-C8)`, v: inDate ? days(inDate, new Date(Date.UTC(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()))) : "" }); fp.merge("E8:G8");
+    const ids = fileIds(R), inDate = ids.es ? null : D(ids.inward_date), since = inDate || ids.from;
+    const todayU = new Date(Date.UTC(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()));
+    lab(7, "ફાઈલ નં. / દફતર"); inp("C7", ids.file_no); lab(7, "ઇનવર્ડ નં.", "D"); inp("E7", ids.inward_no, ids.es ? { align: "center" } : {}); fp.merge("E7:G7");
+    lab(8, "ઇનવર્ડ તારીખ"); inp("C8", ids.es ? ESK : inDate || "", { align: "center" }); lab(8, ids.es && ids.from ? "પડતર દિવસ (ઈ-સહીથી)" : "પડતર દિવસ", "D");
+    calc("E8", { f: ids.es && ids.from ? `=IF(ISNUMBER(C8),TODAY()-C8,TODAY()-${DT(ids.from)})` : `=IF(ISNUMBER(C8),TODAY()-C8,"")`, v: since ? days(since, todayU) : "" }); fp.merge("E8:G8");
     [[9, "જિલ્લા પંચાયત", dist], [10, "દરખાસ્તનો પત્ર નં. / તારીખ", F.letter], [11, "ફીડર સંવર્ગ (પગાર ધોરણ)", F.feeder], [12, "બઢતીનો સંવર્ગ (પગાર ધોરણ)", F.promotion],
       [13, "ભરતી નિયમો", F.rules_text], [14, "આખરી પ્રવરતા યાદી", F.seniority_list]].forEach(([r, t, v]) => { lab(r, t); inp(`C${r}`, v || ""); fp.merge(`C${r}:G${r}`); });
     lab(15, "ખાતાકીય બઢતી સમિતિની તારીખ"); inp("C15", dpc || "", { align: "center" }); lab(15, "ખાલી જગ્યા", "D"); inp("E15", vv[12] ?? "", { align: "center" }); fp.merge("E15:G15");
@@ -1267,6 +1283,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     lab(17, "લઘુત્તમ અનુભવ (વર્ષ)"); inp("C17", miny, { align: "center" }); lab(17, "વયનિવૃત્તિ", "D"); inp("E17", retAge, { align: "center" }); fp.merge("E17:G17");
     lab(18, "યોગ્ય / અયોગ્ય ઠરાવેલ"); inp("C18", F.fit_unfit || ""); fp.merge("C18:G18");
     for (let r = 7; r <= 18; r++) fp.height(r, 25.5);
+    if (String(ids.file_no).length > 20) fp.height(7, Math.min(90, 12 * (lines(ids.file_no, 20) + 1) + 4)); // long e-file numbers wrap in C7
     sec(20, "(ખ) સામેલ દસ્તાવેજોની ચકાસણી (પંચાયત વિભાગનો પરિપત્ર તા.19-07-2021)");
     const th = (ref, t) => fset(ref, t, { bold: true, fill: FPH, align: "center" });
     th("A21", "#"); th("B21", "દસ્તાવેજ"); fp.merge("B21:C21"); th("D21", "મળેલ?"); th("E21", "પાન નં."); th("F21", "નોંધ"); fp.merge("F21:G21"); fp.height(21, 15);
@@ -1362,13 +1379,13 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     H(wsReg, 4, RH, [12, 16, 28, 10, 12, 30, 12, 22, 10, 14, 60, 22, 16]); wsReg.printCols = 13;
     cands.forEach((c, i) => {
       const r = 5 + i, e = EL_[i];
-      [R.file_no || F.file_no_text || R.base, dist, c.name, num(c.seniority), c.category, `${feederS} → ${promoS}`, dpc || "", F.letter, e.met, e.verdict,
+      [fileIds(R).file_no || R.base, dist, c.name, num(c.seniority), c.category, `${feederS} → ${promoS}`, dpc || "", F.letter, e.met, e.verdict,
         acts.map((o) => o.text).join(" ").slice(0, 900), ACTS.includes(X.action) ? X.action : ACTS[2], "ચકાસણી હેઠળ"].forEach((v, j) => wsReg.set({ r, c: j + 1 }, v ?? "", st({ size: 9 })));
     });
 
     return { wb, viewers };
   }
-  return { build, refGroups, datedif, toDate, fmt, CRIT, DOCS, TYPE_GU, viewerHtml, CKN, checkVals };
+  return { build, refGroups, datedif, toDate, fmt, CRIT, DOCS, TYPE_GU, viewerHtml, CKN, checkVals, fileIds, ESK };
 })();
 
 
@@ -1432,6 +1449,7 @@ async function loadPdf(file) {
   if (!window.pdfjsLib) { $("rmsg").textContent = "PDF વાંચવાનું સાધન લોડ થયું નથી. પાનું ફરી ખોલો."; return; }
   if (S.running) return;
   S.pages.forEach((p) => URL.revokeObjectURL(p.url));
+  if (!esTouched && $("esarkar").checked) { $("esarkar").checked = false; esUI(); }
   Object.assign(S, { file, pdf: null, n: 0, pages: [], cls: {}, txt: {}, fail: {}, fileJ: null, cands: [], extra: null, R: null, ready: false });
   $("drop").classList.add("compact"); $("drop").querySelector("strong").textContent = "બીજી PDF પસંદ કરો"; $("fname").textContent = file.name; $("fsize").textContent = (file.size / 1048576).toFixed(1) + " MB"; $("fpages").textContent = "…"; $("filecard").hidden = false; $("rbar").hidden = false; setBar("rbar", 0);
   renderEmpty(); $("rmsg").textContent = "PDF ખોલી રહ્યા છીએ…"; $("run").disabled = true; $("dlzip").disabled = true; $("dlxlsx").disabled = true; stepState();
@@ -1462,6 +1480,7 @@ async function loadPdf(file) {
     Object.assign(S, { cls: saved.cls || {}, txt: saved.txt || {}, fileJ: saved.fileJ || null, cands: saved.cands || [], extra: saved.extra || null });
     log("આ ફાઈલનું અગાઉનું કામ આ બ્રાઉઝરમાં મળ્યું; ત્યાંથી આગળ ચાલશે.");
     renderPagesGrid();
+    esFromFile(S.fileJ);
     if (S.fileJ && S.cands.length && S.cands.every(Boolean) && S.extra) finish();
   }
   S.ready = true; updateRunState(); estimate();
@@ -1641,7 +1660,7 @@ Reply with only a JSON array.`, imgs, "default");
       let done = key.length - todo.length; setStage("read", "run", `${done} / ${key.length}`);
       await pool(calls.map((ps) => async () => {
         const ans = await askArr(`These ${ps.length} images are pages ${ps.join(", ")} (in this order) of a scanned Gujarati promotion-proposal PDF of a District Panchayat in Gujarat. Some pages are rotated or handwritten.
-For each page transcribe the FACTS faithfully in Gujarati: names, designations, cadre (વહીવટ / હિસાબી), order and letter numbers, dates (write dd-mm-yyyy; handwritten ૮ looks like "<", ૬ looks like "S" – check carefully), marks, seat numbers, seniority numbers, table rows as "col | col | col", forenoon/afternoon joining, signatures and office. For a Patrak-A copy every APAR row (from, to, reporting marks, reviewing marks). Keep every number; mark unreadable text "(અસ્પષ્ટ)". At most 1200 characters per page.
+For each page transcribe the FACTS faithfully in Gujarati: names, designations, cadre (વહીવટ / હિસાબી), order and letter numbers, dates (write dd-mm-yyyy; handwritten ૮ looks like "<", ૬ looks like "S" – check carefully), marks, seat numbers, seniority numbers, table rows as "col | col | col", forenoon/afternoon joining, signatures and office, and the e-Sarkar "File No: …" line printed at the top or bottom of the page, if any. For a Patrak-A copy every APAR row (from, to, reporting marks, reviewing marks). Keep every number; mark unreadable text "(અસ્પષ્ટ)". At most 1200 characters per page.
 Reply with only a JSON array: [{"p":N,"t":"${TYPES.split(", ")[0]}|…","who":"surname or empty","text":"…"}].`, ps.map((p) => S.pages[p - 1].blob), "default");
         if (Array.isArray(ans)) for (const o of ans) { const p = parseInt(String(o.p).replace(/\D/g, ""), 10); if (ps.includes(p)) { S.txt[p] = String(o.text || ""); if (o.who && !S.cls[p].who) S.cls[p].who = String(o.who); if (o.t) S.cls[p].t = String(o.t); } }
         ps.forEach((p) => { if (!S.txt[p]) { S.fail[p] = (S.fail[p] || 0) + 1; if (S.fail[p] >= 2) S.txt[p] = "(વાંચી શકાયું નથી)"; } });
@@ -1669,7 +1688,8 @@ TRANSCRIBED PAGES:
 ${textsFor(fpages, 165000)}
 
 Reply with only a JSON object (all text in Gujarati):
-{"district":"જિલ્લા પંચાયત …","letter":"letter no. and date of the DDO's proposal, or 'ફાઈલમાં નથી' with what is there instead","file_no_text":"Board file no. / desk if written on the file, else ''",
+{"esarkar":true,"efile_no":"the e-Sarkar file number exactly as printed on the pages (e.g. 'File No: DPSBRKN/est/e-file/4413/2026/4309/Establishment' -> DPSBRKN/est/e-file/4413/2026/4309/Establishment), else ''","esarkar_date":"dd-mm-yyyy date of the DDO's e-signature on the forwarding letter, else ''",
+"district":"જિલ્લા પંચાયત …","letter":"letter no. and date of the DDO's proposal, or 'ફાઈલમાં નથી' with what is there instead","file_no_text":"Board file no. / desk if written on the file, else ''",
 "feeder":"feeder cadre, class and pay scale / level","feeder_short":"feeder cadre name only, e.g. સીનીયર ક્લાર્ક (હિસાબી)","promotion":"promotion cadre, class, pay scale / level; direct : promotion ratio","promotion_short":"promotion cadre name only, e.g. નાયબ હિસાબનીશ",
 "post":"promotion post with class and pay level","post_source":"પાન …","exam_name":"name of the prescribed departmental examination, e.g. ઉચ્ચ શ્રેણી ખાતાકીય પરીક્ષા",
 "rules_text":"recruitment rules with notification no. and date, and file pages","seniority_list":"which seniority list: cadre, as on date, final on date, order no.","seniority_as_on":"dd-mm-yyyy","seniority_source":"e.g. આખરી પ્રવરતા યાદી (પાન 15)",
@@ -1685,10 +1705,10 @@ Reply with only a JSON object (all text in Gujarati):
 "recon":{"in_zone":{"n":0,"src":"where the papers state it, with page"},"fit":{"n":0,"src":""},"promoted_earlier":{"n":0,"src":""},"eligible_5yr":{"n":0,"src":""}},
 "checks":{"checklist_sign":{"ok":"હા|ના|ચકાસો","note":"which checklist pages carry the DDO's signature / seal or e-sign and which do not","pages":"પાન …"},"patrak_d":{"ok":"હા|ના|ચકાસો","note":"is Annexure-D (પત્રક-ડ) enclosed; letter no. and date; does it give CCC date, centre and recognition for every candidate","pages":"પાન …"}},
 "docs":[16 objects {"received":"હા|ના|અંશતઃ|લાગુ નથી","pages":"12-14","remark":"short"} in this order: ${BUILD.DOCS.join("; ")}]}
-Use numbers (not strings) for counts and null when not in the file. vac: n = the figure in the main source (roster register / minutes), check = the same figure from a second document or null; statement_total = posts vacant per the vacancy statement; roster_points = roster points used in the roster abstract; considered = posts the DPC considered. recon: the counts as stated in the checklist / minutes / Patrak-K. "candidates" = only those the DPC recommended. "zone" = the zone of consideration rows of the seniority list plus the few around it.`;
+esarkar = true only when the proposal came through e-Sarkar (pages carry the printed e-Sarkar 'File No: …/e-file/…' line, or the letter is e-signed and forwarded on e-Sarkar); then there is no paper inward. Use numbers (not strings) for counts and null when not in the file. vac: n = the figure in the main source (roster register / minutes), check = the same figure from a second document or null; statement_total = posts vacant per the vacancy statement; roster_points = roster points used in the roster abstract; considered = posts the DPC considered. recon: the counts as stated in the checklist / minutes / Patrak-K. "candidates" = only those the DPC recommended. "zone" = the zone of consideration rows of the seniority list plus the few around it.`;
       const j = await ask(prompt, null, "complex");
       if (!j || typeof j !== "object" || !Array.isArray(j.candidates)) throw { code: "invalid_json", message: "file" };
-      j._b = false; S.fileJ = j; S.cands = new Array(j.candidates.length).fill(null); saveWork();
+      j._b = false; S.fileJ = j; S.cands = new Array(j.candidates.length).fill(null); saveWork(); esFromFile(j);
       log(`ફાઈલની વિગત તૈયાર: ${j.candidates.length} ઉમેદવાર (${j.candidates.map((c) => c.short).join(", ")}).`);
     }
     if (!S.fileJ._b) {
@@ -1825,7 +1845,7 @@ function collectR() {
   return {
     base: (S.file?.name || "PDF").replace(/\.pdf$/i, ""), n: S.n,
     pages: Object.keys(S.cls).map(Number).map((p) => ({ p, t: S.cls[p].t, who: S.cls[p].who })),
-    file_no: $("fileno").value.trim(), inward_no: $("inwardno").value.trim(),
+    file_no: $("fileno").value.trim(), inward_no: $("inwardno").value.trim(), esarkar: $("esarkar").checked,
     inward_date: $("inwarddate").value ? $("inwarddate").value.split("-").reverse().join("-") : "",
     file: S.fileJ, cands: S.cands, extra: S.extra,
   };
@@ -1950,7 +1970,7 @@ function caseSummary(R) {
   const F = R.file || {}, cands = (R.cands || []).filter(Boolean), X = R.extra || {}, CKV = BUILD.checkVals(R);
   const qs = [...(F.observations || []), ...cands.flatMap((c) => c.obs || [])].filter((o) => o.ask_ddo === true || /કાર્યવાહી/.test(o.type || ""));
   return {
-    file_name: S.file?.name || `${R.base}.pdf`, pages: R.n || 0, file_no: R.file_no || F.file_no_text || "", inward_no: R.inward_no || "", inward_date: R.inward_date || "",
+    file_name: S.file?.name || `${R.base}.pdf`, pages: R.n || 0, ...(({ file_no, inward_no, inward_date }) => ({ file_no, inward_no, inward_date }))(BUILD.fileIds(R)),
     district: F.district || "", feeder: F.feeder_short || F.feeder || "", promotion: F.promotion_short || F.promotion || "", dpc_date: F.dpc_date || "", letter: F.letter || "",
     action: X.action || "", queries: qs.length, issues: String(X.issues || qs.map((o, i) => `${i + 1}) ${o.text}`).join(" ")).slice(0, 3000),
     cands: cands.map((c, ci) => { const m = (c.criteria || []).map((x) => x.met); return { name: c.name || c.short || "", seniority: c.seniority ?? "", category: c.category || "", verdict: verdictOf(m), met: `${m.filter((x) => x === Y).length} / ${12 - m.filter((x) => x === NA).length}`, checks: `${CKV[ci].filter((x) => x.v === Y).length} / 6` }; }),
@@ -1998,7 +2018,7 @@ function renderRegister() {
   for (const r of rows) {
     h += `<tr data-id="${esc(r.id)}">
       <td class="mono">${dmy(r.updated ? new Date(r.updated) : null)}</td>
-      <td><b>${esc(r.file_no || "—")}</b><small>${esc(r.district || "")}</small><small>${esc(r.file_name || "")}${r.pages ? ` · ${r.pages} પાન` : ""}</small>${r.inward_no || r.inward_date ? `<small>ઇનવર્ડ ${esc(r.inward_no || "")} ${esc(r.inward_date || "")}</small>` : ""}</td>
+      <td><b>${esc(r.file_no || "—")}</b><small>${esc(r.district || "")}</small><small>${esc(r.file_name || "")}${r.pages ? ` · ${r.pages} પાન` : ""}</small>${r.inward_no || r.inward_date ? `<small>ઇનવર્ડ ${r.inward_no === BUILD.ESK && r.inward_date === BUILD.ESK ? BUILD.ESK : esc(`${r.inward_no || ""} ${r.inward_date || ""}`)}</small>` : ""}</td>
       <td>${esc(r.feeder || "")} → ${esc(r.promotion || "")}<small>સમિતિ ${esc(r.dpc_date || "—")}</small></td>
       <td><div class="cl">${(r.cands || []).map((c) => `<div><span class="chip ${c.verdict === "લાયક" ? "c-ok" : c.verdict === "લાયક નથી" ? "c-bad" : "c-warn"}">${esc(c.verdict)}</span>${esc(c.name)} <span class="muted">(ક્રમ ${esc(c.seniority)})</span></div>`).join("")}</div></td>
       <td>${esc(r.action || "—")}${r.queries ? `<small>${r.queries} પૃચ્છા</small>` : ""}</td>
@@ -2093,8 +2113,18 @@ function renderEmpty() {
     <h3 style="font-size:17px;margin:10px 0 4px;color:var(--ink)">હજુ કોઈ અહેવાલ નથી</h3>
     <p>દરખાસ્તની PDF અપલોડ કરી 'ચકાસણી શરૂ કરો' દબાવો. ચકાસણી પૂરી થતાં અહીં ઉમેદવારવાર પરિણામ, અવલોકનો અને ફાઈલ નોંધ દેખાશે.</p></div>`;
 }
+// e-Sarkar: no paper inward, so inward no. and date are written as "e-Sarkar" (BUILD.fileIds)
+let esTouched = false;
+function esUI() {
+  const on = $("esarkar").checked;
+  $("inwardno").disabled = on; $("inwarddate").disabled = on; $("inwardbox").style.opacity = on ? 0.45 : "";
+  $("esnote").hidden = !on; $("filenolab").textContent = on ? "e-Sarkar ઈ-ફાઈલ નં." : "મંડળનો ફાઈલ નં. / દફતર";
+  stepState();
+}
+$("esarkar").addEventListener("change", () => { esTouched = true; esUI(); if (S.R) { S.R = collectR(); saveCase(S.R); } });
+function esFromFile(F) { if (!esTouched && F && F.esarkar === true && !$("esarkar").checked) { $("esarkar").checked = true; esUI(); log("આ દરખાસ્ત e-Sarkar પર આવેલ જણાય છે; ઇનવર્ડ નં./તારીખમાં 'e-Sarkar' લખાશે."); } }
 function stepState() {
-  const has2 = ["fileno", "inwardno", "inwarddate"].some((id) => $(id).value.trim());
+  const has2 = ["fileno", "inwardno", "inwarddate"].some((id) => $(id).value.trim()) || $("esarkar").checked;
   const st = {
     s1: S.ready ? ["done", `${S.n} પાન તૈયાર`] : S.file ? ["active", "પાન તૈયાર થાય છે"] : ["active", "શરૂ કરો"],
     s2: has2 ? ["done", "ભરેલ"] : ["", "મરજિયાત"],
