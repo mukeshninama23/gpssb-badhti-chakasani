@@ -225,7 +225,7 @@ input.rm{font-size:13px;padding:5px 8px;min-width:150px}
     <div>
       <div class="eyebrow">પંચાયત સેવા વર્ગ-3 · ખાતાકીય બઢતી દરખાસ્ત</div>
       <h1>બઢતી ફાઈલ ચકાસણી</h1>
-      <p class="lead">જિલ્લા પંચાયતની સ્કેન કરેલ બઢતી દરખાસ્ત અપલોડ કરો. Claude દરેક પાન વાંચી ઉમેદવારવાર 12 માપદંડ તપાસે છે અને ગુજરાતી એક્સેલ તૈયાર કરે છે, જેમાં દરેક આધાર પાન ક્લિકથી ખૂલે છે.</p>
+      <p class="lead">જિલ્લા પંચાયતની સ્કેન કરેલ બઢતી દરખાસ્ત અપલોડ કરો. Claude દરેક પાના વાંચી ઉમેદવારવાર 12 માપદંડ તપાસે છે અને ગુજરાતી એક્સેલ તૈયાર કરે છે, જેમાં દરેક આધાર પાના ક્લિકથી ખૂલે છે.</p>
     </div>
     <div class="cover-side">
       <span class="svc" id="svc"><i></i><span id="svctext">Claude સાથે જોડાણ ચકાસાય છે…</span></span>
@@ -245,7 +245,7 @@ input.rm{font-size:13px;padding:5px 8px;min-width:150px}
             <div class="drop" id="drop" tabindex="0" role="button" aria-label="PDF પસંદ કરો">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 17v-6"/><path d="M9.5 13.5 12 11l2.5 2.5"/></svg>
               <strong>PDF અહીં મૂકો અથવા ક્લિક કરી પસંદ કરો</strong>
-              <span class="muted">સ્કેન કરેલ દરખાસ્ત ફાઈલ · 300 પાન સુધી</span>
+              <span class="muted">સ્કેન કરેલ દરખાસ્ત ફાઈલ · 300 પાના સુધી</span>
             </div>
             <input type="file" id="pdfin" accept="application/pdf,.pdf" hidden>
             <div class="filecard" id="filecard" hidden>
@@ -296,9 +296,9 @@ input.rm{font-size:13px;padding:5px 8px;min-width:150px}
           <span class="num">4</span>
           <div class="step-h"><h2>એક્સેલ ડાઉનલોડ</h2><span class="state" id="s4st"></span></div>
           <div class="step-b dl">
-            <button class="primary" id="dlzip" disabled><span id="dlziplab">ZIP ડાઉનલોડ કરો</span><small>એક્સેલ + બધા સ્કેન પાન + પાન લિંક</small></button>
+            <button class="primary" id="dlzip" disabled><span id="dlziplab">ZIP ડાઉનલોડ કરો</span><small>એક્સેલ + બધા સ્કેન પાના + પાના લિંક</small></button>
             <button id="dlxlsx" disabled>ફક્ત એક્સેલ ફાઈલ</button>
-            <div class="muted" id="dlmsg">ZIP આખી કાઢ્યા (Extract All) પછી એક્સેલ ખોલો; પાન નંબર પર ક્લિક કરતાં તે સ્કેન પાન ખૂલશે.</div>
+            <div class="muted" id="dlmsg">ZIP આખી કાઢ્યા (Extract All) પછી એક્સેલ ખોલો; પાના નંબર પર ક્લિક કરતાં તે સ્કેન પાના ખૂલશે.</div>
           </div>
         </li>
       </ol>
@@ -307,12 +307,12 @@ input.rm{font-size:13px;padding:5px 8px;min-width:150px}
     <section class="panel work" aria-label="ચકાસણી અહેવાલ">
       <div class="tabs" role="tablist">
         <button class="tab" role="tab" aria-selected="true" data-tab="res" id="tab-res">અહેવાલ</button>
-        <button class="tab" role="tab" aria-selected="false" data-tab="pages" id="tab-pages">બધા પાન<span class="count" id="pgcount"></span></button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="pages" id="tab-pages">બધા પાના<span class="count" id="pgcount"></span></button>
         <button class="tab" role="tab" aria-selected="false" data-tab="reg" id="tab-reg">રજીસ્ટર<span class="count" id="regcount"></span></button>
         <button class="tab" role="tab" aria-selected="false" data-tab="log" id="tab-log">પ્રવૃત્તિ</button>
       </div>
       <div class="view" id="v-res"></div>
-      <div class="view" id="v-pages" hidden><div class="empty">PDF અપલોડ કર્યા પછી અહીં બધા પાન દેખાશે. કોઈ પણ પાન પર ક્લિક કરી મોટું જુઓ.</div></div>
+      <div class="view" id="v-pages" hidden><div class="empty">PDF અપલોડ કર્યા પછી અહીં બધા પાના દેખાશે. કોઈ પણ પાના પર ક્લિક કરી મોટું જુઓ.</div></div>
       <div class="view" id="v-reg" hidden></div>
       <div class="view" id="v-log" hidden><div class="log" id="log"><span class="muted">હજુ કોઈ પ્રવૃત્તિ નથી.</span></div></div>
     </section>
@@ -321,16 +321,16 @@ input.rm{font-size:13px;padding:5px 8px;min-width:150px}
 
 <footer class="foot gutter">
   <div class="inner">
-    <span>પરિણામ Claude દ્વારા તૈયાર થાય છે અને તેમાં ભૂલ હોઈ શકે. ભલામણ કરતાં પહેલાં દરેક મુદ્દો પાન લિંકથી ચકાસી લેવો.</span>
-    <span>PDF આ બ્રાઉઝરમાં ખૂલે છે; ચકાસણી વખતે મહત્ત્વના પાનની છબી Claudeને વાંચવા મોકલાય છે.</span>
+    <span>પરિણામ Claude દ્વારા તૈયાર થાય છે અને તેમાં ભૂલ હોઈ શકે. ભલામણ કરતાં પહેલાં દરેક મુદ્દો પાના લિંકથી ચકાસી લેવો.</span>
+    <span>PDF આ બ્રાઉઝરમાં ખૂલે છે; ચકાસણી વખતે મહત્ત્વના પાનાની છબી Claudeને વાંચવા મોકલાય છે.</span>
   </div>
 </footer>
 
-<div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-label="પાન જુઓ">
+<div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-label="પાના જુઓ">
   <div class="vbar">
-    <strong id="vtitle">પાન</strong>
-    <button id="vprev" aria-label="પાછલું પાન">‹ પાછલું</button>
-    <button id="vnext" aria-label="પછીનું પાન">પછીનું ›</button>
+    <strong id="vtitle">પાના</strong>
+    <button id="vprev" aria-label="પાછલું પાના">‹ પાછલું</button>
+    <button id="vnext" aria-label="પછીનું પાના">પછીનું ›</button>
     <button id="vclose">બંધ કરો</button>
   </div>
   <div class="vchips" id="vchips" hidden></div>
@@ -386,6 +386,8 @@ const XW = (() => {
         sd += `<row r="${r}"${ht}>`;
         for (const cell of (rows[r] || []).sort((a, b) => a.c - b.c)) {
           const ref = colName(cell.c) + r; let v = cell.value; let st = { ...cell.style };
+          const tf = wb.textFix || ((x) => x);
+          if (typeof v === "string") v = tf(v); else if (v && typeof v === "object" && !(v instanceof Date) && v.f) v = { ...v, f: tf(v.f), v: typeof v.v === "string" ? tf(v.v) : v.v };
           if (v instanceof Date || (v && v.v instanceof Date)) { st.date = true; }
           const s = wb.styleId(st);
           if (v === null || v === undefined || v === "") { sd += `<c r="${ref}" s="${s}"/>`; continue; }
@@ -430,7 +432,7 @@ const XW = (() => {
           `<dataValidation type="list" allowBlank="1" showInputMessage="1" showErrorMessage="1" sqref="${d.sqref}"><formula1>"${esc(d.items.join(","))}"</formula1></dataValidation>`).join("") + `</dataValidations>`;
       }
       if (this.links.length) {
-        x += `<hyperlinks>` + this.links.map((l, i) => `<hyperlink ref="${l.ref}" r:id="rIdL${i + 1}"${l.tip ? ` tooltip="${esc(l.tip.slice(0, 250))}"` : ""}/>`).join("") + `</hyperlinks>`;
+        x += `<hyperlinks>` + this.links.map((l, i) => `<hyperlink ref="${l.ref}" r:id="rIdL${i + 1}"${l.tip ? ` tooltip="${esc((this.wb.textFix || ((t) => t))(l.tip).slice(0, 250))}"` : ""}/>`).join("") + `</hyperlinks>`;
       }
       x += `<pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/>`;
       x += `<pageSetup paperSize="9" orientation="${this.landscape ? "landscape" : "portrait"}" fitToWidth="1" fitToHeight="${this.fitH ? 1 : 0}"/>`;
@@ -562,7 +564,19 @@ const BUILD = (() => {
   const qt = (s) => String(s ?? "").replace(/"/g, '""');
   const DT = (d) => `DATE(${d.getUTCFullYear()},${d.getUTCMonth() + 1},${d.getUTCDate()})`;
   const LIST = "(\\d{1,3}(?:\\s*[-–]\\s*\\d{1,3})?(?:\\s*,\\s*\\d{1,3}(?:\\s*[-–]\\s*\\d{1,3})?)*)";
-  const PREF = new RegExp("(?:\\bp\\.|પાન)\\s*" + LIST, "g"), RAW = new RegExp("^\\s*" + LIST);
+  const PREF = new RegExp("(?:\\bp\\.|પાના(?:\\s*નં\\.?)?|પાન)\\s*" + LIST, "g"), RAW = new RegExp("^\\s*" + LIST);
+  // the user's word for a page: "પાના નં." before a page number or at the end of a label, "પાના" when it counts or names pages
+  const GU_ = "\\u0A81-\\u0AFF";
+  const PW_RULES = [
+    [new RegExp(`(\\d+)\\s+પાન(?![${GU_}])`, "g"), "$1 પાના"],
+    [new RegExp(`(?<![${GU_}])(બધા|દરેક|કેટલાક|મહત્ત્વના|ખૂટતા) પાન(?![${GU_}])`, "g"), "$1 પાના"],
+    [new RegExp(`(?<![${GU_}])પાન(ની|નો|ના|નું|ને)(?![${GU_}])`, "g"), "પાના$1"],
+    [new RegExp(`(?<![${GU_}])પાન(?![${GU_}])(?=\\s*નં)`, "g"), "પાના"],
+    [new RegExp(`(?<![${GU_}])પાન(?![${GU_}])(?=\\s*[:\\-–]?\\s*[\\d૦-૯…])`, "g"), "પાના નં."],
+    [new RegExp(`(?<![${GU_}])પાન(?![${GU_}])(?=\\s*($|[)\\]/,;]))`, "g"), "પાના નં."],
+    [new RegExp(`(?<![${GU_}])પાન(?![${GU_}])`, "g"), "પાના"],
+  ];
+  const fixPageWord = (t) => typeof t !== "string" || t.indexOf("પાન") < 0 ? t : PW_RULES.reduce((a, [rx, rp]) => a.replace(rx, rp), t);
   function refGroups(text, n, raw) {
     if (typeof text !== "string") return [];
     const out = [], ms = raw ? [RAW.exec(text)] : [...text.matchAll(PREF)];
@@ -583,7 +597,7 @@ const BUILD = (() => {
   function viewerHtml(pages, key, title) {
     const chips = pages.map((p) => `<a class="chip" href="#p${p}">${p}</a>`).join("");
     const blocks = pages.map((p) => `<section id="p${p}"><div class="bar"><b>પાન ${p}</b><a href="../pages/p${p3(p)}.jpg" target="_blank">પૂરા કદમાં ખોલો</a><a href="#top">↑ ઉપર</a></div><img src="../pages/p${p3(p)}.jpg" alt="પાન ${p}" loading="lazy"></section>`).join("");
-    return `<!doctype html><html lang="gu"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title} – પાન ${key}</title><style>
+    return fixPageWord(`<!doctype html><html lang="gu"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title} – પાન ${key}</title><style>
 :root{--bg:#eef1f5;--card:#fff;--ink:#1d2733;--muted:#5b6673;--acc:#1f3864;--line:#d5dbe3}
 @media (prefers-color-scheme:dark){:root{--bg:#14181d;--card:#1e242b;--ink:#e6eaef;--muted:#9aa5b1;--acc:#8fb0e8;--line:#323a44}}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"Nirmala UI","Segoe UI",Arial,sans-serif}
@@ -592,7 +606,7 @@ h1{font-size:16px;margin:0 0 6px}.sub{color:var(--muted);font-size:12px;margin-b
 .chip{display:inline-block;margin:2px 3px;padding:2px 9px;border:1px solid var(--line);border-radius:12px;color:var(--acc);text-decoration:none;font-size:13px}
 main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:var(--card);border:1px solid var(--line);border-radius:6px;margin:14px 0;padding:8px;scroll-margin-top:110px}
 .bar{display:flex;gap:16px;align-items:center;font-size:13px;margin-bottom:6px;flex-wrap:wrap}.bar a{color:var(--acc)}img{width:100%;height:auto;display:block;background:#fff}
-</style></head><body><a id="top"></a><header><h1>${title} – ઉલ્લેખિત પાન: ${key}</h1><div class="sub">${pages.length} પાન. નંબર પર ક્લિક કરી તે પાન પર જાઓ.</div>${chips}</header><main>${blocks}</main></body></html>`;
+</style></head><body><a id="top"></a><header><h1>${title} – ઉલ્લેખિત પાન: ${key}</h1><div class="sub">${pages.length} પાન. નંબર પર ક્લિક કરી તે પાન પર જાઓ.</div>${chips}</header><main>${blocks}</main></body></html>`);
   }
 
   // ---------- file no. / inward no. / inward date. A proposal received on e-Sarkar has no paper inward:
@@ -633,7 +647,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
 
   function build(R, XW) {
     const n = R.n, F = R.file || {}, cands = (R.cands || []).filter(Boolean), X = R.extra || {};
-    const wb = new XW.Workbook("Nirmala UI");
+    const wb = new XW.Workbook("Nirmala UI"); wb.textFix = fixPageWord;
     const viewers = new Map();
     const dpc = toDate(F.dpc_date), D = (s) => toDate(s);
     const feederS = F.feeder_short || String(F.feeder || "").replace(/,?\s*વર્ગ-3.*$/, "").trim();
@@ -828,7 +842,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
         const pgS = sg(a.pages_ok); if (pgS === N || pgS === C) pgBad++; if (pgS) pgSeen++;
         if (repS === N || repS === C) sigBad[0]++; if (revS === N || revS === C) sigBad[1]++; if (repS || revS) sigSeen++;
         ws.set({ r, c: 11 }, repS, st({ align: "center" })); ws.set({ r, c: 12 }, revS, st({ align: "center" })); ws.set({ r, c: 13 }, pgS, st({ align: "center" }));
-        const det = [a.sign_note ? "સહી: " + a.sign_note : "", a.pages_note ? "પાન: " + a.pages_note : ""].filter(Boolean).join("; ");
+        const det = [a.sign_note ? "સહી: " + a.sign_note : "", a.pages_note ? "પાના: " + a.pages_note : ""].filter(Boolean).join("; ");
         ws.set({ r, c: 14 }, det, st({ size: 9 })); // not linked, so long text wraps
         ws.set({ r, c: 15 }, a.remark || "", st({ size: 9 }));
         const hl = Math.max(lines(det, 44), lines(a.remark, 48));
@@ -1307,7 +1321,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
       const r = 22 + i, x = docs[i] || {};
       fset(`A${r}`, i + 1, { align: "center" }); fset(`B${r}`, dn); fp.merge(`B${r}:C${r}`);
       inp(`D${r}`, MET.has(x.received) ? x.received : "", { align: "center" });
-      const pg = x.pages ? String(x.pages).replace(/^\s*(p\.|પાન)\s*/, "") : "";
+      const pg = x.pages ? String(x.pages).replace(/^\s*(p\.|પાના\s*નં\.?|પાના|પાન)\s*/, "") : "";
       inp(`E${r}`, pg || "–", { align: "center" }); inp(`F${r}`, x.remark || ""); fp.merge(`F${r}:G${r}`); fp.height(r, 21.75);
     });
     fp.dropdown("D22:D37", [Y, N, PART, NA]);
@@ -1337,7 +1351,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     srcG(49, paP || pagesOf(c4.map((c) => c.dob_source)));
     // each criterion cell: હા / ના on the first line, the details below it (e.g. CCC: result, date and institution)
     const shortTxt = (t, m = 70) => { t = String(t ?? "").replace(/\s+/g, " ").trim(); return t.length > m ? t.slice(0, m - 1) + "…" : t; };
-    const instOf = (t) => String(t || "").split(/ – |; | \((?:પાન|પરીક્ષા|ઓનલાઈન|તા\.|જાહેરનામું)/)[0].trim();
+    const instOf = (t) => String(t || "").split(/ – |; | \((?:પાના|પાન|પરીક્ષા|ઓનલાઈન|તા\.|જાહેરનામું)/)[0].trim();
     const fpDetail = (c, k) => {
       if (!c) return "";
       const cr = (c.criteria || [])[k] || {}, ck = c.checks || {};
@@ -1454,7 +1468,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
 
     return { wb, viewers };
   }
-  return { build, refGroups, datedif, toDate, fmt, CRIT, DOCS, TYPE_GU, viewerHtml, CKN, checkVals, fileIds, ESK };
+  return { fixPageWord, build, refGroups, datedif, toDate, fmt, CRIT, DOCS, TYPE_GU, viewerHtml, CKN, checkVals, fileIds, ESK };
 })();
 
 
@@ -1462,7 +1476,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
 <script>
 "use strict";
 const $ = (id) => document.getElementById(id);
-const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const esc = (s) => String(typeof BUILD !== "undefined" && BUILD.fixPageWord ? BUILD.fixPageWord(String(s ?? "")) : s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const Y = "હા", N = "ના", C = "ચકાસો", NA = "લાગુ નથી";
 const S = { file: null, pdf: null, n: 0, pages: [], cls: {}, txt: {}, sig: {}, fail: {}, fileJ: null, cands: [], extra: null, key: "", running: false, stop: false, ctrl: [], R: null, ready: false };
 let sample = null, downloads = null, limits = null;
@@ -1486,7 +1500,7 @@ Verdict: "લાયક નથી" if any criterion is "ના"; "ચકાસણ
 Known recruitment rules: Senior Clerk RR 1998 (KP/107/98 dt 19-11-1998: 5 yrs as Junior Clerk/Typist/Asst Storekeeper + dept exam; r.4 Hindi after selection). Senior Account Clerk RR 1998 (KP/111/98: 5 yrs as Account Clerk + dept exam). Deputy Chitnis RR 2013 (KP/01/2014/PRR/102013/1897-KH dt 04-01-2014: 5 yrs as Senior Clerk or Store Keeper Class III, dept exam, CCC; proviso two-thirds; ratio direct:promotion 1:3; r.9 training after promotion). Deputy Accountant RR 2018 (KP/22 of 2018/PRR/1194/589/KH dt 01-10-2018: 5 yrs as Senior Accounts Clerk, dept exam, CCC; proviso two-thirds; ratio 1:2; r.7 training after promotion). Board consultation (Amendment) Rules 2021 (KP/18/2021 dt 19-07-2021): Board must be consulted on promotions. Checklist circular બઢત/152021/920/ખ dt 19-07-2021 lists the documents to send.
 Compulsory checks on EVERY file (Board letters dt 06-08-2021, 17-02-2025 and 12-09-2025): (1) the DDO's signature / seal or e-sign on EVERY page of the checklist; (2) Annexure-D (પત્રક-ડ: CCC date, centre, recognised or not) enclosed and complete for each candidate; (3) the previous year's final seniority list (as on 1 April, GAD resolution dt 22-01-2009) shows the departmental-exam column correctly for each candidate – compare it with this year's list and the exam result (a blank column although the exam was passed is a "ના"); (4) CCC passing date and the university / institution, matching Patrak-D; (5) Hindi / Gujarati exam passed or exempted, with the order, matching Patrak-K; (6) retirement date = last day of the BIRTH MONTH in the year the employee completes 58 years (also when born on the 1st, e.g. born 01-06-1994 -> 30-06-2052), compared with the date written in Patrak-K. Every compulsory check that is not proved is a query to the DDO.
 Always check: Admin/Accounts line of the seniority list and vacancies; minutes complete (page/item gaps); separate no-inquiry certificate present; reasons others were found unfit; discrepancies between checklist, Patrak-A/K, minutes, service book, orders; vacancy statement present and posts vacant over 3 years; roster point for each promotion; earlier DPC / Board advice; proposal date vs DPC date; typing errors in dates.
-Write all text in Gujarati (digits 0-9, dates dd-mm-yyyy). Cite PDF page numbers as "પાન 12" or "પાન 12, 45-47" (PDF page numbers, never the office's handwritten numbers).`;
+Write all text in Gujarati (digits 0-9, dates dd-mm-yyyy). Cite PDF page numbers as "પાના નં. 12" or "પાના નં. 12, 45-47" (PDF page numbers, never the office's handwritten numbers).`;
 const TYPES = "forwarding_letter, index, checklist, patrak_a, patrak_b, patrak_k, patrak_d, seniority_list, recruitment_rules, dpc_minutes, apar, apar_certificate, roster, select_list, vacancy_statement, exam_result, service_book, order, certificate, marksheet, board_letter, other";
 const FILE_TYPES = new Set(["forwarding_letter", "index", "checklist", "patrak_k", "patrak_d", "seniority_list", "recruitment_rules", "dpc_minutes", "roster", "select_list", "vacancy_statement", "board_letter"]);
 
@@ -1525,9 +1539,9 @@ async function loadPdf(file) {
   try {
     S.pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
   } catch (e) { $("rmsg").textContent = "આ PDF ખોલી શકાઈ નથી. ફાઈલ બરાબર છે કે નહીં તે તપાસો."; log("PDF ખોલવામાં ભૂલ: " + (e?.message || e), "err"); return; }
-  S.n = S.pdf.numPages; $("fpages").textContent = `${S.n} પાન`; $("pgcount").textContent = S.n;
+  S.n = S.pdf.numPages; $("fpages").textContent = `${S.n} પાના`; $("pgcount").textContent = S.n;
   S.key = `${file.name}|${file.size}|${S.n}`;
-  log(`${file.name} – ${S.n} પાન મળ્યા. પાન તૈયાર કરી રહ્યા છીએ.`);
+  log(`${file.name} – ${S.n} પાના મળ્યા. પાના તૈયાર કરી રહ્યા છીએ.`);
   renderPagesGrid();
   for (let p = 1; p <= S.n; p++) {
     const page = await S.pdf.getPage(p);
@@ -1541,9 +1555,9 @@ async function loadPdf(file) {
     S.pages[p - 1] = { blob, url: URL.createObjectURL(blob), w: cv.width, h: cv.height };
     page.cleanup();
     const img = document.querySelector(`#v-pages [data-p="${p}"] img`); if (img) img.src = S.pages[p - 1].url;
-    setBar("rbar", p / S.n); $("rmsg").textContent = `પાન તૈયાર: ${p} / ${S.n}`;
+    setBar("rbar", p / S.n); $("rmsg").textContent = `પાના તૈયાર: ${p} / ${S.n}`;
   }
-  $("rmsg").textContent = `${S.n} પાન તૈયાર. હવે 'ચકાસણી શરૂ કરો' દબાવો.`;
+  $("rmsg").textContent = `${S.n} પાના તૈયાર. હવે 'ચકાસણી શરૂ કરો' દબાવો.`;
   const saved = await idb.get(S.key);
   if (saved && saved.cls && Object.keys(saved.cls).length) {
     Object.assign(S, { cls: saved.cls || {}, txt: saved.txt || {}, sig: saved.sig || {}, fileJ: saved.fileJ || null, cands: saved.cands || [], extra: saved.extra || null });
@@ -1556,11 +1570,11 @@ async function loadPdf(file) {
 }
 function renderPagesGrid() {
   const box = $("v-pages");
-  if (!S.n) { box.innerHTML = '<div class="empty">PDF અપલોડ કર્યા પછી અહીં બધા પાન દેખાશે; પાન પર ક્લિક કરી મોટું જુઓ.</div>'; return; }
+  if (!S.n) { box.innerHTML = '<div class="empty">PDF અપલોડ કર્યા પછી અહીં બધા પાના દેખાશે; પાના પર ક્લિક કરી મોટું જુઓ.</div>'; return; }
   let h = '<div class="pages">';
   for (let p = 1; p <= S.n; p++) {
     const c = S.cls[p]; const lab = c ? (BUILD.TYPE_GU[c.t] || "અન્ય") + (c.who ? " – " + c.who : "") : "";
-    h += `<button class="pg" data-p="${p}" title="પાન ${p}"><img alt="પાન ${p}" loading="lazy" src="${S.pages[p - 1]?.url || ""}"><b>પાન ${p}</b><span>${esc(lab)}</span></button>`;
+    h += `<button class="pg" data-p="${p}" title="પાના નં. ${p}"><img alt="પાના નં. ${p}" loading="lazy" src="${S.pages[p - 1]?.url || ""}"><b>પાના નં. ${p}</b><span>${esc(lab)}</span></button>`;
   }
   box.innerHTML = h + "</div>";
 }
@@ -1576,8 +1590,8 @@ function openViewer(list, i) {
 }
 function showPage() {
   const p = V.list[V.i]; const pg = S.pages[p - 1]; const c = S.cls[p];
-  $("vimg").src = pg?.url || ""; $("vimg").alt = `પાન ${p}`;
-  $("vtitle").textContent = `પાન ${p} / ${S.n}` + (c ? ` – ${BUILD.TYPE_GU[c.t] || "અન્ય"}${c.who ? " – " + c.who : ""}` : "");
+  $("vimg").src = pg?.url || ""; $("vimg").alt = `પાના નં. ${p}`;
+  $("vtitle").textContent = `પાના નં. ${p} / ${S.n}` + (c ? ` – ${BUILD.TYPE_GU[c.t] || "અન્ય"}${c.who ? " – " + c.who : ""}` : "");
   const multi = V.list.length > 1; $("vchips").hidden = !multi;
   if (multi) $("vchips").innerHTML = V.list.map((q, k) => `<button data-k="${k}" aria-current="${k === V.i}">${q}</button>`).join("");
   $("vprev").disabled = multi ? V.i === 0 : p === 1; $("vnext").disabled = multi ? V.i === V.list.length - 1 : p === S.n;
@@ -1597,7 +1611,7 @@ document.addEventListener("keydown", (e) => {
 function refButtons(text, raw) {
   const gs = BUILD.refGroups(text || "", S.n || 999, raw);
   if (!gs.length) return "";
-  return '<span class="refs">' + gs.map((g) => `<button class="ref" data-a="${g[0]}" data-b="${g[1]}" ${S.n && !S.viewSaved ? "" : "disabled"}>પાન ${g[0] === g[1] ? g[0] : g[0] + "-" + g[1]}</button>`).join("") + "</span>";
+  return '<span class="refs">' + gs.map((g) => `<button class="ref" data-a="${g[0]}" data-b="${g[1]}" ${S.n && !S.viewSaved ? "" : "disabled"}>પાના નં. ${g[0] === g[1] ? g[0] : g[0] + "-" + g[1]}</button>`).join("") + "</span>";
 }
 document.addEventListener("click", (e) => {
   const b = e.target.closest(".ref"); if (!b || b.disabled) return;
@@ -1662,7 +1676,7 @@ async function contactSheet(pages) {
   }
   return new Promise((res) => cv.toBlob(res, "image/jpeg", 0.8));
 }
-const STAGES = [["cls", "પાન ઓળખવા (દસ્તાવેજનો પ્રકાર)"], ["read", "મહત્ત્વના પાન વાંચવા"], ["file", "ફાઈલની વિગત, બઢતી માટે વિચારેલ પ્રવરતા ક્રમ, ખાલી જગ્યા"], ["cand", "ઉમેદવારવાર લાયકાત"], ["extra", "લાગુ નિયમો અને નોંધ"], ["xls", "એક્સેલ તૈયાર"]];
+const STAGES = [["cls", "પાના ઓળખવા (દસ્તાવેજનો પ્રકાર)"], ["read", "મહત્ત્વના પાના વાંચવા"], ["file", "ફાઈલની વિગત, બઢતી માટે વિચારેલ પ્રવરતા ક્રમ, ખાલી જગ્યા"], ["cand", "ઉમેદવારવાર લાયકાત"], ["extra", "લાગુ નિયમો અને નોંધ"], ["xls", "એક્સેલ તૈયાર"]];
 const stageState = {};
 function setStage(k, state, info) {
   stageState[k] = { state, info: info || "" };
@@ -1699,7 +1713,7 @@ function textsFor(pages, budget) {
   pages = [...new Set(pages)].filter((p) => S.txt[p]).sort((a, b) => a - b);
   let per = 1600, out;
   for (let k = 0; k < 8; k++) {
-    out = pages.map((p) => `[પાન ${p} | ${S.cls[p]?.t || ""}${S.cls[p]?.who ? " | " + S.cls[p].who : ""}]\n${trim(S.txt[p], per)}`).join("\n\n");
+    out = pages.map((p) => `[પાના નં. ${p} | ${S.cls[p]?.t || ""}${S.cls[p]?.who ? " | " + S.cls[p].who : ""}]\n${trim(S.txt[p], per)}`).join("\n\n");
     if (bytes(out) <= budget) break; per = Math.floor(per * 0.75);
   }
   const b = new TextEncoder().encode(out);
@@ -1733,9 +1747,9 @@ Reply with only a JSON array.`, imgs, "default");
         done += all.length; setStage("cls", "run", `${Math.min(done, S.n)} / ${S.n}`); setBar("pbar", 0.15 * done / S.n); saveWork();
       }), 2);
       if (S.stop) throw { code: "cancelled" };
-      renderPagesGrid(); log(`પાન ઓળખ પૂરી: ${Object.values(S.cls).filter((c) => c.k === 2).length} મહત્ત્વના પાન.`);
+      renderPagesGrid(); log(`પાના ઓળખ પૂરી: ${Object.values(S.cls).filter((c) => c.k === 2).length} મહત્ત્વના પાના.`);
     }
-    setStage("cls", "done", `${S.n} પાન`);
+    setStage("cls", "done", `${S.n} પાના`);
 
     // 2. read key pages
     const key = Object.keys(S.cls).map(Number).filter((p) => S.cls[p].k === 2).sort((a, b) => a - b);
@@ -1753,7 +1767,7 @@ Reply with only a JSON array: [{"p":N,"t":"${TYPES.split(", ")[0]}|…","who":"s
       }), 2);
       if (S.stop) throw { code: "cancelled" };
       const left = key.filter((p) => !S.txt[p]);
-      if (left.length) throw { code: "partial", message: `${left.length} પાન (${left.slice(0, 12).join(", ")}${left.length > 12 ? "…" : ""})` };
+      if (left.length) throw { code: "partial", message: `${left.length} પાના (${left.slice(0, 12).join(", ")}${left.length > 12 ? "…" : ""})` };
     }
     // 2b. signatures of the reporting and reviewing officers on every APAR and APAR certificate
     const sigTodo = aparSignPages().filter((p) => !S.sig[p]);
@@ -1764,14 +1778,14 @@ Reply with only a JSON array: [{"p":N,"t":"${TYPES.split(", ")[0]}|…","who":"s
         const ans = await askArr(`These ${ps.length} images are pages ${ps.join(", ")} (in this order) of APARs (annual performance appraisal reports, ખાનગી અહેવાલ), fixed-pay appraisal forms (પત્રક-3) and APAR certificates (પ્રમાણપત્ર) in a scanned Gujarati promotion proposal.
 For EACH page say whether the reporting officer (અહેવાલ લખનાર) and the reviewing officer (સમીક્ષક) have SIGNED in their signature place on that page: a handwritten signature or initials counts; a rubber seal alone does not. On an online / system-generated PAR, the "Appraisal document submission status" table giving the reporting and reviewing officers' names and dates counts as signed. A system-generated "NO PAR" certificate needs no signature (લાગુ નથી). A short-period certificate needs only the reporting officer's signature (reviewing: લાગુ નથી).
 Also give the form's own page number printed on the page (e.g. "5" or "6"; "" if none) and the section titles on it (e.g. "Section-IV સમીક્ષા", "પરિશિષ્ટ-4 વધારાનો હવાલો", "Appraisal document submission status").
-Reply with only a JSON array: [{"p":N,"who":"employee surname in Gujarati","period":"dd-mm-yyyy થી dd-mm-yyyy if shown","rep":"હા|ના|લાગુ નથી|પાન પર નથી","rev":"હા|ના|લાગુ નથી|પાન પર નથી","note":"who signed (designation), dates, online submission dates, or what is missing","pno":"printed page no.","section":"section titles"}]. Use "પાન પર નથી" when that officer's signature place is not on this page.`, ps.map((p) => S.pages[p - 1].blob), "default");
+Reply with only a JSON array: [{"p":N,"who":"employee surname in Gujarati","period":"dd-mm-yyyy થી dd-mm-yyyy if shown","rep":"હા|ના|લાગુ નથી|પાના પર નથી","rev":"હા|ના|લાગુ નથી|પાના પર નથી","note":"who signed (designation), dates, online submission dates, or what is missing","pno":"printed page no.","section":"section titles"}]. Use "પાના પર નથી" when that officer's signature place is not on this page.`, ps.map((p) => S.pages[p - 1].blob), "default");
         if (Array.isArray(ans)) for (const o of ans) { const p = parseInt(String(o.p).replace(/\D/g, ""), 10); if (ps.includes(p)) S.sig[p] = { rep: String(o.rep || ""), rev: String(o.rev || ""), note: String(o.note || ""), period: String(o.period || ""), pno: String(o.pno || ""), section: String(o.section || "") }; }
         ps.forEach((p) => { if (!S.sig[p]) S.sig[p] = { rep: "", rev: "", note: "(વાંચી શકાયું નથી)", period: "" }; });
         done += ps.length; setStage("read", "run", `સહી ચકાસણી ${done} / ${sigTodo.length}`); saveWork();
       }), 2);
       if (S.stop) throw { code: "cancelled" };
     }
-    setStage("read", "done", `${key.length} પાન`);
+    setStage("read", "done", `${key.length} પાના`);
     renderPagesGrid();
 
     // 3. file-level analysis, in two parts so each answer stays a manageable size
@@ -1792,19 +1806,19 @@ Reply with only a JSON object (all text in Gujarati):
 {"esarkar":true,"efile_no":"the e-Sarkar file number exactly as printed on the pages (e.g. 'File No: DPSBRKN/est/e-file/4413/2026/4309/Establishment' -> DPSBRKN/est/e-file/4413/2026/4309/Establishment), else ''","esarkar_date":"dd-mm-yyyy date of the DDO's e-signature on the forwarding letter, else ''",
 "district":"જિલ્લા પંચાયત …","letter":"letter no. and date of the DDO's proposal, or 'ફાઈલમાં નથી' with what is there instead","file_no_text":"Board file no. / desk if written on the file, else ''",
 "feeder":"feeder cadre, class and pay scale / level","feeder_short":"feeder cadre name only, e.g. સીનીયર ક્લાર્ક (હિસાબી)","promotion":"promotion cadre, class, pay scale / level; direct : promotion ratio","promotion_short":"promotion cadre name only, e.g. નાયબ હિસાબનીશ",
-"post":"promotion post with class and pay level","post_source":"પાન …","exam_name":"name of the prescribed departmental examination, e.g. ઉચ્ચ શ્રેણી ખાતાકીય પરીક્ષા",
-"rules_text":"recruitment rules with notification no. and date, and file pages","seniority_list":"which seniority list: cadre, as on date, final on date, order no.","seniority_as_on":"dd-mm-yyyy","seniority_source":"e.g. આખરી પ્રવરતા યાદી (પાન 15)",
-"dpc_date":"dd-mm-yyyy","dpc_source":"e.g. કાર્યવાહી નોંધ, ઠરાવ નં.19 (પાન 20)","decision_source":"pages where the DPC decision on these candidates is recorded, e.g. પાન 5, 24",
-"zone_from":0,"zone_to":0,"zone_source":"e.g. ચેકલીસ્ટ 6(6) (પાન 2)","min_years":5,"min_years_source":"rule clause and page, e.g. ભરતી નિયમો-2018 નિ.2(અ)(1) (પાન 16)","retire_age":58,
+"post":"promotion post with class and pay level","post_source":"પાના નં. …","exam_name":"name of the prescribed departmental examination, e.g. ઉચ્ચ શ્રેણી ખાતાકીય પરીક્ષા",
+"rules_text":"recruitment rules with notification no. and date, and file pages","seniority_list":"which seniority list: cadre, as on date, final on date, order no.","seniority_as_on":"dd-mm-yyyy","seniority_source":"e.g. આખરી પ્રવરતા યાદી (પાના નં. 15)",
+"dpc_date":"dd-mm-yyyy","dpc_source":"e.g. કાર્યવાહી નોંધ, ઠરાવ નં.19 (પાના નં. 20)","decision_source":"pages where the DPC decision on these candidates is recorded, e.g. પાના નં. 5, 24",
+"zone_from":0,"zone_to":0,"zone_source":"e.g. ચેકલીસ્ટ 6(6) (પાના નં. 2)","min_years":5,"min_years_source":"rule clause and page, e.g. ભરતી નિયમો-2018 નિ.2(અ)(1) (પાના નં. 16)","retire_age":58,
 "fit_unfit":"who was found fit / unfit, and why the others in the zone were not considered","earlier_dpc":"earlier DPC and Board advice, or ''",
 "req":["12 strings: the requirement of each criterion 1-12 for THIS cadre, quoting rule, clause and notification"],
 "vac":{"sanctioned":${VITEM},"direct":${VITEM},"promotion":${VITEM},"filled_direct":${VITEM},"filled_promotion":${VITEM},"vacant_direct":${VITEM},"vacant_promotion":${VITEM},"statement_total":${VITEM},"roster_points":${VITEM},"considered":${VITEM},
- "ratio_text":"e.g. (પ્રમાણ 1:2, ભ.નિ. નિ.3)","statement_pages":"પાન …","statement_rows":[{"reason":"","posts":0,"date":"dd-mm-yyyy, or the text written","note":""}],"notes":"roster / reservation remarks","pages":"sources of this sheet with pages"},
+ "ratio_text":"e.g. (પ્રમાણ 1:2, ભ.નિ. નિ.3)","statement_pages":"પાના નં. …","statement_rows":[{"reason":"","posts":0,"date":"dd-mm-yyyy, or the text written","note":""}],"notes":"roster / reservation remarks","pages":"sources of this sheet with pages"},
 "candidates":[{"short":"surname","name":"full name","seniority":0,"who":"surname as used in the page index"}],
 "zone":[{"no":0,"name":"","category":"","dob":"dd-mm-yyyy","in_cadre":"dd-mm-yyyy","status":"status / reason with pages","group":"યોગ્ય – ભલામણ|અયોગ્ય|નિવૃત્ત|અગાઉ બઢતી|ક્ષેત્ર બહાર|અન્ય","remarks":"remarks column of the list"}],
 "zone_note":"one line: sources with pages and what happened to those senior to the zone",
 "recon":{"in_zone":{"n":0,"src":"where the papers state it, with page"},"fit":{"n":0,"src":""},"promoted_earlier":{"n":0,"src":""},"eligible_5yr":{"n":0,"src":""}},
-"checks":{"checklist_sign":{"ok":"હા|ના|ચકાસો","note":"which checklist pages carry the DDO's signature / seal or e-sign and which do not","pages":"પાન …"},"patrak_d":{"ok":"હા|ના|ચકાસો","note":"is Annexure-D (પત્રક-ડ) enclosed; letter no. and date; does it give CCC date, centre and recognition for every candidate","pages":"પાન …"}},
+"checks":{"checklist_sign":{"ok":"હા|ના|ચકાસો","note":"which checklist pages carry the DDO's signature / seal or e-sign and which do not","pages":"પાના નં. …"},"patrak_d":{"ok":"હા|ના|ચકાસો","note":"is Annexure-D (પત્રક-ડ) enclosed; letter no. and date; does it give CCC date, centre and recognition for every candidate","pages":"પાના નં. …"}},
 "docs":[16 objects {"received":"હા|ના|અંશતઃ|લાગુ નથી","pages":"12-14","remark":"short"} in this order: ${BUILD.DOCS.join("; ")}]}
 esarkar = true only when the proposal came through e-Sarkar (pages carry the printed e-Sarkar 'File No: …/e-file/…' line, or the letter is e-signed and forwarded on e-Sarkar); then there is no paper inward. Use numbers (not strings) for counts and null when not in the file. vac: n = the figure in the main source (roster register / minutes), check = the same figure from a second document or null; statement_total = posts vacant per the vacancy statement; roster_points = roster points used in the roster abstract; considered = posts the DPC considered. recon: the counts as stated in the checklist / minutes / Patrak-K. "candidates" = only those the DPC recommended. "zone" = the zone of consideration rows of the seniority list plus the few around it.`;
       const j = await ask(prompt, null, "complex");
@@ -1826,8 +1840,8 @@ TRANSCRIBED PAGES:
 ${textsFor(fpages, 160000)}
 
 Reply with only a JSON object (all text in Gujarati):
-{"observations":[{"type":"મુખ્ય મુદ્દો|કાર્યવાહી|વિસંગતતા|નોંધ|સ્થિતિ","text":"the point, with dates, numbers and pages","impact":"impact on eligibility","pages":"પાન …","ask_ddo":true}],
-"history":[{"step":"short label, e.g. સીનીયર ક્લાર્ક (હિસાબી)માં બઢતી or ખાતાકીય બઢતી સમિતિ – 28-10-2026","text":"what happened: orders, dates, numbers","pages":"પાન …"}],
+{"observations":[{"type":"મુખ્ય મુદ્દો|કાર્યવાહી|વિસંગતતા|નોંધ|સ્થિતિ","text":"the point, with dates, numbers and pages","impact":"impact on eligibility","pages":"પાના નં. …","ask_ddo":true}],
+"history":[{"step":"short label, e.g. સીનીયર ક્લાર્ક (હિસાબી)માં બઢતી or ખાતાકીય બઢતી સમિતિ – 28-10-2026","text":"what happened: orders, dates, numbers","pages":"પાના નં. …"}],
 "file_map":[{"doc":"document description, naming the candidate where it belongs to one","pages":"1-6"}]}
 observations: file-level points (missing documents, discrepancies, roster, vacancies, minutes, checklist vs other papers), most important first; a file-level compulsory check (checks.checklist_sign, checks.patrak_d) that is not "હા" must be an observation of type "કાર્યવાહી" with ask_ddo true; ask_ddo = true when the point must be asked from the DDO before the Board's advice. history: the case in order – first appointment, promotion to the feeder cadre, departmental examination, earlier DPC and Board advice, final seniority list, this DPC, proposal to the Board, Board advice ('આ ફાઈલમાં નથી' if absent). file_map: consecutive page ranges covering every PDF page from 1 to ${S.n} in order, 15-40 entries.`, null, "complex");
       if (!j || typeof j !== "object") throw { code: "invalid_json", message: "file 2" };
@@ -1856,25 +1870,25 @@ TRANSCRIBED PAGES (this candidate first, then common pages):
 ${textsFor([...mine, ...common], 160000)}
 
 APAR SIGNATURE CHECK (read from the page images of this candidate's APARs and certificates; page: reporting / reviewing – note):
-${Object.keys(S.sig).map(Number).sort((a, b) => a - b).filter((p) => sameWho(S.cls[p]?.who, fc.who) || sameWho(S.cls[p]?.who, fc.short)).map((p) => `પાન ${p}${S.sig[p].period ? " (" + S.sig[p].period + ")" : ""}${S.sig[p].pno ? " [ફોર્મનું પાન " + S.sig[p].pno + "]" : ""}${S.sig[p].section ? " {" + S.sig[p].section + "}" : ""}: અહેવાલ લખનાર ${S.sig[p].rep || "?"} / સમીક્ષક ${S.sig[p].rev || "?"}${S.sig[p].note ? " – " + S.sig[p].note : ""}`).join("\n") || "none checked"}
+${Object.keys(S.sig).map(Number).sort((a, b) => a - b).filter((p) => sameWho(S.cls[p]?.who, fc.who) || sameWho(S.cls[p]?.who, fc.short)).map((p) => `પાના નં. ${p}${S.sig[p].period ? " (" + S.sig[p].period + ")" : ""}${S.sig[p].pno ? " [ફોર્મનું પાના " + S.sig[p].pno + "]" : ""}${S.sig[p].section ? " {" + S.sig[p].section + "}" : ""}: અહેવાલ લખનાર ${S.sig[p].rep || "?"} / સમીક્ષક ${S.sig[p].rev || "?"}${S.sig[p].note ? " – " + S.sig[p].note : ""}`).join("\n") || "none checked"}
 
 APAR FORMS IN THE PDF (runs of consecutive APAR pages; a paper APAR has 6 pages, Section I to IV, sometimes followed by Annexure-4 for additional charge; an online PAR has 8-9 pages ending with Section IV; a fixed-pay પત્રક-3 has 2 pages; a certificate 1 page):
-${aparGroups().filter((g) => sameWho(g.who, fc.who) || sameWho(g.who, fc.short)).map((g) => `${g.cert ? "પ્રમાણપત્ર" : "ફોર્મ"} પાન ${g.pages[0]}${g.pages.length > 1 ? "-" + g.pages[g.pages.length - 1] : ""} (${g.pages.length} પાન)`).join("; ") || "none found"}
+${aparGroups().filter((g) => sameWho(g.who, fc.who) || sameWho(g.who, fc.short)).map((g) => `${g.cert ? "પ્રમાણપત્ર" : "ફોર્મ"} પાના નં. ${g.pages[0]}${g.pages.length > 1 ? "-" + g.pages[g.pages.length - 1] : ""} (${g.pages.length} પાના નં.)`).join("; ") || "none found"}
 
 Reply with only a JSON object (all text in Gujarati):
-{"short":"${fc.short}","name":"full name with શ્રી / કુ. / શ્રીમતી","name_short":"title, initials and surname, e.g. શ્રી બી.જે. છૈયા","seniority":${+fc.seniority || 0},"category":"","present":"present post, branch and office","pa_pages":"this candidate's Patrak-A page(s), e.g. પાન 7",
-"dob":"dd-mm-yyyy","dob_source":"documents with pages, e.g. પત્રક-અ મુદ્દો 4 (પાન 7); પ્રવરતા યાદી (પાન 15)",
+{"short":"${fc.short}","name":"full name with શ્રી / કુ. / શ્રીમતી","name_short":"title, initials and surname, e.g. શ્રી બી.જે. છૈયા","seniority":${+fc.seniority || 0},"category":"","present":"present post, branch and office","pa_pages":"this candidate's Patrak-A page(s), e.g. પાના નં. 7",
+"dob":"dd-mm-yyyy","dob_source":"documents with pages, e.g. પત્રક-અ મુદ્દો 4 (પાના નં. 7); પ્રવરતા યાદી (પાના નં. 15)",
 "join":"dd-mm-yyyy date of appointment/joining in the FEEDER cadre","join_source":"documents with pages; say forenoon/afternoon if shown",
 "first_appt":"dd-mm-yyyy first appointment in service","first_appt_post":"post of first appointment, e.g. જુનિયર ક્લાર્ક (હિસાબી)","first_appt_source":"documents with pages","first_appt_note":"e.g. fixed-pay years; whether it counts for this promotion",
-"retirement":"dd-mm-yyyy","retirement_source":"e.g. પત્રક-ક નિવૃત્તિ 30-05-2052 (પાન 13)","exam":"short result of the departmental exam: date, attempt, marks","exam_pages":"પાન …","dpc_decision":"યોગ્ય|અયોગ્ય",
-"criteria":[12 objects in the order of criteria 1-12: {"pos":"candidate's position from the file in 1-3 sentences","pages":"પાન …","value":"short value","met":"હા|ના|ચકાસો|લાગુ નથી"}],
-"apar":[{"year":"2021-22","from":"dd-mm-yyyy","to":"dd-mm-yyyy","rep":"reporting marks","rev":"reviewing marks","type":"ખાનગી અહેવાલ|પ્રમાણપત્ર","marks":82,"remark":"reason / pages","rep_sign":"હા|ના|ચકાસો|લાગુ નથી","rev_sign":"હા|ના|ચકાસો|લાગુ નથી","sign_note":"who signed and on which page, online submission dates, or what is missing","pages_ok":"હા|ના|ચકાસો","pages_note":"pages of the form and sections present, e.g. 6 પાન, વિભાગ I થી IV (74-79); or which page / section is missing"}],
+"retirement":"dd-mm-yyyy","retirement_source":"e.g. પત્રક-ક નિવૃત્તિ 30-05-2052 (પાના નં. 13)","exam":"short result of the departmental exam: date, attempt, marks","exam_pages":"પાના નં. …","dpc_decision":"યોગ્ય|અયોગ્ય",
+"criteria":[12 objects in the order of criteria 1-12: {"pos":"candidate's position from the file in 1-3 sentences","pages":"પાના નં. …","value":"short value","met":"હા|ના|ચકાસો|લાગુ નથી"}],
+"apar":[{"year":"2021-22","from":"dd-mm-yyyy","to":"dd-mm-yyyy","rep":"reporting marks","rev":"reviewing marks","type":"ખાનગી અહેવાલ|પ્રમાણપત્ર","marks":82,"remark":"reason / pages","rep_sign":"હા|ના|ચકાસો|લાગુ નથી","rev_sign":"હા|ના|ચકાસો|લાગુ નથી","sign_note":"who signed and on which page, online submission dates, or what is missing","pages_ok":"હા|ના|ચકાસો","pages_note":"pages of the form and sections present, e.g. 6 પાના, વિભાગ I થી IV (74-79); or which page / section is missing"}],
 "apar_start":"dd-mm-yyyy","apar_end":"dd-mm-yyyy","apar_adverse":"'નથી' or the adverse remark, with source pages","apar_note":"corrections made or anything unusual in the APAR record","apar_source":"Patrak-A item 12 page and pages of the APAR copies",
-"checks":{"seniority_exam":{"last_year":"what the PREVIOUS year's final seniority list shows in the departmental-exam column for this candidate, with page","current":"what this year's list shows, with page","result":"exam result: date and attempt, with pages","note":"","ok":"હા|ના|ચકાસો","pages":"પાન …"},
-"ccc":{"date":"dd-mm-yyyy","institution":"university / institution, certificate no. and date","marks":"theory / practical","patrak_d":"entry in Patrak-D and whether the centre is recognised","ok":"હા|ના|ચકાસો","pages":"પાન …"},
-"hindi":{"status":"પાસ|મુક્તિ|બાકી","evidence":"order or result no. and date, and the basis","patrak_k":"what Patrak-K says","ok":"હા|ના|ચકાસો","pages":"પાન …"},
-"retirement":{"dob":"dd-mm-yyyy","dob_source":"documents with pages","patrak_k":"dd-mm-yyyy retirement date written in Patrak-K","note":"","pages":"પાન …"}},
-"obs":[{"type":"મુખ્ય મુદ્દો|કાર્યવાહી|વિસંગતતા|નોંધ","text":"","impact":"","pages":"પાન …","ask_ddo":false}]}
+"checks":{"seniority_exam":{"last_year":"what the PREVIOUS year's final seniority list shows in the departmental-exam column for this candidate, with page","current":"what this year's list shows, with page","result":"exam result: date and attempt, with pages","note":"","ok":"હા|ના|ચકાસો","pages":"પાના નં. …"},
+"ccc":{"date":"dd-mm-yyyy","institution":"university / institution, certificate no. and date","marks":"theory / practical","patrak_d":"entry in Patrak-D and whether the centre is recognised","ok":"હા|ના|ચકાસો","pages":"પાના નં. …"},
+"hindi":{"status":"પાસ|મુક્તિ|બાકી","evidence":"order or result no. and date, and the basis","patrak_k":"what Patrak-K says","ok":"હા|ના|ચકાસો","pages":"પાના નં. …"},
+"retirement":{"dob":"dd-mm-yyyy","dob_source":"documents with pages","patrak_k":"dd-mm-yyyy retirement date written in Patrak-K","note":"","pages":"પાના નં. …"}},
+"obs":[{"type":"મુખ્ય મુદ્દો|કાર્યવાહી|વિસંગતતા|નોંધ","text":"","impact":"","pages":"પાના નં. …","ask_ddo":false}]}
 APAR rows: every row of the Patrak-A APAR table for the period checked, final marks as a number (null for certificates). rep_sign / rev_sign: from the APAR SIGNATURE CHECK for that form's pages (online PAR: હા, with the submission dates in sign_note; certificate: rev_sign લાગુ નથી; ચકાસો when its pages were not checked or are not in the file). An APAR without the reporting or reviewing officer's signature is a query to the DDO (obs, type કાર્યવાહી, ask_ddo true). pages_ok: whether every page of that form is in the file – use APAR FORMS IN THE PDF, the printed page numbers and section titles (a paper form whose last form page is 6 / Section IV with 6 pages present is complete; a gap in the printed numbers, a missing Section IV or a run shorter than the form is ના); a missing page is a query to the DDO. Use "ચકાસો" when the file does not prove a criterion. checks = the compulsory checks 3-6 for this candidate: "હા" only when the file proves it, "ના" when the file contradicts it (e.g. the previous year's list leaves the exam column blank although the exam was passed, or Patrak-K differs from the order), "ચકાસો" when the evidence is missing. obs = points specific to this candidate; every compulsory check that is not "હા" must also be in obs as type "કાર્યવાહી" with ask_ddo true.`;
       let j = null;
       try { j = await ask(prompt, null, "complex"); } catch (e) { if (!SOFT.has(e?.code)) throw e; }
@@ -1923,8 +1937,8 @@ List 10-16 rules that govern this case (recruitment rules clauses, departmental 
       bad_key: "સર્વર પરની Anthropic API key માન્ય નથી. ઍડમિનને જાણ કરો.",
       no_credit: "Anthropic ખાતામાં ક્રેડિટ પૂરી થઈ છે. ઍડમિનને જાણ કરો.",
       prompt_too_large: "ફાઈલનું લખાણ એક સાથે મોકલવા માટે ઘણું મોટું છે. 'ફરી ચાલુ કરો' દબાવો; ઓછું લખાણ મોકલાશે.",
-      partial: "કેટલાક પાન વંચાયા નહીં. 'ફરી ચાલુ કરો' દબાવતાં ફક્ત તે પાન ફરી વંચાશે.",
-      image_rejected: "કોઈ પાનની છબી સ્વીકારાઈ નહીં. PDF ફરી સ્કેન/સેવ કરી અપલોડ કરો.",
+      partial: "કેટલાક પાના વંચાયા નહીં. 'ફરી ચાલુ કરો' દબાવતાં ફક્ત તે પાના ફરી વંચાશે.",
+      image_rejected: "કોઈ પાનાની છબી સ્વીકારાઈ નહીં. PDF ફરી સ્કેન/સેવ કરી અપલોડ કરો.",
       sampling_disabled: "આ ખાતા માટે આ પાનામાંથી Claude વાપરવાની સુવિધા બંધ છે.",
       upstream_error: "Claude સાથે જોડાણ તૂટ્યું. 'ફરી ચાલુ કરો' દબાવો; થયેલું કામ સચવાયેલું છે.",
       invalid_json: "Claudeનો જવાબ પૂરો વાંચી ન શકાયો. 'ફરી ચાલુ કરો' દબાવો.",
@@ -1942,7 +1956,7 @@ $("run").onclick = () => {
   if (S.R) { // a finished file: redo the analysis from the pages already read
     Object.assign(S, { fileJ: null, cands: [], extra: null, R: null });
     ["file", "cand", "extra", "xls"].forEach((k) => setStage(k, "wait")); $("dlzip").disabled = true; $("dlxlsx").disabled = true;
-    log("વિશ્લેષણ ફરીથી શરૂ (વાંચેલા પાન ફરી વંચાશે નહીં)."); renderEmpty(); stepState();
+    log("વિશ્લેષણ ફરીથી શરૂ (વાંચેલા પાના ફરી વંચાશે નહીં)."); renderEmpty(); stepState();
   }
   runPipeline();
 };
@@ -1975,8 +1989,8 @@ function renderResults(R, savedName) {
   const vn = (x) => (x && typeof x === "object" ? x.n ?? x.check : x) ?? null; // vacancy figures come as {n, check, src}
   const cnt = (v) => verdicts.filter((x) => x === v).length;
   const obs = [...(F.observations || []), ...cands.flatMap((c) => (c.obs || []).map((o) => ({ ...o, text: `${c.short}: ${o.text}` })))];
-  const meta = [F.district, R.n ? `${R.n} પાન` : "", F.dpc_date ? `સમિતિ તા. ${F.dpc_date}` : ""].filter(Boolean).map(esc).join(" · ");
-  let h = `<div class="rep">${savedName ? `<div class="saved">રજીસ્ટરમાંથી ખોલેલ સાચવેલ અહેવાલ – ${esc(savedName)}. પાન લિંક જોવા માટે મૂળ PDF ફરી અપલોડ કરી ચકાસણી ચલાવો.</div>` : ""}<header class="rhead"><div class="eyebrow">ચકાસણી અહેવાલ</div>
+  const meta = [F.district, R.n ? `${R.n} પાના` : "", F.dpc_date ? `સમિતિ તા. ${F.dpc_date}` : ""].filter(Boolean).map(esc).join(" · ");
+  let h = `<div class="rep">${savedName ? `<div class="saved">રજીસ્ટરમાંથી ખોલેલ સાચવેલ અહેવાલ – ${esc(savedName)}. પાના લિંક જોવા માટે મૂળ PDF ફરી અપલોડ કરી ચકાસણી ચલાવો.</div>` : ""}<header class="rhead"><div class="eyebrow">ચકાસણી અહેવાલ</div>
     <h2>${esc(F.feeder || "—")} <span class="arrow">→</span> ${esc(F.promotion || "—")}</h2><p class="meta">${meta}</p></header>`;
   h += `<div class="kpis" role="list">
     <div role="listitem"><span>ઉમેદવાર</span><b>${cands.length}</b></div>
@@ -2053,7 +2067,7 @@ $("dlzip").onclick = async () => {
     root.file(`${R.base}_Scrutiny_Gujarati.xlsx`, blob);
     const pf = root.folder("pages"); S.pages.forEach((pg, i) => pf.file(`p${String(i + 1).padStart(3, "0")}.jpg`, pg.blob));
     const lf = root.folder("links"); for (const [f, html] of viewers) lf.file(f.replace(/^links\//, ""), html);
-    root.file("README.txt", "﻿આ ZIP આખી કાઢો (Extract All). પછી એક્સેલ ખોલો.\r\n'pages' અને 'links' ફોલ્ડર એક્સેલની બાજુમાં જ રાખવા; તો જ પાન નંબર પર ક્લિક કરતાં પાન ખુલશે.\r\nએક્સેલ લિંક પર ક્લિક કરતાં ચેતવણી આવે તો 'Yes' દબાવો.\r\n");
+    root.file("README.txt", "﻿આ ZIP આખી કાઢો (Extract All). પછી એક્સેલ ખોલો.\r\n'pages' અને 'links' ફોલ્ડર એક્સેલની બાજુમાં જ રાખવા; તો જ પાના નંબર પર ક્લિક કરતાં પાના ખુલશે.\r\nએક્સેલ લિંક પર ક્લિક કરતાં ચેતવણી આવે તો 'Yes' દબાવો.\r\n");
     const zb = await z.generateAsync({ type: "blob", compression: "STORE" });
     await save(`${R.base}_Scrutiny.zip`, zb);
   } catch (e) { log("ZIP બનાવવામાં ભૂલ: " + (e?.message || e), "err"); $("dlmsg").textContent = "ZIP બની શકી નથી; 'ફક્ત એક્સેલ' અજમાવો."; }
@@ -2127,7 +2141,7 @@ function renderRegister() {
   for (const r of rows) {
     h += `<tr data-id="${esc(r.id)}">
       <td class="mono">${dmy(r.updated ? new Date(r.updated) : null)}</td>
-      <td><b>${esc(r.file_no || "—")}</b><small>${esc(r.district || "")}</small><small>${esc(r.file_name || "")}${r.pages ? ` · ${r.pages} પાન` : ""}</small>${r.inward_no || r.inward_date ? `<small>ઇનવર્ડ ${r.inward_no === BUILD.ESK && r.inward_date === BUILD.ESK ? BUILD.ESK : esc(`${r.inward_no || ""} ${r.inward_date || ""}`)}</small>` : ""}</td>
+      <td><b>${esc(r.file_no || "—")}</b><small>${esc(r.district || "")}</small><small>${esc(r.file_name || "")}${r.pages ? ` · ${r.pages} પાના` : ""}</small>${r.inward_no || r.inward_date ? `<small>ઇનવર્ડ ${r.inward_no === BUILD.ESK && r.inward_date === BUILD.ESK ? BUILD.ESK : esc(`${r.inward_no || ""} ${r.inward_date || ""}`)}</small>` : ""}</td>
       <td>${esc(r.feeder || "")} → ${esc(r.promotion || "")}<small>સમિતિ ${esc(r.dpc_date || "—")}</small></td>
       <td><div class="cl">${(r.cands || []).map((c) => `<div><span class="chip ${c.verdict === "લાયક" ? "c-ok" : c.verdict === "લાયક નથી" ? "c-bad" : "c-warn"}">${esc(c.verdict)}</span>${esc(c.name)} <span class="muted">(ક્રમ ${esc(c.seniority)})</span></div>`).join("")}</div></td>
       <td>${esc(r.action || "—")}${r.queries ? `<small>${r.queries} પૃચ્છા</small>` : ""}</td>
@@ -2235,7 +2249,7 @@ function esFromFile(F) { if (!esTouched && F && F.esarkar === true && !$("esarka
 function stepState() {
   const has2 = ["fileno", "inwardno", "inwarddate"].some((id) => $(id).value.trim()) || $("esarkar").checked;
   const st = {
-    s1: S.ready ? ["done", `${S.n} પાન તૈયાર`] : S.file ? ["active", "પાન તૈયાર થાય છે"] : ["active", "શરૂ કરો"],
+    s1: S.ready ? ["done", `${S.n} પાના તૈયાર`] : S.file ? ["active", "પાના તૈયાર થાય છે"] : ["active", "શરૂ કરો"],
     s2: has2 ? ["done", "ભરેલ"] : ["", "મરજિયાત"],
     s3: S.R ? ["done", "પૂર્ણ"] : S.running ? ["active", "ચાલુ છે"] : S.ready ? ["active", "શરૂ કરી શકાય"] : ["", ""],
     s4: S.R ? ["active", "તૈયાર"] : ["", ""],
