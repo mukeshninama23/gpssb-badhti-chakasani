@@ -683,9 +683,9 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     function linkify(ws, specs, lastCol, keepColor) {
       const start = lastCol + 2, done = {};
       ws.printCols = lastCol; // print the table itself, not the link columns
-      for (const [col, raw] of specs) {
+      for (const [col, raw, r0, r1] of specs) { // optional r0-r1: only those rows
         const c = XW.colNum(col);
-        for (const cell of [...ws.cells.values()].filter((x) => x.c === c)) {
+        for (const cell of [...ws.cells.values()].filter((x) => x.c === c && (!r0 || (x.r >= r0 && x.r <= r1)))) {
           const v = cell.value; if (typeof v !== "string") continue;
           const rw = raw === "auto" ? /^\s*\d/.test(v) : raw;
           if (rw && !/^\s*\d/.test(v)) continue;
@@ -792,14 +792,14 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     cands.forEach((c, ci) => {
       const ws = wsAp[ci];
       title(ws, `ખાનગી અહેવાલની વિગત – ${nm(c)} (પ્રવરતા ક્રમ ${c.seniority ?? "?"})`, c.apar_source ? "આધાર: " + String(c.apar_source).replace(/^આધાર:\s*/, "") : "આધાર: પત્રક-અ મુદ્દો 12 અને ખાનગી અહેવાલની નકલો");
-      H(ws, 4, ["વર્ષ", "તારીખથી", "તારીખ સુધી", "દિવસ", "અહેવાલ લખનાર", "સમીક્ષક", "પ્રકાર", "આખરી ગુણ", "આગલા સમયગાળા સાથે સળંગ?", "પ્રમાણપત્ર માન્ય?", "અહેવાલ લખનારની સહી", "સમીક્ષકની સહી", "સહીની વિગત", "નોંધ / પાન"],
-        [9, 12, 12, 7, 11, 11, 15, 10, 17, 12, 12, 12, 34, 44]);
+      H(ws, 4, ["વર્ષ", "તારીખથી", "તારીખ સુધી", "દિવસ", "અહેવાલ લખનાર", "સમીક્ષક", "પ્રકાર", "આખરી ગુણ", "આગલા સમયગાળા સાથે સળંગ?", "પ્રમાણપત્ર માન્ય?", "અહેવાલ લખનારની સહી", "સમીક્ષકની સહી", "ફોર્મના બધા પાન છે?", "સહી અને પાનની વિગત", "નોંધ / પાન"],
+        [9, 12, 12, 7, 11, 11, 15, 10, 17, 12, 12, 12, 12, 38, 40]);
       ws.height(4, 30);
       let endD = D(c.apar_end), startD = D(c.apar_start);
       if (!endD && dpc) endD = new Date(Date.UTC(dpc.getUTCMonth() >= 3 ? dpc.getUTCFullYear() : dpc.getUTCFullYear() - 1, 2, 31));
       if (!startD && endD) startD = new Date(Date.UTC(endD.getUTCFullYear() - 5, 3, 1));
       const rows = (c.apar || []).map((a) => ({ ...a, f: D(a.from), t: D(a.to) })).filter((a) => a.f && a.t).sort((a, b) => a.f - b.f);
-      let r = 5, prev = null, gaps = 0, ovl = 0, bad = 0, certDays = 0, certN = 0, total = 0, sigSeen = 0; const marks = [], sigBad = [0, 0];
+      let r = 5, prev = null, gaps = 0, ovl = 0, bad = 0, certDays = 0, certN = 0, total = 0, sigSeen = 0, pgSeen = 0, pgBad = 0; const marks = [], sigBad = [0, 0];
       for (const a of rows) {
         const isCert = /પ્રમાણ|cert/i.test(a.type || "");
         const dd = days(a.f, a.t) + 1; total += dd;
@@ -825,17 +825,19 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
         // signatures of the reporting and reviewing officers on the copy in the file (online PARs: submission dates)
         const sg = (v) => [Y, N, C, NA].includes(v) ? v : "";
         const repS = sg(a.rep_sign), revS = sg(a.rev_sign) || (isCert && a.rep_sign ? NA : "");
+        const pgS = sg(a.pages_ok); if (pgS === N || pgS === C) pgBad++; if (pgS) pgSeen++;
         if (repS === N || repS === C) sigBad[0]++; if (revS === N || revS === C) sigBad[1]++; if (repS || revS) sigSeen++;
-        ws.set({ r, c: 11 }, repS, st({ align: "center" })); ws.set({ r, c: 12 }, revS, st({ align: "center" }));
-        ws.set({ r, c: 13 }, a.sign_note || "", st({ size: 9 })); // not linked, so long text wraps
-        ws.set({ r, c: 14 }, a.remark || "", st({ size: 9 }));
-        const hl = Math.max(lines(a.sign_note, 40), lines(a.remark, 52));
+        ws.set({ r, c: 11 }, repS, st({ align: "center" })); ws.set({ r, c: 12 }, revS, st({ align: "center" })); ws.set({ r, c: 13 }, pgS, st({ align: "center" }));
+        const det = [a.sign_note ? "સહી: " + a.sign_note : "", a.pages_note ? "પાન: " + a.pages_note : ""].filter(Boolean).join("; ");
+        ws.set({ r, c: 14 }, det, st({ size: 9 })); // not linked, so long text wraps
+        ws.set({ r, c: 15 }, a.remark || "", st({ size: 9 }));
+        const hl = Math.max(lines(det, 44), lines(a.remark, 48));
         if (hl > 1) ws.height(r, Math.min(80, 12 * hl + 4));
         prev = a; r++;
       }
       const a1 = 5, a2 = Math.max(5, r - 1), RG = (col) => `${col}${a1}:${col}${a2}`;
       ws.cf(RG("I"), [{ eq: "ખૂટતો ગાળો", style: { fill: RED } }, { eq: "બેવડો દિવસ", style: { fill: AMBER } }]);
-      statusCF(ws, RG("J")); statusCF(ws, `K${a1}:L${a2}`);
+      statusCF(ws, RG("J")); statusCF(ws, `K${a1}:M${a2}`);
       r += 1;
       const covOk = rows.length && startD && endD && rows[0].f.getTime() === startD.getTime() && rows[rows.length - 1].t.getTime() >= endD.getTime() && gaps === 0;
       const avg = marks.length ? Math.round(marks.reduce((x, y) => x + y, 0) / marks.length * 10) / 10 : "";
@@ -852,6 +854,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
         ["avg", "સરેરાશ આખરી ગુણ", marks.length ? { f: `=ROUND(AVERAGE(${RG("H")}),1)`, v: avg } : "—"],
         ["lohi", "ઓછામાં ઓછા / વધુમાં વધુ ગુણ", marks.length ? { f: `=MIN(${RG("H")})&" / "&MAX(${RG("H")})`, v: lohi } : "—"],
         ["adv", "પ્રતિકૂળ નોંધ", adverse],
+        ["pg", "પાન ખૂટતા / ચકાસવાના ફોર્મ", rows.length && pgSeen ? { f: `=COUNTIF(${RG("M")},"${N}")+COUNTIF(${RG("M")},"${C}")`, v: pgBad } : "ચકાસેલ નથી"],
         ["sig", "સહી ન હોય / ચકાસવાની (અહેવાલ લખનાર / સમીક્ષક)", rows.length && sigSeen ? { f: `=(COUNTIF(${RG("K")},"${N}")+COUNTIF(${RG("K")},"${C}"))&" / "&(COUNTIF(${RG("L")},"${N}")+COUNTIF(${RG("L")},"${C}"))`, v: `${sigBad[0]} / ${sigBad[1]}` } : "ચકાસેલ નથી"]];
       const R0 = {};
       for (const [k, lab, val] of sum) {
@@ -868,16 +871,17 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
       const adv = /^\s*(નથી|—|-)?\s*(\(|$)/.test(adverse) ? "પ્રતિકૂળ નોંધ નથી" : "પ્રતિકૂળ નોંધ: " + String(adverse).slice(0, 80);
       const sr = r, okr = r + 1;
       const sigTxt = !sigSeen ? "" : sigBad[0] + sigBad[1] ? `; સહી ખૂટે/ચકાસવી: અહેવાલ લખનાર ${sigBad[0]}, સમીક્ષક ${sigBad[1]}` : "; દરેક અહેવાલ પર અહેવાલ લખનાર અને સમીક્ષકની સહી";
-      const okv = rows.length ? (covOk && bad === 0 ? (sigBad[0] + sigBad[1] ? C : Y) : N) : C;
-      const summ = rows.length ? `${yrs}; સરેરાશ ${avg || "—"}, ગુણ ${lohi || "—"}; ${adv}${sigTxt}` : "ખાનગી અહેવાલની વિગત મળી નથી – ચકાસો";
+      const pgTxt = !pgSeen ? "" : pgBad ? `; ${pgBad} ફોર્મમાં પાન ખૂટે/ચકાસવા` : "; દરેક ફોર્મના બધા પાન છે";
+      const okv = rows.length ? (covOk && bad === 0 ? (sigBad[0] + sigBad[1] + pgBad ? C : Y) : N) : C;
+      const summ = rows.length ? `${yrs}; સરેરાશ ${avg || "—"}, ગુણ ${lohi || "—"}; ${adv}${sigTxt}${pgTxt}` : "ખાનગી અહેવાલની વિગત મળી નથી – ચકાસો";
       ws.set({ r: sr, c: 1 }, "સારાંશ", st({ bold: true, fill: SUB })); ws.merge(`A${sr}:B${sr}`);
-      ws.set({ r: sr, c: 3 }, rows.length && marks.length ? { f: `="${qt(yrs)}; સરેરાશ "&E${R0.avg}&", ગુણ "&E${R0.lohi}&"; ${qt(adv)}${qt(sigTxt)}"`, v: summ } : summ, st({ align: "center" })); ws.merge(`C${sr}:H${sr}`);
+      ws.set({ r: sr, c: 3 }, rows.length && marks.length ? { f: `="${qt(yrs)}; સરેરાશ "&E${R0.avg}&", ગુણ "&E${R0.lohi}&"; ${qt(adv)}${qt(sigTxt)}${qt(pgTxt)}"`, v: summ } : summ, st({ align: "center" })); ws.merge(`C${sr}:H${sr}`);
       ws.set({ r: okr, c: 1 }, "ખાનગી અહેવાલ 'સિદ્ધ ગુણવત્તા અને કાર્યક્ષમતા' દર્શાવે છે?", st({ bold: true, fill: SUB })); ws.merge(`A${okr}:B${okr}`);
-      ws.set({ r: okr, c: 3 }, rows.length ? { f: sigSeen ? `=IF(AND(E${R0.cov}="${Y}",E${R0.gap}=0,E${R0.bad}=0),IF(COUNTIF(K${a1}:L${a2},"${N}")+COUNTIF(K${a1}:L${a2},"${C}")>0,"${C}","${Y}"),"${N}")` : `=IF(AND(E${R0.cov}="${Y}",E${R0.gap}=0,E${R0.bad}=0),"${Y}","${N}")`, v: okv } : C, st({ bold: true, align: "center" }));
+      ws.set({ r: okr, c: 3 }, rows.length ? { f: sigSeen || pgSeen ? `=IF(AND(E${R0.cov}="${Y}",E${R0.gap}=0,E${R0.bad}=0),IF(COUNTIF(K${a1}:M${a2},"${N}")+COUNTIF(K${a1}:M${a2},"${C}")>0,"${C}","${Y}"),"${N}")` : `=IF(AND(E${R0.cov}="${Y}",E${R0.gap}=0,E${R0.bad}=0),"${Y}","${N}")`, v: okv } : C, st({ bold: true, align: "center" }));
       ws.merge(`C${okr}:H${okr}`); statusCF(ws, `C${okr}`);
-      if (c.apar_note) { ws.set({ r: okr + 1, c: 1 }, c.apar_note, st({ size: 9 })); ws.merge(`A${okr + 1}:N${okr + 1}`); ws.height(okr + 1, Math.max(30, 13 * lines(c.apar_note, 170))); }
+      if (c.apar_note) { ws.set({ r: okr + 1, c: 1 }, c.apar_note, st({ size: 9 })); ws.merge(`A${okr + 1}:O${okr + 1}`); ws.height(okr + 1, Math.max(30, 13 * lines(c.apar_note, 170))); }
       ws.freeze = "A5";
-      linkify(ws, [["N", false]], 14, true);
+      linkify(ws, [["O", false]], 15, true);
       aparRef.push({ sum: q(ws.name) + `C${sr}`, ok: q(ws.name) + `C${okr}`, avgCell: q(ws.name) + `E${R0.avg}`, okv, summ, avg });
     });
 
@@ -1359,15 +1363,18 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     verdictCF(fp, "C62:F62");
     fset("A64", "4 થી વધુ ઉમેદવાર હોય તો આ પત્રકની વધારાની નકલ જોડવી.", { size: 8, color: FPMUTED }); fp.merge("A64:G64"); fp.height(64, 15);
     sec(66, "(ઘ) ક્ષતિઓ / મુદ્દાઓ");
-    th("A67", "#"); th("B67", "મુદ્દો"); fp.merge("B67:F67"); th("G67", "પ્રકાર"); fp.height(67, 15);
+    th("A67", "#"); th("B67", "મુદ્દો"); fp.merge("B67:E67"); th("F67", "આધાર પાન"); th("G67", "પ્રકાર"); fp.height(67, 15);
     const top = [...acts, ...OBS.filter((o) => !isQ(o) && !/સ્થિતિ/.test(o.type || ""))].slice(0, 8);
     for (let i = 0; i < 8; i++) {
       const r = 68 + i, o = top[i];
       fset(`A${r}`, i + 1, { align: "center" });
       const txt = o ? String(o.text || "").slice(0, 700) : "";
-      inp(`B${r}`, txt); fp.merge(`B${r}:F${r}`);
+      inp(`B${r}`, txt); fp.merge(`B${r}:E${r}`);
+      // page links of the point: the cell opens all its pages, the columns to the right open each group
+      const pg = o ? String(pagesOf(o.pages || "", (txt.match(PREF) || []).join(", ")) || "") : "";
+      fset(`F${r}`, pg.split(", ").filter(Boolean).slice(0, 10).join(", "), { align: "center", valign: "center", size: 8 });
       inp(`G${r}`, o ? (isQ(o) ? "જિ.વિ.અ.ને પૃચ્છા" : "નોંધ") : "", { align: "center" });
-      fp.height(r, o ? Math.max(24, 12.5 * lines(txt, 95) + 6) : 24);
+      fp.height(r, o ? Math.max(24, 12.5 * lines(txt, 82) + 6) : 24);
     }
     fp.dropdown("G68:G75", ["જિ.વિ.અ.ને પૃચ્છા", "નોંધ"]);
     fp.cf("G68:G75", [{ eq: "જિ.વિ.અ.ને પૃચ્છા", style: { fill: AMBER, bold: true, color: "FF7F5500" } }]);
@@ -1386,7 +1393,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     });
     fp.height(83, 30); fp.height(84, 45.75); fp.height(85, 18); fp.height(86, 18);
     fset("A87", "પંચાયત, ગ્રામ ગૃહ નિર્માણ અને ગ્રામ વિકાસ વિભાગના પરિપત્ર નં. બઢત/152021/920/ખ તા.19-07-2021ના ચેકલીસ્ટના સંદર્ભમાં તૈયાર કરેલ.", { size: 7, color: FPMUTED }); fp.merge("A87:G87"); fp.height(87, 15);
-    linkify(fp, [["E", "auto"], ["G", "auto"]], 7);
+    linkify(fp, [["E", "auto"], ["F", true, 68, 75], ["G", "auto"]], 7);
 
     // ---------- Register row (to copy into Promotion_Register_Gujarati.xlsx)
     title(wsReg, "રજીસ્ટર માટેની હાર", "આ હાર 'Promotion_Register_Gujarati.xlsx'ના રજીસ્ટર પત્રકમાં નકલ કરી શકાય.");
@@ -1624,16 +1631,20 @@ function estimate() {
 }
 
 const trim = (s, n) => (s || "").length > n ? s.slice(0, n) + "…" : (s || "");
-// last two pages of every APAR form (and page 2 of long online PARs, which holds the submission-status table) and every APAR certificate
-function aparSignPages() {
-  const out = new Set(); let g = [];
-  const flush = () => { if (!g.length) return; g.slice(-2).forEach((p) => out.add(p)); if (g.length >= 7) out.add(g[1]); g = []; };
+// APAR forms as runs of consecutive APAR pages (a new form starts at each first page, k = 1), and APAR certificates
+function aparGroups() {
+  const out = []; let g = null;
   for (let p = 1; p <= S.n; p++) {
     const c = S.cls[p];
-    if (c && c.t === "apar") { if (g.length && (c.k === 1 || (S.cls[g[g.length - 1]].who || "") !== (c.who || ""))) flush(); g.push(p); }
-    else { flush(); if (c && c.t === "apar_certificate") out.add(p); }
+    if (c && c.t === "apar") { if (!g || c.k === 1 || (S.cls[g.pages[g.pages.length - 1]].who || "") !== (c.who || "")) { g = { who: c.who || "", pages: [] }; out.push(g); } g.pages.push(p); }
+    else { g = null; if (c && c.t === "apar_certificate") out.push({ who: c.who || "", pages: [p], cert: true }); }
   }
-  flush();
+  return out;
+}
+// pages to look at: the last two of every form, page 2 of long (online) forms with the submission-status table, every certificate
+function aparSignPages() {
+  const out = new Set();
+  for (const g of aparGroups()) { if (g.cert) out.add(g.pages[0]); else { g.pages.slice(-2).forEach((p) => out.add(p)); if (g.pages.length >= 7) out.add(g.pages[1]); } }
   return [...out].sort((a, b) => a - b);
 }
 function pageIndex() { return Object.keys(S.cls).map(Number).sort((a, b) => a - b).map((p) => `${p}:${S.cls[p].t}${S.cls[p].who ? ":" + S.cls[p].who : ""}`).join(" "); }
@@ -1705,8 +1716,9 @@ Reply with only a JSON array: [{"p":N,"t":"${TYPES.split(", ")[0]}|…","who":"s
       await pool(calls.map((ps) => async () => {
         const ans = await askArr(`These ${ps.length} images are pages ${ps.join(", ")} (in this order) of APARs (annual performance appraisal reports, ખાનગી અહેવાલ), fixed-pay appraisal forms (પત્રક-3) and APAR certificates (પ્રમાણપત્ર) in a scanned Gujarati promotion proposal.
 For EACH page say whether the reporting officer (અહેવાલ લખનાર) and the reviewing officer (સમીક્ષક) have SIGNED in their signature place on that page: a handwritten signature or initials counts; a rubber seal alone does not. On an online / system-generated PAR, the "Appraisal document submission status" table giving the reporting and reviewing officers' names and dates counts as signed. A system-generated "NO PAR" certificate needs no signature (લાગુ નથી). A short-period certificate needs only the reporting officer's signature (reviewing: લાગુ નથી).
-Reply with only a JSON array: [{"p":N,"who":"employee surname in Gujarati","period":"dd-mm-yyyy થી dd-mm-yyyy if shown","rep":"હા|ના|લાગુ નથી|પાન પર નથી","rev":"હા|ના|લાગુ નથી|પાન પર નથી","note":"who signed (designation), dates, online submission dates, or what is missing"}]. Use "પાન પર નથી" when that officer's signature place is not on this page.`, ps.map((p) => S.pages[p - 1].blob), "default");
-        if (Array.isArray(ans)) for (const o of ans) { const p = parseInt(String(o.p).replace(/\D/g, ""), 10); if (ps.includes(p)) S.sig[p] = { rep: String(o.rep || ""), rev: String(o.rev || ""), note: String(o.note || ""), period: String(o.period || "") }; }
+Also give the form's own page number printed on the page (e.g. "5" or "6"; "" if none) and the section titles on it (e.g. "Section-IV સમીક્ષા", "પરિશિષ્ટ-4 વધારાનો હવાલો", "Appraisal document submission status").
+Reply with only a JSON array: [{"p":N,"who":"employee surname in Gujarati","period":"dd-mm-yyyy થી dd-mm-yyyy if shown","rep":"હા|ના|લાગુ નથી|પાન પર નથી","rev":"હા|ના|લાગુ નથી|પાન પર નથી","note":"who signed (designation), dates, online submission dates, or what is missing","pno":"printed page no.","section":"section titles"}]. Use "પાન પર નથી" when that officer's signature place is not on this page.`, ps.map((p) => S.pages[p - 1].blob), "default");
+        if (Array.isArray(ans)) for (const o of ans) { const p = parseInt(String(o.p).replace(/\D/g, ""), 10); if (ps.includes(p)) S.sig[p] = { rep: String(o.rep || ""), rev: String(o.rev || ""), note: String(o.note || ""), period: String(o.period || ""), pno: String(o.pno || ""), section: String(o.section || "") }; }
         ps.forEach((p) => { if (!S.sig[p]) S.sig[p] = { rep: "", rev: "", note: "(વાંચી શકાયું નથી)", period: "" }; });
         done += ps.length; setStage("read", "run", `સહી ચકાસણી ${done} / ${sigTodo.length}`); saveWork();
       }), 2);
@@ -1797,7 +1809,10 @@ TRANSCRIBED PAGES (this candidate first, then common pages):
 ${textsFor([...mine, ...common], 160000)}
 
 APAR SIGNATURE CHECK (read from the page images of this candidate's APARs and certificates; page: reporting / reviewing – note):
-${Object.keys(S.sig).map(Number).sort((a, b) => a - b).filter((p) => sameWho(S.cls[p]?.who, fc.who) || sameWho(S.cls[p]?.who, fc.short)).map((p) => `પાન ${p}${S.sig[p].period ? " (" + S.sig[p].period + ")" : ""}: અહેવાલ લખનાર ${S.sig[p].rep || "?"} / સમીક્ષક ${S.sig[p].rev || "?"}${S.sig[p].note ? " – " + S.sig[p].note : ""}`).join("\n") || "none checked"}
+${Object.keys(S.sig).map(Number).sort((a, b) => a - b).filter((p) => sameWho(S.cls[p]?.who, fc.who) || sameWho(S.cls[p]?.who, fc.short)).map((p) => `પાન ${p}${S.sig[p].period ? " (" + S.sig[p].period + ")" : ""}${S.sig[p].pno ? " [ફોર્મનું પાન " + S.sig[p].pno + "]" : ""}${S.sig[p].section ? " {" + S.sig[p].section + "}" : ""}: અહેવાલ લખનાર ${S.sig[p].rep || "?"} / સમીક્ષક ${S.sig[p].rev || "?"}${S.sig[p].note ? " – " + S.sig[p].note : ""}`).join("\n") || "none checked"}
+
+APAR FORMS IN THE PDF (runs of consecutive APAR pages; a paper APAR has 6 pages, Section I to IV, sometimes followed by Annexure-4 for additional charge; an online PAR has 8-9 pages ending with Section IV; a fixed-pay પત્રક-3 has 2 pages; a certificate 1 page):
+${aparGroups().filter((g) => sameWho(g.who, fc.who) || sameWho(g.who, fc.short)).map((g) => `${g.cert ? "પ્રમાણપત્ર" : "ફોર્મ"} પાન ${g.pages[0]}${g.pages.length > 1 ? "-" + g.pages[g.pages.length - 1] : ""} (${g.pages.length} પાન)`).join("; ") || "none found"}
 
 Reply with only a JSON object (all text in Gujarati):
 {"short":"${fc.short}","name":"full name with શ્રી / કુ. / શ્રીમતી","name_short":"title, initials and surname, e.g. શ્રી બી.જે. છૈયા","seniority":${+fc.seniority || 0},"category":"","present":"present post, branch and office","pa_pages":"this candidate's Patrak-A page(s), e.g. પાન 7",
@@ -1806,14 +1821,14 @@ Reply with only a JSON object (all text in Gujarati):
 "first_appt":"dd-mm-yyyy first appointment in service","first_appt_post":"post of first appointment, e.g. જુનિયર ક્લાર્ક (હિસાબી)","first_appt_source":"documents with pages","first_appt_note":"e.g. fixed-pay years; whether it counts for this promotion",
 "retirement":"dd-mm-yyyy","retirement_source":"e.g. પત્રક-ક નિવૃત્તિ 30-05-2052 (પાન 13)","exam":"short result of the departmental exam: date, attempt, marks","exam_pages":"પાન …","dpc_decision":"યોગ્ય|અયોગ્ય",
 "criteria":[12 objects in the order of criteria 1-12: {"pos":"candidate's position from the file in 1-3 sentences","pages":"પાન …","value":"short value","met":"હા|ના|ચકાસો|લાગુ નથી"}],
-"apar":[{"year":"2021-22","from":"dd-mm-yyyy","to":"dd-mm-yyyy","rep":"reporting marks","rev":"reviewing marks","type":"ખાનગી અહેવાલ|પ્રમાણપત્ર","marks":82,"remark":"reason / pages","rep_sign":"હા|ના|ચકાસો|લાગુ નથી","rev_sign":"હા|ના|ચકાસો|લાગુ નથી","sign_note":"who signed and on which page, online submission dates, or what is missing"}],
+"apar":[{"year":"2021-22","from":"dd-mm-yyyy","to":"dd-mm-yyyy","rep":"reporting marks","rev":"reviewing marks","type":"ખાનગી અહેવાલ|પ્રમાણપત્ર","marks":82,"remark":"reason / pages","rep_sign":"હા|ના|ચકાસો|લાગુ નથી","rev_sign":"હા|ના|ચકાસો|લાગુ નથી","sign_note":"who signed and on which page, online submission dates, or what is missing","pages_ok":"હા|ના|ચકાસો","pages_note":"pages of the form and sections present, e.g. 6 પાન, વિભાગ I થી IV (74-79); or which page / section is missing"}],
 "apar_start":"dd-mm-yyyy","apar_end":"dd-mm-yyyy","apar_adverse":"'નથી' or the adverse remark, with source pages","apar_note":"corrections made or anything unusual in the APAR record","apar_source":"Patrak-A item 12 page and pages of the APAR copies",
 "checks":{"seniority_exam":{"last_year":"what the PREVIOUS year's final seniority list shows in the departmental-exam column for this candidate, with page","current":"what this year's list shows, with page","result":"exam result: date and attempt, with pages","note":"","ok":"હા|ના|ચકાસો","pages":"પાન …"},
 "ccc":{"date":"dd-mm-yyyy","institution":"university / institution, certificate no. and date","marks":"theory / practical","patrak_d":"entry in Patrak-D and whether the centre is recognised","ok":"હા|ના|ચકાસો","pages":"પાન …"},
 "hindi":{"status":"પાસ|મુક્તિ|બાકી","evidence":"order or result no. and date, and the basis","patrak_k":"what Patrak-K says","ok":"હા|ના|ચકાસો","pages":"પાન …"},
 "retirement":{"dob":"dd-mm-yyyy","dob_source":"documents with pages","patrak_k":"dd-mm-yyyy retirement date written in Patrak-K","note":"","pages":"પાન …"}},
 "obs":[{"type":"મુખ્ય મુદ્દો|કાર્યવાહી|વિસંગતતા|નોંધ","text":"","impact":"","pages":"પાન …","ask_ddo":false}]}
-APAR rows: every row of the Patrak-A APAR table for the period checked, final marks as a number (null for certificates). rep_sign / rev_sign: from the APAR SIGNATURE CHECK for that form's pages (online PAR: હા, with the submission dates in sign_note; certificate: rev_sign લાગુ નથી; ચકાસો when its pages were not checked or are not in the file). An APAR without the reporting or reviewing officer's signature is a query to the DDO (obs, type કાર્યવાહી, ask_ddo true). Use "ચકાસો" when the file does not prove a criterion. checks = the compulsory checks 3-6 for this candidate: "હા" only when the file proves it, "ના" when the file contradicts it (e.g. the previous year's list leaves the exam column blank although the exam was passed, or Patrak-K differs from the order), "ચકાસો" when the evidence is missing. obs = points specific to this candidate; every compulsory check that is not "હા" must also be in obs as type "કાર્યવાહી" with ask_ddo true.`;
+APAR rows: every row of the Patrak-A APAR table for the period checked, final marks as a number (null for certificates). rep_sign / rev_sign: from the APAR SIGNATURE CHECK for that form's pages (online PAR: હા, with the submission dates in sign_note; certificate: rev_sign લાગુ નથી; ચકાસો when its pages were not checked or are not in the file). An APAR without the reporting or reviewing officer's signature is a query to the DDO (obs, type કાર્યવાહી, ask_ddo true). pages_ok: whether every page of that form is in the file – use APAR FORMS IN THE PDF, the printed page numbers and section titles (a paper form whose last form page is 6 / Section IV with 6 pages present is complete; a gap in the printed numbers, a missing Section IV or a run shorter than the form is ના); a missing page is a query to the DDO. Use "ચકાસો" when the file does not prove a criterion. checks = the compulsory checks 3-6 for this candidate: "હા" only when the file proves it, "ના" when the file contradicts it (e.g. the previous year's list leaves the exam column blank although the exam was passed, or Patrak-K differs from the order), "ચકાસો" when the evidence is missing. obs = points specific to this candidate; every compulsory check that is not "હા" must also be in obs as type "કાર્યવાહી" with ask_ddo true.`;
       let j = null;
       try { j = await ask(prompt, null, "complex"); } catch (e) { if (!SOFT.has(e?.code)) throw e; }
       if (!j || typeof j !== "object" || !Array.isArray(j.criteria)) throw { code: "invalid_json", message: "candidate " + fc.short };
