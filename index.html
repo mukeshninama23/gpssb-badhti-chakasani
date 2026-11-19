@@ -1346,45 +1346,65 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
       if (k === 6) { const ms = (c.apar || []).map((a) => num(a.marks)).filter((x) => x != null); return shortTxt(cr.value || (ms.length ? `સરેરાશ ગુણ ${Math.round(ms.reduce((a, b) => a + b, 0) / ms.length)}, ${ms.length} અહેવાલ` : "")); }
       return shortTxt(cr.value);
     };
+    // feeder (part 0) and promotion (part 1) cadre from criterion 1 "A → B", else from the file particulars
+    const cadreOf = (c, part) => { const v = String((c?.criteria || [])[0]?.value || ""); const pr = v.split(/\s*(?:→|->)\s*/); return (pr.length > 1 ? pr[part] : "") || (part ? F.promotion || F.promotion_cadre : F.feeder || F.feeder_cadre) || (part ? "" : v); };
     const withDetail = (o, dexpr, dval) => { const ex = o.f.slice(1); return { f: `=IF((${ex})="","",(${ex})&CHAR(10)&${dexpr})`, v: o.v ? o.v + (dval ? "\n" + dval : "") : "" }; };
     const ST = (r, v) => `LEFT(${r},${v.length})="${v}"`; // status = first word of the cell
     const CNT = (rg, v) => `SUMPRODUCT(--(LEFT(${rg},${v.length})="${v}"))`;
+    // criteria cells of one candidate: row 50 and rows 52-61 (row 51 is the promotion cadre, not a criterion); met = filled and not ના / ચકાસો / લાગુ નથી
+    const CR = (col) => [`${col}50`, `${col}52:${col}61`];
+    const CNTX = (col, v) => CR(col).map((rg) => CNT(rg, v)).join("+");
+    const FILLED = (col) => CR(col).map((rg) => `SUMPRODUCT(--(LEN(${rg})>0))`).join("+");
     const fpf = {
       2: (col, e) => ({ f: `=IF(OR(${col}46="",$C$15="",$C$17=""),"",IF(DATEDIF(${col}46,$C$15,"y")>=$C$17,"${Y}","${N}"))`, v: e?.sv ? (e.sv.y >= miny ? Y : N) : "" }),
       10: (col, e, c) => { const s = num(c?.seniority); return { f: `=IF(OR(${col}43="",$C$16="",$E$16=""),"",IF(AND(${col}43>=$C$16,${col}43<=$E$16),"${Y}","${N}"))`, v: s == null || zf == null || zt == null ? "" : (s >= zf && s <= zt ? Y : N) }; },
       11: (col, e, c) => ({ f: `=IF(OR(${col}42="",$E$15=""),"",IF($E$15>0,"${Y}","${N}"))`, v: !c || vv[12] == null ? "" : (vv[12] > 0 ? Y : N) }),
     };
     FP_CRIT.forEach((name, k) => {
-      const r = 50 + k, kk = k + 1;
+      const r = k === 0 ? 50 : 51 + k, kk = k + 1;
       rowLab(r, name, kk);
       FC.forEach((col, i) => {
         const c = c4[i], e = c ? EL_[i] : null;
         if (fpf[kk]) {
           const o = fpf[kk](col, e, c), s0 = num(c?.seniority);
           const d = kk === 2 ? [`${col}47`, e?.sv ? `${e.sv.y} વર્ષ ${e.sv.m} માસ` : ""]
-            : kk === 10 ? [`"ક્રમ "&${col}43&" ("&$C$16&"-"&$E$16&")"`, s0 == null ? "" : `ક્રમ ${s0} (${zf ?? ""}-${zt ?? ""})`]
+            : kk === 10 ? null
             : [`"ખાલી જગ્યા "&$E$15`, vv[12] == null ? "" : `ખાલી જગ્યા ${vv[12]}`];
-          calc(`${col}${r}`, withDetail(o, d[0], d[1]), { align: "center", size: 8 });
-        } else { const st0 = e ? e.metVals[k] : "", dt = st0 ? fpDetail(c, k) : ""; inp(`${col}${r}`, st0 ? st0 + (dt ? "\n" + dt : "") : "", { align: "center", size: 8 }); }
+          if (kk === 10) {
+            const inR = s0 != null && zf != null && zt != null && s0 >= zf && s0 <= zt;
+            calc(`${col}${r}`, { f: `=IF(OR(${col}43="",$C$16="",$E$16=""),"",IF(AND(${col}43>=$C$16,${col}43<=$E$16),"","${N} – ")&"ક્રમ "&${col}43&CHAR(10)&"(વિચારેલ ક્રમ "&$C$16&" થી "&$E$16&")")`,
+              v: s0 == null || zf == null || zt == null ? "" : `${inR ? "" : N + " – "}ક્રમ ${s0}\n(વિચારેલ ક્રમ ${zf} થી ${zt})` }, { align: "center", size: 8 });
+          } else calc(`${col}${r}`, withDetail(o, d[0], d[1]), { align: "center", size: 8 });
+        } else {
+          const st0 = e ? e.metVals[k] : "", dt = st0 ? fpDetail(c, k) : "";
+          let txt = st0 ? st0 + (dt ? "\n" + dt : "") : "";
+          if (st0 && k === 0) { const fc0 = cadreOf(c, 0); txt = st0 === Y ? fc0 : `${st0} – ${fc0}`; }
+          if (st0 && (k === 7 || k === 8)) txt = st0 === Y ? "કોઈ નથી" : `${st0}${dt ? " – " + dt : ""}`;
+          inp(`${col}${r}`, txt, { align: "center", size: 8 });
+        }
       });
       srcG(r, pagesOf(c4.map((c) => (c.criteria || [])[k]?.pages || "")));
     });
-    for (let r = 43; r <= 61; r++) fp.height(r, 21);
+    for (let r = 43; r <= 62; r++) fp.height(r, 21);
     FP_CRIT.forEach((name, k) => { // taller rows for the details (about 21 characters a line at 8 pt)
-      const dl = Math.max(0, ...c4.map((c) => { const t = fpDetail(c, k) || (k === 9 || k === 10 || k === 1 ? "x" : ""); return t ? lines(t, 21) : 0; }));
-      fp.height(50 + k, Math.max(21, 11 * (1 + dl) + 5));
+      const one = k === 0 || k === 7 || k === 8; // these show only the cadre / "કોઈ નથી" when met
+      const dl = Math.max(0, ...c4.map((c) => { const t = k === 0 ? cadreOf(c, 0) : one ? "" : fpDetail(c, k) || (k === 9 || k === 10 || k === 1 ? "x" : ""); return t ? lines(t, 21) : 0; }));
+      fp.height(k === 0 ? 50 : 51 + k, one ? Math.max(21, 11 * Math.max(1, dl) + 8) : Math.max(21, 11 * (1 + dl) + 5));
     });
-    rowLab(61, "મળેલ માપદંડ (વયનિવૃત્તિ તારીખ સહિત)");
-    FC.forEach((col, i) => { const e = c4[i] ? EL_[i] : null; calc(`${col}61`, { f: `=IF(${col}42="","",(${CNT(`${col}50:${col}60`, Y)}+IF(AND(ISNUMBER(${col}49),ISNUMBER($C$15)),IF(${col}49>=$C$15,1,0),0))&" / "&(12-${CNT(`${col}50:${col}60`, NA)}))`, v: e ? e.met : "" }, { align: "center" }); });
-    rowLab(62, "પરિણામ");
-    FC.forEach((col, i) => { const e = c4[i] ? EL_[i] : null; calc(`${col}62`, { f: `=IF(${col}42="","",IF(OR(${CNT(`${col}50:${col}60`, N)}>0,AND(ISNUMBER(${col}49),ISNUMBER($C$15),${col}49<$C$15)),"${NEL}",IF(${CNT(`${col}50:${col}60`, C)}+COUNTBLANK(${col}49:${col}60)>0,"${NRV}","${EL}")))`, v: e ? e.verdict : "" }, { align: "center", bold: true }); });
-    fp.height(62, 25.5);
-    rowLab(63, "સમિતિનો નિર્ણય"); FC.forEach((col, i) => inp(`${col}63`, c4[i]?.dpc_decision || "", { align: "center" })); srcG(63, pagesOf(F.decision_source || F.dpc_source)); fp.height(63, 21);
-    fp.dropdown("C63:F63", ["યોગ્ય", "અયોગ્ય"]); // criteria cells carry details, so no હા/ના dropdown there
-    fp.cf("C50:F60", [{ expr: ST("C50", Y), style: { fill: GREEN, color: "FF006100" } }, { expr: ST("C50", N), style: { fill: RED, color: "FF9C0006" } }, { expr: ST("C50", C), style: { fill: AMBER, color: "FF7F5500" } }, { expr: ST("C50", NA), style: { fill: GREY } }]);
+    rowLab(51, "બઢતીનો સંવર્ગ");
+    FC.forEach((col, i) => inp(`${col}51`, c4[i] ? cadreOf(c4[i], 1) : "", { align: "center", size: 8 })); srcG(51, pagesOf(c4.map((c) => (c.criteria || [])[0]?.pages || ""))); fp.height(51, 32);
+    rowLab(62, "મળેલ માપદંડ (વયનિવૃત્તિ તારીખ સહિત)");
+    FC.forEach((col, i) => { const e = c4[i] ? EL_[i] : null; calc(`${col}62`, { f: `=IF(${col}42="","",((${FILLED(col)})-(${CNTX(col, N)})-(${CNTX(col, C)})-(${CNTX(col, NA)})+IF(AND(ISNUMBER(${col}49),ISNUMBER($C$15)),IF(${col}49>=$C$15,1,0),0))&" / "&(12-(${CNTX(col, NA)})))`, v: e ? e.met : "" }, { align: "center" }); });
+    rowLab(63, "પરિણામ");
+    FC.forEach((col, i) => { const e = c4[i] ? EL_[i] : null; calc(`${col}63`, { f: `=IF(${col}42="","",IF(OR((${CNTX(col, N)})>0,AND(ISNUMBER(${col}49),ISNUMBER($C$15),${col}49<$C$15)),"${NEL}",IF((${CNTX(col, C)})+COUNTBLANK(${col}49:${col}50)+COUNTBLANK(${col}52:${col}61)>0,"${NRV}","${EL}")))`, v: e ? e.verdict : "" }, { align: "center", bold: true }); });
+    fp.height(63, 25.5);
+    rowLab(64, "સમિતિનો નિર્ણય"); FC.forEach((col, i) => inp(`${col}64`, c4[i]?.dpc_decision || "", { align: "center" })); srcG(64, pagesOf(F.decision_source || F.dpc_source)); fp.height(64, 21);
+    fp.dropdown("C64:F64", ["યોગ્ય", "અયોગ્ય"]); // criteria cells carry details, so no હા/ના dropdown there
+    const crCF = (a) => [{ expr: ST(a, N), style: { fill: RED, color: "FF9C0006" } }, { expr: ST(a, C), style: { fill: AMBER, color: "FF7F5500" } }, { expr: ST(a, NA), style: { fill: GREY } }, { expr: `LEN(${a})>0`, style: { fill: GREEN, color: "FF006100" } }];
+    fp.cf("C50:F50", crCF("C50")); fp.cf("C52:F61", crCF("C52"));
     fp.cf("C49:F49", [{ expr: "AND(ISNUMBER(C49),ISNUMBER($C$15),C49>=$C$15)", style: { fill: GREEN, color: "FF006100" } }, { expr: "AND(ISNUMBER(C49),ISNUMBER($C$15),C49<$C$15)", style: { fill: RED, color: "FF9C0006" } }]);
-    verdictCF(fp, "C62:F62");
-    fset("A64", "4 થી વધુ ઉમેદવાર હોય તો આ પત્રકની વધારાની નકલ જોડવી.", { size: 8, color: FPMUTED }); fp.merge("A64:G64"); fp.height(64, 15);
+    verdictCF(fp, "C63:F63");
+    fset("A65", "4 થી વધુ ઉમેદવાર હોય તો આ પત્રકની વધારાની નકલ જોડવી.", { size: 8, color: FPMUTED }); fp.merge("A65:G65"); fp.height(65, 15);
     sec(66, "(ઘ) ક્ષતિઓ / મુદ્દાઓ");
     th("A67", "#"); th("B67", "મુદ્દો"); fp.merge("B67:E67"); th("F67", "આધાર પાન"); th("G67", "પ્રકાર"); fp.height(67, 15);
     const top = [...acts, ...OBS.filter((o) => !isQ(o) && !/સ્થિતિ/.test(o.type || ""))].slice(0, 8);
@@ -1418,7 +1438,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     { // page 3 normally starts at (ચ); when (ગ) and (ઘ) together are too tall for page 2, start page 3 at (ઘ) instead
       const hs = (a, b) => { let t = 0; for (let r = a; r <= b; r++) t += fp.rowsH[r] ?? 15; return t; };
       const PAGE = 1150; // one printed page of the front page, in row points at its fit-to-width scale
-      fp.breaks.push(hs(40, 76) > PAGE && hs(65, fp.maxR) <= PAGE ? 64 : 76);
+      fp.breaks.push(hs(40, 76) > PAGE && hs(66, fp.maxR) <= PAGE ? 65 : 76);
     }
     linkify(fp, [["E", "auto"], ["F", true, 68, 75], ["G", "auto"]], 7);
 
