@@ -103,6 +103,8 @@ button:focus-visible,.drop:focus-visible,a:focus-visible{outline:3px solid var(-
 .dl{display:flex;flex-direction:column;gap:8px}
 .dl .primary{display:flex;flex-direction:column;align-items:flex-start;gap:0;text-align:left;padding:10px 14px}
 .dl .primary small{font-weight:400;opacity:.85;font-size:12.5px}
+.dl #dladv{display:flex;flex-direction:column;align-items:flex-start;gap:0;text-align:left;padding:9px 14px}
+.dl #dladv small{font-weight:400;opacity:.8;font-size:12px}
 
 /* report workspace */
 .work{display:flex;flex-direction:column}
@@ -298,6 +300,7 @@ input.rm{font-size:13px;padding:5px 8px;min-width:150px}
           <div class="step-b dl">
             <button class="primary" id="dlzip" disabled><span id="dlziplab">ZIP ડાઉનલોડ કરો</span><small>એક્સેલ + બધા સ્કેન પાના + પાના લિંક</small></button>
             <button id="dlxlsx" disabled>ફક્ત એક્સેલ ફાઈલ</button>
+            <button id="dladv" disabled><span>મંડળ સંમતિ પત્ર (Word)</span><small>મંડળ સંમત થાય ત્યારે – ફાઈલની વિગત ભરેલ સ્ટાન્ડર્ડ પત્ર</small></button>
             <div class="muted" id="dlmsg">ZIP આખી કાઢ્યા (Extract All) પછી એક્સેલ ખોલો; પાના નંબર પર ક્લિક કરતાં તે સ્કેન પાના ખૂલશે.</div>
           </div>
         </li>
@@ -1473,7 +1476,104 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
 
     return { wb, viewers };
   }
-  return { fixPageWord, build, refGroups, datedif, toDate, fmt, CRIT, DOCS, TYPE_GU, viewerHtml, CKN, checkVals, fileIds, ESK };
+  // ---------- Board's concurrence letter (standard format of letter CB1/PR/A-04/26-27/2596-99), filled from R.
+  // Returns the .docx parts; adviceDocx zips them. Outward no., letter date and the Board's note date stay as
+  // highlighted "……" blanks unless given in opts { outward, date, noteDate }. opts.test marks every page as a test sample.
+  const GDIG = "૦૧૨૩૪૫૬૭૮૯";
+  const gdig = (s) => String(s ?? "").replace(/[0-9]/g, (d) => GDIG[+d]);
+  function adviceParts(R, opts = {}) {
+    const F = R.file || {}, ids = fileIds(R), FONT = "Nirmala UI", BL = "……";
+    const xe = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    const rpr = (o = {}) => `<w:rPr><w:rFonts w:ascii="${FONT}" w:hAnsi="${FONT}" w:eastAsia="${FONT}" w:cs="${FONT}"/>${o.b ? "<w:b/><w:bCs/>" : ""}${o.i ? "<w:i/><w:iCs/>" : ""}${o.color ? `<w:color w:val="${o.color}"/>` : ""}<w:sz w:val="${o.sz || 24}"/><w:szCs w:val="${o.sz || 24}"/>${o.hl ? '<w:highlight w:val="yellow"/>' : ""}${o.u ? '<w:u w:val="single"/>' : ""}</w:rPr>`;
+    // text -> runs; "\t" becomes a tab, every "……" blank is highlighted so it is easy to find and fill
+    const r = (t, o = {}) => String(t).split("\t").map((seg, i) => (i ? `<w:r>${rpr(o)}<w:tab/></w:r>` : "") +
+      seg.split(/(……)/).filter((s) => s !== "").map((s) => `<w:r>${rpr(s === BL ? { ...o, hl: true } : o)}<w:t xml:space="preserve">${xe(s)}</w:t></w:r>`).join("")).join("");
+    const p = (runs, o = {}) => `<w:p><w:pPr>${o.keepNext ? "<w:keepNext/>" : ""}<w:spacing w:before="${o.before || 0}" w:after="${o.after ?? 80}" w:line="${o.line || 300}" w:lineRule="auto"/>${o.ind ? `<w:ind ${Object.entries(o.ind).map(([k, v]) => `w:${k}="${v}"`).join(" ")}/>` : ""}<w:jc w:val="${o.jc || "left"}"/>${o.sect || ""}</w:pPr>${runs}</w:p>`;
+    const P = (t, o = {}, ro = {}) => p(r(t, ro), o);
+    const J = (t, ind) => p(r(t), { jc: "both", after: 120, line: 320, ind });
+    const num = (no, t, after = 100) => p(r(`${no}\t${t}`), { jc: "both", after, line: 320, ind: { left: 720, hanging: 720 } });
+    const d = (v) => { const t = toDate(v); return t ? gdig(fmt(t).replace(/-/g, "/")) : ""; };
+    const dist = String(F.district || "").replace(/^જિલ્લા\s*પંચાયત\s*,?\s*/, "").trim() || BL;
+    const cad = (s, full) => s || String(full || "").replace(/,?\s*વર્ગ-3.*$/, "").trim() || BL;
+    const feeder = cad(F.feeder_short, F.feeder), promo = cad(F.promotion_short, F.promotion);
+    const cands = (R.cands || []).filter(Boolean).filter((c) => !(c.criteria || []).some((k) => k && k.met === N)); // not those found ineligible
+    const n = cands.length, many = n > 1;
+    const now = opts.today ? toDate(opts.today) : new Date(), y = now.getUTCFullYear(), fy0 = now.getUTCMonth() >= 3 ? y : y - 1;
+    const fy = gdig(`${String(fy0).slice(2)}-${String(fy0 + 1).slice(2)}`);
+    const efile = String(ids.file_no || "").replace(/^e-Sarkar\s*–\s*/, "");
+    const boardFile = !ids.es && R.file_no ? gdig(R.file_no) : BL;
+    let ref;
+    if (ids.es) { const dd = d(F.letter_date || ids.dispatch || F.esarkar_date); ref = `આપશ્રીના ${dd ? `તા.${dd}ના ` : ""}${F.letter_no ? `પત્ર નં.${F.letter_no}, ` : ""}e-Sarkar ઈ-ફાઈલ નં. ${efile || BL}થી મળેલ દરખાસ્ત`; }
+    else if (F.letter_no || F.letter_date) ref = `આપશ્રીના ${F.letter_date ? `તા.${d(F.letter_date)}ના ` : ""}પત્ર નં.${F.letter_no || BL}`;
+    else ref = `આપશ્રીનો પત્ર – ${F.letter || BL}`;
+    const whom = many ? `કુલ-${gdig(String(n).padStart(2, "0"))} કર્મચારીઓને` : "કર્મચારીને";
+    const RIGHT = { left: 5100 };
+    const hdr = opts.test ? "rIdH" : "", ftr = opts.test ? "rIdF" : "";
+    const refs = `${hdr ? `<w:headerReference w:type="default" r:id="${hdr}"/>` : ""}${ftr ? `<w:footerReference w:type="default" r:id="${ftr}"/>` : ""}`;
+    const sectA4 = `<w:sectPr>${refs}<w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1080" w:right="1100" w:bottom="1080" w:left="1300" w:header="560" w:footer="500" w:gutter="0"/></w:sectPr>`;
+    const sectLand = `<w:sectPr>${refs}<w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="1080" w:right="720" w:bottom="1080" w:left="720" w:header="560" w:footer="500" w:gutter="0"/></w:sectPr>`;
+    const B = [];
+    B.push(P("ખાનગી", { after: 0 }));
+    B.push(P(`નં.સી.બી.૧/પીઆર/${boardFile}/${fy}/${opts.outward ? gdig(opts.outward) : BL}`, { ind: RIGHT, after: 0 }));
+    ["ગુજરાત પંચાયત સેવા પસંદગી મંડળ", "બ્લોક નં-૨, પાંચમો માળ, કર્મયોગીભવન,", "સેક્ટર-૧૦/એ, ગાંધીનગર"].forEach((t) => B.push(P(t, { ind: RIGHT, after: 0 })));
+    B.push(P(`તા. ${opts.date ? d(opts.date) : BL}`, { ind: RIGHT, after: 240 }));
+    B.push(P("પ્રતિ,", { after: 0 }), P("જિલ્લા વિકાસ અધિકારીશ્રી,", { after: 0 }), P(`જિલ્લા પંચાયત કચેરી, ${dist}`, { after: 0 }), P(`જિ- ${dist}`, { after: 200 }));
+    B.push(p(r("વિષય:- પંચાયત સેવા (વર્ગ-૩)માં બઢતી અંગેની દરખાસ્તમાં પરામર્શ કરવા બાબત.", { b: true, u: true }), { ind: { left: 1440, hanging: 720 }, after: 0 }));
+    B.push(p(r(`${feeder} સંવર્ગમાંથી ${promo} સંવર્ગ`, { b: true }), { ind: { left: 1440 }, after: 0 }));
+    B.push(p(r("સંદર્ભ:- ", { b: true }) + r(ref), { ind: { left: 1440, hanging: 720 }, after: 200 }));
+    B.push(P("શ્રીમાન,", { after: 120 }));
+    B.push(J(`ઉપરોક્ત વિષય પરત્વેના સંદર્ભદર્શિત પત્રથી આપના દ્વારા મોકલવામાં આવેલ પંચાયત સેવા(વર્ગ-૩)ના ${feeder} સંવર્ગમાંથી ${promo} સંવર્ગમાં બઢતી આપવાની દરખાસ્ત પરત્વે મંડળના આદેશાનુસાર જણાવવાનું કે, ગુજરાત પંચાયત સેવા પસંદગી બોર્ડ(કાર્યો) નિયમો-૧૯૯૮ અને ગુજરાત પંચાયત સેવા પસંદગી બોર્ડ (કાર્યો)(સુધારા) નિયમો-૨૦૨૧ની જોગવાઇઓ ધ્યાને લેતાં તેમજ સરકારશ્રીના પંચાયત વિભાગના પત્ર ક્રમાંક-ખતપ/૧૦૨૦૨૦/૧૦૦૪/ખ, તા.૦૭/૦૮/૨૦૨૧થી આપવામાં આવેલ માર્ગદર્શન ધ્યાને લેતાં આપની દરખાસ્ત સાથેના સાધનિક કાગળો ચકાસતાં, નીચેની શરતોને આધીન દરખાસ્ત સાથે સામેલ સૂચિત પસંદગીયાદીમાં (નકલ સામેલ છે.) દર્શાવ્યા મુજબના ${whom} પંચાયત સેવા(વર્ગ-૩)ના ${feeder} સંવર્ગમાંથી ${promo} સંવર્ગમાં બઢતી આપવાની દરખાસ્ત સાથે મંડળ સંમત થાય છે.`, { firstLine: 720 }));
+    B.push(num("૨.", `આ પત્ર મંડળની સરખા ક્રમાંકની ફાઇલ ઉપર મંડળની તા.${opts.noteDate ? d(opts.noteDate) : BL} નોંધથી મળેલ સંમતિ અન્વયે રવાના કરેલ છે.`));
+    B.push(num("૩.", "આ પરત્વે જિલ્લા પંચાયત દ્વારા જે હુકમ કરવામાં આવે તેની નકલ મંડળનો સંદર્ભ દર્શાવીને અત્રેની કચેરીને મોકલી આપવા વિનંતી છે.", 160));
+    B.push(p(r("શરતો:-", { b: true, u: true }), { keepNext: true }));
+    [
+      "નિમણુંક સત્તાધિકારી દ્વારા બઢતી આપતા પહેલા સામાન્ય વહીવટ વિભાગના ઠરાવ ક્રમાંક:-કકપ/૧૦૨૦૧૫/૧૬૩/ક, તા.૧૫-૪-૨૦૨૧ મુજબ સી.સી.સી પરીક્ષા માટે ઠરાવમાં દર્શાવેલ જોગવાઇનું પાલન કરવાનું રહેશે.",
+      "સબંધિત સંવર્ગના ભરતી નિયમોની જોગવાઇ મુજબ પસંદ થયેલ ઉમેદવારે સરકારશ્રી દ્વારા ઠરાવાયેલ હિન્દી અથવા ગુજરાતી અથવા તે બંને પરીક્ષા પાસ કરવી જોઇશે.",
+      "ત્રણ વર્ષ કરતા વધુ સમયથી ખાલી જગ્યાઓ ચાલુ રાખવાના આદેશો સરકારશ્રી દ્વારા કરવાના થાય છે. જેથી દરખાસ્તમાં દર્શાવેલ ખાલી જગ્યા ત્રણ વર્ષ કરતા વધુ સમયથી ખાલી હોય તો સદર જગ્યા અબેયન્સમુક્ત (પુનઃજીવિત) કરાવ્યા બાદ જ સદર કર્મચારીને બઢતી આપવાની રહેશે.",
+      "સબંધિત સંવર્ગના ભરતી નિયમોની જોગવાઇ મુજબ પસંદ થયેલ ઉમેદવારે સરકાર ઠરાવે તેવી તાલીમ, ઠરાવે તેટલી મુદત માટે લેવાની અને ઠરાવે તેવી તાલીમાંત પરીક્ષા પાસ કરવાની રહેશે.",
+      "દરખાસ્ત સાથે સામેલ સૂચિત પસંદગી યાદીમાં સમાવિષ્ટ કર્મચારીઓની બઢતી માટેની લાયકાતને પ્રતિકૂળ અસર થાય તેવો બનાવ (event) દરખાસ્ત મોકલ્યાની તારીખથી બઢતી આપવાના હુકમની તારીખ દરમ્યાન બનેલ નથી, તેની ખાતરી કર્યા બાદ જ સબંધિત કર્મચારીઓને બઢતી આપવાના હુકમ નિમણૂક સત્તાધિકારી દ્વારા કરવાના રહેશે.",
+      "નિમણુંક સત્તાધિકારીશ્રીએ નિમણુંક આપતા પહેલાં સરકારશ્રીના પ્રવર્તમાન નિતિ-નિયમોને આધીન કાર્યવાહીને અનુસરવાનું રહેશે.",
+      "મંડળની આ સંમતી પશ્ચાતવર્તી અસરથી ગણી શકાશે નહી.",
+    ].forEach((t, i) => B.push(num(`(${gdig(i + 1)})`, t)));
+    B.push(P("", { after: 0 }), P("આપનો વિશ્વાસુ", { ind: { left: 6000 }, after: 240, keepNext: true }), P("\"મંડળના આદેશાનુસાર\"", { after: 0, keepNext: true }));
+    [["સહી/-", 6300], ["સચિવ", 6300], ["ગુજરાત પંચાયત સેવા પસંદગી મંડળ", 5400], ["ગાંધીનગર", 6200]].forEach(([t, l], i) => B.push(P(t, { ind: { left: l }, after: i === 3 ? 120 : 0, keepNext: true })));
+    B.push(p(r("બીડાણ:- ", { u: true }) + r("ઉપર મુજબ"), { after: 240 }));
+    B.push(p(r("નકલ સવિનય રવાના:-", { b: true, u: true }), { keepNext: true }));
+    B.push(num("(૧)", "માન. અગ્ર સચિવશ્રી, પંચાયત ગ્રામ ગૃહ નિર્માણ અને ગ્રામ વિકાસ વિભાગ, બ્લોક નંબર-૮ નવા સચિવાલય, ગાંધીનગર તરફ જાણ સારૂ."));
+    B.push(num("(૨)", "માન. વિકાસ કમિશ્નરશ્રી, વિકાસ કમિશ્નરશ્રીની કચેરી, બ્લોક નંબર-૩, ગ્રાઉન્ડ ફ્લોર, કર્મયોગી ભવન, સેક્ટર-૧૦/એ, ગાંધીનગર તરફ જાણ સારૂ."));
+    B.push(p(r("નકલ:- ", { u: true }) + r("કચેરીની પરામર્શ શાખા-૧ ની સીલેક્ટ ફાઇલમાં રાખવા સારૂ."), { after: 0, sect: sectA4 }));
+    // enclosure: the suggested select list (landscape)
+    const W = [1500, 3300, 1900, 2000, 2400, 1900, 1400], bd = '<w:top w:val="single" w:sz="4" w:space="0" w:color="000000"/><w:left w:val="single" w:sz="4" w:space="0" w:color="000000"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="000000"/><w:right w:val="single" w:sz="4" w:space="0" w:color="000000"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="000000"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="000000"/>';
+    const tc = (t, w, o = {}) => `<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${o.head ? '<w:shd w:val="clear" w:color="auto" w:fill="EDEDED"/>' : ""}<w:vAlign w:val="center"/></w:tcPr>${p(r(t, { b: o.head, sz: 22 }), { jc: o.left ? "left" : "center", after: 0, line: 280 })}</w:tc>`;
+    const HEAD = ["આખરી પ્રવરતાયાદી ક્રમાંક", "કર્મચારીનું પુરૂ નામ", "કર્મચારીનો હાલનો હોદ્દો (સંવર્ગ)", "જે સંવર્ગમાં બઢતી આપવાની છે તે સંવર્ગ", "એડહોક બઢતી આપવાની દરખાસ્ત હોય તો તેની ટૂંકમાં વિગત", "બઢતી માટે લાગુ પડતી શરતો (જો હોય તો)", "રીમાર્કસ"];
+    const rows = (n ? cands : [{}]).map((c) => `<w:tr>${[c.seniority != null && c.seniority !== "" ? gdig(c.seniority) : BL, c.name || BL, feeder, promo, "--", "--", ""].map((v, i) => tc(v, W[i], { left: i === 1 })).join("")}</w:tr>`).join("");
+    const tbl = `<w:tbl><w:tblPr><w:tblW w:w="${W.reduce((a, b) => a + b, 0)}" w:type="dxa"/><w:tblBorders>${bd}</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="60" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${W.map((w) => `<w:gridCol w:w="${w}"/>`).join("")}</w:tblGrid><w:tr><w:trPr><w:tblHeader/></w:trPr>${HEAD.map((h, i) => tc(h, W[i], { head: true })).join("")}</w:tr>${rows}</w:tbl>`;
+    B.push(p(r("બિડાણ – સૂચિત પસંદગી યાદી (દરખાસ્ત સાથે સામેલ, નકલ)", { i: true, sz: 20 }), { jc: "right", after: 120 }));
+    B.push(p(r("પંચાયત સેવા (વર્ગ-૩)ના કર્મચારીઓને બઢતી આપવાની દરખાસ્ત સાથેની સૂચિત પસંદગી યાદી", { b: true, u: true }), { jc: "center", after: 80 }));
+    B.push(p(r(`જિલ્લા પંચાયતનું નામ:- ${dist}`, { b: true, u: true }), { jc: "center", after: 160 }));
+    B.push(tbl, P("", { after: 0 }), P("", { after: 0 }));
+    [["સહી/-", 10600], ...(F.ddo_name ? [[`(${F.ddo_name})`, 10000]] : []), ["જિલ્લા વિકાસ અધિકારી", 10000], [dist, 10500]].forEach(([t, l]) => B.push(P(t, { ind: { left: l }, after: 0 })));
+    const NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"';
+    const XH = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+    const files = {
+      "word/document.xml": `${XH}<w:document ${NS}><w:body>${B.join("")}${sectLand}</w:body></w:document>`,
+      "word/styles.xml": `${XH}<w:styles ${NS}><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="${FONT}" w:hAnsi="${FONT}" w:eastAsia="${FONT}" w:cs="${FONT}"/><w:sz w:val="24"/><w:szCs w:val="24"/><w:lang w:val="gu-IN" w:eastAsia="en-US" w:bidi="gu-IN"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="0" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style></w:styles>`,
+      "_rels/.rels": `${XH}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`,
+      "word/_rels/document.xml.rels": `${XH}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdS" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>${opts.test ? '<Relationship Id="rIdH" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml"/><Relationship Id="rIdF" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/>' : ""}</Relationships>`,
+      "[Content_Types].xml": `${XH}<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>${opts.test ? '<Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/>' : ""}</Types>`,
+    };
+    if (opts.test) {
+      files["word/header1.xml"] = `${XH}<w:hdr ${NS}>${p(r("નમૂનો – ફક્ત ટેસ્ટ માટે (આ ફાઈલમાં મંડળે હજુ સંમતિ આપેલ નથી)", { b: true, color: "C00000", sz: 20 }), { jc: "center", after: 0 })}</w:hdr>`;
+      files["word/footer1.xml"] = `${XH}<w:ftr ${NS}>${p(r("ટેસ્ટ નમૂનો – ફાઈલની વિગત ચકાસણી પરિણામમાંથી આપોઆપ ભરેલ છે; પીળા ખાના (જાવક નં., તારીખ, નોંધની તારીખ) ભરવાના રહે છે.", { i: true, sz: 16 }), { jc: "center", after: 0 })}</w:ftr>`;
+    }
+    return { files, candidates: n, district: dist };
+  }
+  async function adviceDocx(R, JSZipLib, type = "blob", opts = {}) {
+    const { files } = adviceParts(R, opts), z = new JSZipLib();
+    for (const [k, v] of Object.entries(files)) z.file(k, v, { createFolders: false }); // no folder entries: Word online refuses them
+    return z.generateAsync({ type, mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", compression: "DEFLATE" });
+  }
+  return { fixPageWord, build, refGroups, datedif, toDate, fmt, CRIT, DOCS, TYPE_GU, viewerHtml, CKN, checkVals, fileIds, ESK, adviceParts, adviceDocx };
 })();
 
 
@@ -1540,7 +1640,7 @@ async function loadPdf(file) {
   if (!esTouched && $("esarkar").checked) { $("esarkar").checked = false; esUI(); }
   Object.assign(S, { file, pdf: null, n: 0, pages: [], cls: {}, txt: {}, sig: {}, fail: {}, fileJ: null, cands: [], extra: null, R: null, ready: false });
   $("drop").classList.add("compact"); $("drop").querySelector("strong").textContent = "બીજી PDF પસંદ કરો"; $("fname").textContent = file.name; $("fsize").textContent = (file.size / 1048576).toFixed(1) + " MB"; $("fpages").textContent = "…"; $("filecard").hidden = false; $("rbar").hidden = false; setBar("rbar", 0);
-  renderEmpty(); $("rmsg").textContent = "PDF ખોલી રહ્યા છીએ…"; $("run").disabled = true; $("dlzip").disabled = true; $("dlxlsx").disabled = true; stepState();
+  renderEmpty(); $("rmsg").textContent = "PDF ખોલી રહ્યા છીએ…"; $("run").disabled = true; $("dlzip").disabled = true; $("dlxlsx").disabled = true; $("dladv").disabled = true; stepState();
   try {
     S.pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
   } catch (e) { $("rmsg").textContent = "આ PDF ખોલી શકાઈ નથી. ફાઈલ બરાબર છે કે નહીં તે તપાસો."; log("PDF ખોલવામાં ભૂલ: " + (e?.message || e), "err"); return; }
@@ -1809,7 +1909,7 @@ ${textsFor(fpages, 165000)}
 
 Reply with only a JSON object (all text in Gujarati):
 {"esarkar":true,"efile_no":"the e-Sarkar file number exactly as printed on the pages (e.g. 'File No: DPSBRKN/est/e-file/4413/2026/4309/Establishment' -> DPSBRKN/est/e-file/4413/2026/4309/Establishment), else ''","esarkar_date":"dd-mm-yyyy date of the DDO's e-signature on the forwarding letter, else ''","dispatch_date":"dd-mm-yyyy dispatch date printed on the e-Sarkar pages of this proposal: the 'Dispatch Date' if printed; if not, the 'Approved Date' in the e-Sarkar header line ('Letter No: … Approved Date: dd-mm-yyyy hh:mm') of the forwarding letter or of the proposal's own index / checklist / patrak pages (the latest such date; ignore older letters quoted in the file); else ''","dispatch_label":"'Dispatch Date' or 'Approved Date', whichever the dispatch_date was read from, else ''","inward_no":"paper (offline) proposals only: the Board's (GPSSB) inward number from its inward stamp on the forwarding letter, else ''","inward_date":"paper (offline) proposals only: dd-mm-yyyy date from that GPSSB inward stamp, '' if there is no stamp or the date cannot be read for certain",
-"district":"જિલ્લા પંચાયત …","letter":"letter no. and date of the DDO's proposal, or 'ફાઈલમાં નથી' with what is there instead","file_no_text":"Board file no. / desk if written on the file, else ''",
+"district":"જિલ્લા પંચાયત …","letter":"letter no. and date of the DDO's proposal, or 'ફાઈલમાં નથી' with what is there instead","letter_no":"the DDO forwarding letter's number exactly as printed, '' if it has none","letter_date":"dd-mm-yyyy date of that forwarding letter (for 'E sign મુજબ' the e-sign date), else ''","ddo_name":"name of the District Development Officer who signed the forwarding letter / select list, in Gujarati with શ્રી, else ''","file_no_text":"Board file no. / desk if written on the file, else ''",
 "feeder":"feeder cadre, class and pay scale / level","feeder_short":"feeder cadre name only, e.g. સીનીયર ક્લાર્ક (હિસાબી)","promotion":"promotion cadre, class, pay scale / level; direct : promotion ratio","promotion_short":"promotion cadre name only, e.g. નાયબ હિસાબનીશ",
 "post":"promotion post with class and pay level","post_source":"પાના નં. …","exam_name":"name of the prescribed departmental examination, e.g. ઉચ્ચ શ્રેણી ખાતાકીય પરીક્ષા",
 "rules_text":"recruitment rules with notification no. and date, and file pages","seniority_list":"which seniority list: cadre, as on date, final on date, order no.","seniority_as_on":"dd-mm-yyyy","seniority_source":"e.g. આખરી પ્રવરતા યાદી (પાના નં. 15)",
@@ -1960,7 +2060,7 @@ $("stop").onclick = () => { S.stop = true; S.ctrl.forEach((c) => c.abort()); };
 $("run").onclick = () => {
   if (S.R) { // a finished file: redo the analysis from the pages already read
     Object.assign(S, { fileJ: null, cands: [], extra: null, R: null });
-    ["file", "cand", "extra", "xls"].forEach((k) => setStage(k, "wait")); $("dlzip").disabled = true; $("dlxlsx").disabled = true;
+    ["file", "cand", "extra", "xls"].forEach((k) => setStage(k, "wait")); $("dlzip").disabled = true; $("dlxlsx").disabled = true; $("dladv").disabled = true;
     log("વિશ્લેષણ ફરીથી શરૂ (વાંચેલા પાના ફરી વંચાશે નહીં)."); renderEmpty(); stepState();
   }
   runPipeline();
@@ -1984,7 +2084,7 @@ function finish() {
   $("run").textContent = "ફરીથી ચકાસો"; stepState();
   renderResults(S.R);
   saveCase(S.R);
-  $("dlzip").disabled = !downloads; $("dlxlsx").disabled = !downloads;
+  $("dlzip").disabled = !downloads; $("dlxlsx").disabled = !downloads; $("dladv").disabled = !downloads;
   log("ચકાસણી પૂરી. એક્સેલ ડાઉનલોડ કરી શકાય છે.");
 }
 function renderResults(R, savedName) {
@@ -2080,6 +2180,18 @@ $("dlzip").onclick = async () => {
   } catch (e) { log("ZIP બનાવવામાં ભૂલ: " + (e?.message || e), "err"); $("dlmsg").textContent = "ZIP બની શકી નથી; 'ફક્ત એક્સેલ' અજમાવો."; }
   finally { b.disabled = false; $("dlziplab").textContent = "ZIP ડાઉનલોડ કરો"; }
 };
+// Board's concurrence letter in the standard format, filled from this file (outward no., date and note date left to fill)
+async function saveAdvice(R) {
+  const blob = await BUILD.adviceDocx(R, JSZip, "blob");
+  await save(`${R.base}_GPSSB_Sammati_Patra.docx`, blob);
+  const n = BUILD.adviceParts(R).candidates;
+  log(`મંડળ સંમતિ પત્ર (Word) બન્યો: ${n} કર્મચારી પસંદગી યાદીમાં. જાવક નં., તારીખ અને નોંધની તારીખ (પીળા ખાના) ભરવાના રહે છે.`);
+}
+$("dladv").onclick = async () => {
+  if (!S.R || !downloads) return;
+  try { const R = collectR(); S.R = R; saveCase(R); await saveAdvice(R); }
+  catch (e) { log("સંમતિ પત્ર બનાવવામાં ભૂલ: " + (e?.message || e), "err"); }
+};
 $("dlxlsx").onclick = async () => {
   if (!S.R || !downloads) return;
   try { const R = collectR(); S.R = R; saveCase(R); const { blob } = await makeXlsx(R); await save(`${R.base}_Scrutiny_Gujarati.xlsx`, blob); }
@@ -2090,6 +2202,7 @@ $("dlxlsx").onclick = async () => {
 let db = null;
 const REG = { rows: [], loaded: false, filter: "", confirm: null };
 const STATUSES = ["ચકાસણી હેઠળ", "જિ.વિ.અ.ને પૃચ્છા મોકલી", "જવાબ બાકી", "મંડળ સમક્ષ રજૂ કરવા તૈયાર", "મંડળ સંમત", "મંડળ અસંમત", "બઢતી હુકમ થયો", "જિ.વિ.અ.ને પરત", "બંધ"];
+const ADV_ST = ["મંડળ સંમત", "બઢતી હુકમ થયો"]; // Board concurred: the register row offers the concurrence letter
 function caseId(key) {
   let a = 7, b = 11;
   for (const ch of key) { a = (Math.imul(a, 31) + ch.charCodeAt(0)) >>> 0; b = (Math.imul(b, 37) + ch.charCodeAt(0)) >>> 0; }
@@ -2154,7 +2267,7 @@ function renderRegister() {
       <td>${esc(r.action || "—")}${r.queries ? `<small>${r.queries} પૃચ્છા</small>` : ""}</td>
       <td><select class="st" data-act="status" aria-label="મંડળમાં સ્થિતિ">${STATUSES.map((st) => `<option${st === (r.status || STATUSES[0]) ? " selected" : ""}>${esc(st)}</option>`).join("")}</select></td>
       <td><input type="text" class="rm" data-act="remarks" value="${esc(r.remarks || "")}" aria-label="નોંધ" placeholder="મંડળનો પત્ર, તારીખ…"></td>
-      <td><div class="acts">${REG.confirm === r.id ? `<button class="danger" data-act="del-yes">હા, કાઢો</button><button data-act="del-no">રદ</button>` : `<button data-act="open">અહેવાલ</button><button data-act="xls">એક્સેલ</button><button data-act="del">કાઢો</button>`}</div></td></tr>`;
+      <td><div class="acts">${REG.confirm === r.id ? `<button class="danger" data-act="del-yes">હા, કાઢો</button><button data-act="del-no">રદ</button>` : `<button data-act="open">અહેવાલ</button><button data-act="xls">એક્સેલ</button>${ADV_ST.includes(r.status) ? '<button data-act="adv" title="મંડળ સંમત: ફાઈલની વિગત ભરેલ સંમતિ પત્ર (Word)">સંમતિ પત્ર</button>' : ""}<button data-act="del">કાઢો</button>`}</div></td></tr>`;
   }
   h += `</tbody></table></div>${rows.length ? "" : '<div class="empty">શોધ મુજબ કોઈ ફાઈલ નથી.</div>'}</div>`;
   const q0 = document.activeElement?.id === "regq" ? document.activeElement.selectionStart : null;
@@ -2212,6 +2325,7 @@ $("v-reg").addEventListener("click", async (e) => {
     const R = JSON.parse(snap.data().json);
     if (act === "open") { renderResults(R, row?.file_name || `${R.base}.pdf`); selectTab("res"); }
     else if (act === "xls") { const { blob } = await makeXlsx(R); await save(`${R.base}_Scrutiny_Gujarati.xlsx`, blob); }
+    else if (act === "adv") await saveAdvice(R);
   } catch { log("સાચવેલ અહેવાલ ખોલી શકાયો નહીં.", "err"); }
   finally { b.disabled = false; }
 });
