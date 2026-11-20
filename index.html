@@ -1490,6 +1490,42 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
 
     return { wb, viewers };
   }
+  // ---------- districts and promotion cadres (for the district x cadre count of files in the register)
+  const DISTRICTS_GU = ["અમદાવાદ", "અમરેલી", "આણંદ", "અરવલ્લી", "બનાસકાંઠા", "ભરૂચ", "ભાવનગર", "બોટાદ", "છોટાઉદેપુર", "દાહોદ", "ડાંગ", "દેવભૂમિ દ્વારકા",
+    "ગાંધીનગર", "ગીર સોમનાથ", "જામનગર", "જૂનાગઢ", "ખેડા", "કચ્છ", "મહીસાગર", "મહેસાણા", "મોરબી", "નર્મદા", "નવસારી", "પંચમહાલ", "પાટણ", "પોરબંદર",
+    "રાજકોટ", "સાબરકાંઠા", "સુરત", "સુરેન્દ્રનગર", "તાપી", "વડોદરા", "વલસાડ", "વાવ-થરાદ"]; // 34 districts (Vav-Tharad from 2025)
+  const DISTRICTS_EN = ["ahmedabad", "amreli", "anand", "aravalli", "banaskantha", "bharuch", "bhavnagar", "botad", "chhota udaipur", "dahod", "dang", "dwarka",
+    "gandhinagar", "somnath", "jamnagar", "junagadh", "kheda", "kutch", "mahisagar", "mehsana", "morbi", "narmada", "navsari", "panchmahal", "patan", "porbandar",
+    "rajkot", "sabarkantha", "surat", "surendranagar", "tapi", "vadodara", "valsad", "vav"];
+  const CADRES_GU = [ // feeder -> promotion; add more as the Board's GR lists them
+    ["જુનિયર ક્લાર્ક (વહીવટ)", "સીનીયર ક્લાર્ક (વહીવટ)"], ["જુનિયર ક્લાર્ક (હિસાબી)", "સીનીયર ક્લાર્ક (હિસાબી)"],
+    ["સીનીયર ક્લાર્ક (વહીવટ)", "નાયબ ચીટનીશ"], ["સીનીયર ક્લાર્ક (હિસાબી)", "નાયબ હિસાબનીશ"],
+    ["ફીમેલ હેલ્થ વર્કર", "ફીમેલ હેલ્થ સુપરવાઈઝર"], ["મલ્ટી પર્પઝ હેલ્થ વર્કર (પુરુષ)", "મલ્ટી પર્પઝ હેલ્થ સુપરવાઈઝર (પુરુષ)"],
+    ["આંકડા મદદનીશ", "સંશોધન મદદનીશ"], ["સમાજ કલ્યાણ નિરીક્ષક (જુનિયર)", "સમાજ કલ્યાણ નિરીક્ષક (સીનીયર)"]];
+  // spelling-proof key: drop "જિલ્લા પંચાયત", spaces, punctuation, vowel signs, anusvara and virama
+  const skel = (s) => String(s || "").replace(/જિલ્લા\s*પંચાયત|District\s*Panchayat/gi, "").replace(/[\s\-–.,()/]/g, "").replace(/[ઁ-ઃ઼ા-્]/g, "");
+  const D_ALIAS = { "અરવલ્લી": ["અરવલી"], "દેવભૂમિ દ્વારકા": ["દ્વારકા"], "ગીર સોમનાથ": ["સોમનાથ"], "છોટાઉદેપુર": ["છોટાઉદયપુર"] };
+  function canonDistrict(s) {
+    const k = skel(s), low = String(s || "").toLowerCase(); let best = "", bl = 0;
+    DISTRICTS_GU.forEach((d, i) => {
+      for (const v of [d, ...(D_ALIAS[d] || [])]) { const sk = skel(v); if (sk && k.includes(sk) && sk.length > bl) { best = d; bl = sk.length; } }
+      if (!best && low.includes(DISTRICTS_EN[i])) best = d;
+    });
+    return best;
+  }
+  function canonCadre(feeder, promo) { // index into CADRES_GU, or -1
+    const f = skel(feeder), p = skel(promo), fl = String(feeder || "").toLowerCase(), pl = String(promo || "").toLowerCase();
+    const clerk = (x, xl) => x.includes("કલરક") || xl.includes("clerk");
+    const acc = (x, xl) => /હસબ|એકઉનટ/.test(x) || /account/.test(xl);
+    if (p.includes("ચટન") || pl.includes("chitnis")) return 2;
+    if (p.includes("હસબન") || pl.includes("accountant")) return 3;
+    if (clerk(f, fl) && clerk(p, pl)) return acc(f + p, fl + pl) ? 1 : 0;
+    if ((f.includes("ફમલ") || f.includes("મહલ") || fl.includes("female")) && (p.includes("સપરવ") || pl.includes("supervisor"))) return 4;
+    if ((f.includes("મલટ") || f.includes("પરષ") || fl.includes("multi")) && (p.includes("સપરવ") || pl.includes("supervisor"))) return 5;
+    if (f.includes("આકડ") || f.includes("સટટસટ") || fl.includes("statistic")) return 6;
+    if (f.includes("સમજકલયણ") || fl.includes("social welfare")) return 7;
+    return -1;
+  }
   // ---------- roster register certified by the Social Justice & Empowerment Department (SJED): only the latest certification counts
   function rosterSjed(R) {
     const F = R.file || {}, x = F.roster_sjed || {}, dpc = toDate(F.dpc_date);
@@ -1597,7 +1633,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     for (const [k, v] of Object.entries(files)) z.file(k, v, { createFolders: false }); // no folder entries: Word online refuses them
     return z.generateAsync({ type, mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", compression: "DEFLATE" });
   }
-  return { fixPageWord, build, refGroups, datedif, toDate, fmt, CRIT, DOCS, TYPE_GU, viewerHtml, CKN, checkVals, fileIds, ESK, adviceParts, adviceDocx, rosterSjed };
+  return { fixPageWord, build, refGroups, datedif, toDate, fmt, CRIT, DOCS, TYPE_GU, viewerHtml, CKN, checkVals, fileIds, ESK, adviceParts, adviceDocx, rosterSjed, DISTRICTS_GU, CADRES_GU, canonDistrict, canonCadre };
 })();
 
 
@@ -2314,13 +2350,50 @@ async function exportRegister() {
   let r = 5, k = 1;
   for (const row of REG.rows) {
     const d = row.updated ? new Date(row.updated) : null;
-    [k++, row.file_no, row.district, row.feeder, row.promotion, (row.cands || []).length, BUILD.toDate(row.dpc_date) || row.dpc_date, row.letter, row.inward_no,
+    const dc = BUILD.canonDistrict(row.district), ci = BUILD.canonCadre(row.feeder, row.promotion); // canonical names so the count sheet can match them
+    [k++, row.file_no, dc || row.district, ci >= 0 ? BUILD.CADRES_GU[ci][0] : row.feeder, ci >= 0 ? BUILD.CADRES_GU[ci][1] : row.promotion, (row.cands || []).length, BUILD.toDate(row.dpc_date) || row.dpc_date, row.letter, row.inward_no,
       row.inward_no === BUILD.ESK ? (row.dispatch_date ? `${row.dispatch_date} (${BUILD.ESK})` : BUILD.ESK) : BUILD.toDate(row.inward_date) || row.inward_date,
       row.status || STATUSES[0], d ? new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())) : "", row.remarks, row.file_name]
       .forEach((v, j) => ws.set({ r, c: j + 1 }, v ?? "", { size: 9, border: true, align: [0, 5, 6, 8, 9, 11].includes(j) ? "center" : "left" }));
     r++;
   }
   ws.dropdown(`K5:K${r - 1}`, STATUSES); ws.freeze = "C5";
+  // district x cadre: each file counts 1 under its district and its feeder -> promotion cadre (formulas over the register sheet)
+  {
+    const mx = wb.add("જિલ્લાવાર સંવર્ગવાર ફાઈલ"), last = Math.max(r - 1, 5), C = BUILD.CADRES_GU, nc = C.length;
+    const RG = (col) => `'બઢતી રજીસ્ટર'!$${col}$5:$${col}$${last}`, cl = XW.colName;
+    const cnt = {}; REG.rows.forEach((row) => { const d = BUILD.canonDistrict(row.district), ci = BUILD.canonCadre(row.feeder, row.promotion); const key = `${d}|${ci}`; cnt[key] = (cnt[key] || 0) + 1; cnt[`${d}|T`] = (cnt[`${d}|T`] || 0) + 1; });
+    mx.set("A1", "જિલ્લાવાર સંવર્ગવાર બઢતી ફાઈલ", { bold: true, size: 14, color: "FF1F3864", wrap: false });
+    mx.set("A2", "રજીસ્ટરની દરેક ફાઈલ તેના જિલ્લા અને તેના ફીડર → બઢતીના સંવર્ગમાં 1 ગણાય છે (ફોર્મ્યુલા).", { size: 9, color: "FF595959", wrap: false });
+    const H = { bold: true, color: "FFFFFFFF", fill: "FF1F3864", align: "center", valign: "center", border: true }, H2 = { bold: true, fill: "FFDDEBF7", align: "center", valign: "center", border: true };
+    mx.set({ r: 4, c: 1 }, "ક્રમ", H); mx.set({ r: 5, c: 1 }, "", H); mx.merge("A4:A5");
+    mx.set({ r: 4, c: 2 }, "ફીડર સંવર્ગ", { ...H, align: "left" }); mx.set({ r: 5, c: 2 }, "બઢતીનો સંવર્ગ", { ...H2, align: "left" });
+    C.forEach(([fe, pr], j) => { mx.set({ r: 4, c: 3 + j }, fe, H); mx.set({ r: 5, c: 3 + j }, pr, H2); mx.width(3 + j, 15); });
+    const cO = 3 + nc, cT = 4 + nc;
+    [[cO, "અન્ય સંવર્ગ"], [cT, "કુલ ફાઈલ"]].forEach(([c, t]) => { mx.set({ r: 4, c }, t, H); mx.set({ r: 5, c }, "", H); mx.merge(`${cl(c)}4:${cl(c)}5`); mx.width(c, 11); });
+    mx.width(1, 6); mx.width(2, 20); mx.height(4, 42); mx.height(5, 42);
+    const B = { size: 10, border: true, align: "center" };
+    BUILD.DISTRICTS_GU.forEach((dn, i) => {
+      const rr = 6 + i;
+      mx.set({ r: rr, c: 1 }, i + 1, B); mx.set({ r: rr, c: 2 }, dn, { ...B, bold: true, align: "left" });
+      C.forEach((_, j) => { const L = cl(3 + j), v = cnt[`${dn}|${j}`] || 0;
+        mx.set({ r: rr, c: 3 + j }, { f: `IF(COUNTIFS(${RG("C")},$B${rr},${RG("D")},${L}$4,${RG("E")},${L}$5)=0,"",COUNTIFS(${RG("C")},$B${rr},${RG("D")},${L}$4,${RG("E")},${L}$5))`, v: v || "" }, B); });
+      const tot = cnt[`${dn}|T`] || 0, oth = tot - C.reduce((a, _, j) => a + (cnt[`${dn}|${j}`] || 0), 0);
+      mx.set({ r: rr, c: cO }, { f: `IF(${cl(cT)}${rr}-SUM(C${rr}:${cl(2 + nc)}${rr})=0,"",${cl(cT)}${rr}-SUM(C${rr}:${cl(2 + nc)}${rr}))`, v: oth || "" }, B);
+      mx.set({ r: rr, c: cT }, { f: `COUNTIF(${RG("C")},$B${rr})`, v: tot }, { ...B, bold: true });
+    });
+    const rt = 6 + BUILD.DISTRICTS_GU.length, mlast = rt - 1;
+    mx.set({ r: rt, c: 2 }, "કુલ", { ...H2, align: "left" }); mx.set({ r: rt, c: 1 }, "", H2);
+    for (let c = 3; c <= cT; c++) { const L = cl(c); let v = 0; // cached value: the same count worked out here
+      const colVals = BUILD.DISTRICTS_GU.map((dn) => c === cT ? (cnt[`${dn}|T`] || 0) : c === cO ? ((cnt[`${dn}|T`] || 0) - C.reduce((a, _, j) => a + (cnt[`${dn}|${j}`] || 0), 0)) : (cnt[`${dn}|${c - 3}`] || 0));
+      v = colVals.reduce((a, b) => a + b, 0);
+      mx.set({ r: rt, c }, { f: `SUM(${L}6:${L}${mlast})`, v }, H2); }
+    const inList = BUILD.DISTRICTS_GU.reduce((a, dn) => a + (cnt[`${dn}|T`] || 0), 0);
+    mx.set({ r: rt + 2, c: 2 }, "રજીસ્ટરમાં ફાઈલ", { bold: true }); mx.set({ r: rt + 2, c: 3 }, { f: `COUNTA(${RG("B")})`, v: REG.rows.length }, { align: "center", bold: true });
+    mx.set({ r: rt + 3, c: 2 }, "યાદીમાં ન મળેલ જિલ્લો", {}); mx.set({ r: rt + 3, c: 3 }, { f: `C${rt + 2}-${cl(cT)}${rt}`, v: REG.rows.length - inList }, { align: "center" });
+    mx.cf(`C6:${cl(cO)}${mlast}`, [{ expr: `AND(ISNUMBER(C6),C6>0)`, style: { fill: "FFC6EFCE", color: "FF006100", bold: true } }]);
+    mx.freeze = "C6"; mx.landscape = true;
+  }
   await save(`Promotion_Register_Gujarati_${dmy(today)}.xlsx`, await wb.toBlob(JSZip, "blob"));
 }
 $("v-reg").addEventListener("input", (e) => { if (e.target.id === "regq") { REG.filter = e.target.value; renderRegister(); } });
