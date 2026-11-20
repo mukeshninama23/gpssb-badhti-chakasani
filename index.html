@@ -805,7 +805,19 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     wsVac.set({ r: vr, c: 5 }, "", st({ fill: SUB }));
     wsVac.set({ r: vr, c: 6 }, { f: `=IF(C${vr}=C12,"રોસ્ટર સાથે મળે છે ("&C12&")","રોસ્ટરથી જુદું")`, v: tot === vv[12] ? `રોસ્ટર સાથે મળે છે (${vv[12]})` : "રોસ્ટરથી જુદું" }, st({ fill: SUB }));
     if (V.notes) { wsVac.set({ r: vr + 2, c: 2 }, V.notes, st({ size: 9 })); wsVac.merge(`B${vr + 2}:F${vr + 2}`); wsVac.height(vr + 2, Math.max(30, 13 * lines(V.notes, 150))); }
-    linkify(wsVac, [["F", false]], 6, true);
+    let sjedPg = 0;
+    { // roster register – SJED certification (latest only)
+      const rs = rosterSjed(R); let rr = vr + (V.notes ? 4 : 2);
+      wsVac.set({ r: rr, c: 2 }, "રોસ્ટર રજીસ્ટર – સામાજિક ન્યાય અને અધિકારિતા વિભાગ (SJED)ની ચકાસણી (છેલ્લી)", st({ bold: true, fill: SUB })); wsVac.merge(`B${rr}:F${rr}`);
+      [["SJED દ્વારા પ્રમાણિત?", rs.certified || C], ["છેલ્લી પ્રમાણિત તારીખ", rs.date || "–"], ["તારીજની સ્થિતિ તારીખ", rs.as_on || "–"],
+        ["સમિતિની તારીખે કેટલું જૂનું", rs.age || "–"], ["પ્રમાણિત કરનાર", rs.by || "–"], ["SJEDની નોંધ", rs.note || "–"], ["પાના નં.", rs.pages || "–"]].forEach(([k, v]) => {
+        rr++; wsVac.set({ r: rr, c: 2 }, k, st({ bold: true })); wsVac.set({ r: rr, c: 3 }, v, st({ color: BLUE, align: v instanceof Date || k.startsWith("SJED દ્વારા") ? "center" : "left" })); wsVac.merge(`C${rr}:F${rr}`);
+        if (k === "SJEDની નોંધ") wsVac.height(rr, Math.max(15, 13 * lines(String(v), 90)));
+        if (k === "પાના નં.") sjedPg = rr;
+      });
+      wsVac.cf(`C${vr + (V.notes ? 5 : 3)}`, [{ eq: Y, style: { fill: GREEN, color: "FF006100" } }, { eq: N, style: { fill: RED, color: "FF9C0006" } }, { eq: C, style: { fill: AMBER, color: "FF7F5500" } }]);
+    }
+    linkify(wsVac, [["F", false], ...(sjedPg ? [["C", true, sjedPg, sjedPg]] : [])], 6, true);
     const VAC = q(SN.vac) + "$C$12", VCON = q(SN.vac) + "$C$15";
 
     // ---------- APAR sheets
@@ -1333,7 +1345,9 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
       fset(`A${r}`, i + 1, { align: "center" }); fset(`B${r}`, dn); fp.merge(`B${r}:C${r}`);
       inp(`D${r}`, MET.has(x.received) ? x.received : "", { align: "center" });
       const pg = x.pages ? String(x.pages).replace(/^\s*(p\.|પાના\s*નં\.?|પાના|પાન)\s*/, "") : "";
-      inp(`E${r}`, pg || "–", { align: "center" }); inp(`F${r}`, x.remark || ""); fp.merge(`F${r}:G${r}`); fp.height(r, 21.75);
+      const rs = i === 10 ? rosterSjed(R) : null; // roster register row: SJED certification (latest) first
+      const rem = rs && rs.text ? `SJED પ્રમાણિત: ${rs.text}${x.remark ? "; " + x.remark : ""}` : x.remark || "";
+      inp(`E${r}`, pg || "–", { align: "center" }); inp(`F${r}`, rem); fp.merge(`F${r}:G${r}`); fp.height(r, Math.max(21.75, 12 * lines(rem, 44) + 4));
     });
     fp.dropdown("D22:D37", [Y, N, PART, NA]);
     fp.cf("D22:D37", [{ eq: Y, style: { fill: GREEN, color: "FF006100" } }, { eq: N, style: { fill: RED, color: "FF9C0006" } }, { eq: PART, style: { fill: AMBER, color: "FF7F5500" } }, { eq: NA, style: { fill: GREY } }]);
@@ -1476,6 +1490,16 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
 
     return { wb, viewers };
   }
+  // ---------- roster register certified by the Social Justice & Empowerment Department (SJED): only the latest certification counts
+  function rosterSjed(R) {
+    const F = R.file || {}, x = F.roster_sjed || {}, dpc = toDate(F.dpc_date);
+    const certified = [Y, N, C].includes(x.certified) ? x.certified : (x.date ? Y : "");
+    const d = toDate(x.date), ason = toDate(x.as_on), age = d && dpc ? datedif(d, dpc) : null;
+    const ageTxt = age ? `${age.y ? age.y + " વર્ષ " : ""}${age.m} માસ` : "";
+    const text = !certified ? "" : certified === N ? "ના – SJED દ્વારા પ્રમાણિત રોસ્ટર રજીસ્ટર ફાઈલમાં નથી"
+      : `${certified}${d ? ` – છેલ્લી તા. ${fmt(d)}` : ""}${ason ? ` (તા. ${fmt(ason)}ની સ્થિતિ)` : ""}`;
+    return { certified, date: d, as_on: ason, by: x.by || "", note: x.note || "", pages: x.pages || "", age: ageTxt, text };
+  }
   // ---------- Board's concurrence letter (standard format of letter CB1/PR/A-04/26-27/2596-99), filled from R.
   // Returns the .docx parts; adviceDocx zips them. Outward no., letter date and the Board's note date stay as
   // highlighted "……" blanks unless given in opts { outward, date, noteDate }. opts.test marks every page as a test sample.
@@ -1573,7 +1597,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     for (const [k, v] of Object.entries(files)) z.file(k, v, { createFolders: false }); // no folder entries: Word online refuses them
     return z.generateAsync({ type, mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", compression: "DEFLATE" });
   }
-  return { fixPageWord, build, refGroups, datedif, toDate, fmt, CRIT, DOCS, TYPE_GU, viewerHtml, CKN, checkVals, fileIds, ESK, adviceParts, adviceDocx };
+  return { fixPageWord, build, refGroups, datedif, toDate, fmt, CRIT, DOCS, TYPE_GU, viewerHtml, CKN, checkVals, fileIds, ESK, adviceParts, adviceDocx, rosterSjed };
 })();
 
 
@@ -1924,7 +1948,9 @@ Reply with only a JSON object (all text in Gujarati):
 "zone_note":"one line: sources with pages and what happened to those senior to the zone",
 "recon":{"in_zone":{"n":0,"src":"where the papers state it, with page"},"fit":{"n":0,"src":""},"promoted_earlier":{"n":0,"src":""},"eligible_5yr":{"n":0,"src":""}},
 "checks":{"checklist_sign":{"ok":"હા|ના|ચકાસો","note":"which checklist pages carry the DDO's signature / seal or e-sign and which do not","pages":"પાના નં. …"},"patrak_d":{"ok":"હા|ના|ચકાસો","note":"is Annexure-D (પત્રક-ડ) enclosed; letter no. and date; does it give CCC date, centre and recognition for every candidate","pages":"પાના નં. …"}},
+"roster_sjed":{"certified":"હા|ના|ચકાસો – is the roster register (or its tarij, પરિશિષ્ટ-બ) certified by the Social Justice & Empowerment Department (SJED, સામાજિક ન્યાય અને અધિકારિતા વિભાગ: Section Officer / roster liaison officer's stamp, signature and date)?","date":"dd-mm-yyyy of the LATEST SJED certification only (if several, the latest), else ''","as_on":"dd-mm-yyyy status date of the certified tarij, else ''","by":"who certified, as stamped (e.g. Section Officer, Social Justice & Empowerment Deptt., Sachivalaya, Gandhinagar)","note":"remark written by SJED on it, short, in Gujarati, else ''","pages":"પાના નં. …"},
 "docs":[16 objects {"received":"હા|ના|અંશતઃ|લાગુ નથી","pages":"12-14","remark":"short"} in this order: ${BUILD.DOCS.join("; ")}]}
+roster_sjed: look for the Social Justice & Empowerment Department's stamp, signature and date on the roster register pages and its tarij (પરિશિષ્ટ-બ); report only the LATEST certification (date and the tarij's status date) and any remark written by it.
 esarkar = true only when the proposal came through e-Sarkar (pages carry the printed e-Sarkar 'File No: …/e-file/…' line, or the letter is e-signed and forwarded on e-Sarkar); then there is no paper inward. Use numbers (not strings) for counts and null when not in the file. vac: n = the figure in the main source (roster register / minutes), check = the same figure from a second document or null; statement_total = posts vacant per the vacancy statement; roster_points = roster points used in the roster abstract; considered = posts the DPC considered. recon: the counts as stated in the checklist / minutes / Patrak-K. "candidates" = only those the DPC recommended. "zone" = the zone of consideration rows of the seniority list plus the few around it.`;
       const j = await ask(prompt, null, "complex");
       if (!j || typeof j !== "object" || !Array.isArray(j.candidates)) throw { code: "invalid_json", message: "file" };
@@ -1948,7 +1974,7 @@ Reply with only a JSON object (all text in Gujarati):
 {"observations":[{"type":"મુખ્ય મુદ્દો|કાર્યવાહી|વિસંગતતા|નોંધ|સ્થિતિ","text":"the point, with dates, numbers and pages","impact":"impact on eligibility","pages":"પાના નં. …","ask_ddo":true}],
 "history":[{"step":"short label, e.g. સીનીયર ક્લાર્ક (હિસાબી)માં બઢતી or ખાતાકીય બઢતી સમિતિ – 28-10-2026","text":"what happened: orders, dates, numbers","pages":"પાના નં. …"}],
 "file_map":[{"doc":"document description, naming the candidate where it belongs to one","pages":"1-6"}]}
-observations: file-level points (missing documents, discrepancies, roster, vacancies, minutes, checklist vs other papers), most important first; a file-level compulsory check (checks.checklist_sign, checks.patrak_d) that is not "હા" must be an observation of type "કાર્યવાહી" with ask_ddo true; ask_ddo = true when the point must be asked from the DDO before the Board's advice. history: the case in order – first appointment, promotion to the feeder cadre, departmental examination, earlier DPC and Board advice, final seniority list, this DPC, proposal to the Board, Board advice ('આ ફાઈલમાં નથી' if absent). file_map: consecutive page ranges covering every PDF page from 1 to ${S.n} in order, 15-40 entries.`, null, "complex");
+observations: file-level points (missing documents, discrepancies, roster, vacancies, minutes, checklist vs other papers), most important first; if FILE FACTS show roster_sjed.certified not "હા" (roster register not certified by the Social Justice & Empowerment Department), that must be an observation of type કાર્યવાહી with ask_ddo true asking for the latest SJED-certified roster register; a file-level compulsory check (checks.checklist_sign, checks.patrak_d) that is not "હા" must be an observation of type "કાર્યવાહી" with ask_ddo true; ask_ddo = true when the point must be asked from the DDO before the Board's advice. history: the case in order – first appointment, promotion to the feeder cadre, departmental examination, earlier DPC and Board advice, final seniority list, this DPC, proposal to the Board, Board advice ('આ ફાઈલમાં નથી' if absent). file_map: consecutive page ranges covering every PDF page from 1 to ${S.n} in order, 15-40 entries.`, null, "complex");
       if (!j || typeof j !== "object") throw { code: "invalid_json", message: "file 2" };
       Object.assign(S.fileJ, { observations: j.observations || [], history: j.history || [], file_map: j.file_map || [], _b: true }); saveWork();
     }
@@ -2112,6 +2138,7 @@ function renderResults(R, savedName) {
     ["ભરતી નિયમો", F.rules_text, F.rules_text],
     ["પ્રવરતા યાદી", F.seniority_list, F.seniority_list],
     ["દરખાસ્ત પત્ર", F.letter, ""],
+    ["રોસ્ટર – SJED પ્રમાણિત (છેલ્લી)", (() => { const rs = BUILD.rosterSjed(R); return rs.text ? `${rs.text}${rs.age ? `; સમિતિની તારીખે ${rs.age} જૂનું` : ""}${rs.note ? `; SJEDની નોંધ: ${rs.note}` : ""}` : ""; })(), (R.file?.roster_sjed || {}).pages],
   ];
   h += `<section class="sect"><h3>ફાઈલની વિગત</h3><dl class="parts">${parts.map(([k, v, p]) => `<div><dt>${k}</dt><dd>${esc(v || "—")}${refButtons(p)}</dd></div>`).join("")}</dl></section>`;
   h += `<section class="sect"><h3>ઉમેદવારવાર લાયકાત <span class="count">${cands.length}</span></h3><div class="cands">`;
