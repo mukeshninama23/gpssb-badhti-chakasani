@@ -735,7 +735,10 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
 
     const shorts = cands.map((c) => c.short || c.name || "ઉમેદવાર");
     const SN = { fp: sheetName("Summary Sheet"), chk: sheetName("ફરજિયાત ચકાસણી"), map: sheetName("ફાઈલ નકશો"), res: sheetName("પરિણામ"), el: shorts.map((s) => sheetName("લાયકાત-" + s)) };
-    const wsFP = wb.add(SN.fp), wsChk = wb.add(SN.chk), wsMap = wb.add(SN.map), wsRes = wb.add(SN.res);
+    // more than 4 candidates: one more copy of the Summary Sheet for every further 4 (the approved format says "વધારાની નકલ જોડવી")
+    const nFP = Math.max(1, Math.ceil(cands.length / 4));
+    SN.fpx = Array.from({ length: nFP - 1 }, (_, g) => sheetName(`Summary Sheet (${g + 2})`));
+    const wsFP = wb.add(SN.fp), wsFPx = SN.fpx.map((s) => wb.add(s)), wsChk = wb.add(SN.chk), wsMap = wb.add(SN.map), wsRes = wb.add(SN.res);
     const wsEl = SN.el.map((s) => wb.add(s));
     SN.rules = sheetName("લાગુ નિયમો"); const wsRules = wb.add(SN.rules);
     SN.ap = shorts.map((s) => sheetName("ખાનગી અહેવાલ-" + s)); const wsAp = SN.ap.map((s) => wb.add(s));
@@ -853,8 +856,10 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
           if (diff > 1) gaps++; if (diff <= 0) ovl++;
           ws.set({ r, c: 9 }, { f: `=IF(B${r}=C${r - 1}+1,"સળંગ",IF(B${r}<=C${r - 1},"બેવડો દિવસ","ખૂટતો ગાળો"))`, v: cont }, st({ align: "center" }));
         }
-        if (isCert) { certN++; certDays += dd; if (dd > 90) bad++; }
-        ws.set({ r, c: 10 }, { f: `=IF(G${r}="${CERT}",IF(D${r}<=90,"${Y}","${N}"),"–")`, v: isCert ? (dd <= 90 ? Y : N) : "–" }, st({ align: "center" }));
+        const outside = endD && a.f > endD; // after the five years (e.g. the current year up to the DPC): shown, not judged
+        if (isCert) { certN++; certDays += dd; if (dd > 90 && !outside) bad++; }
+        if (outside) ws.set({ r, c: 10 }, isCert ? "સમયગાળા બહાર" : "–", st({ align: "center" }));
+        else ws.set({ r, c: 10 }, { f: `=IF(G${r}="${CERT}",IF(D${r}<=90,"${Y}","${N}"),"–")`, v: isCert ? (dd <= 90 ? Y : N) : "–" }, st({ align: "center" }));
         // signatures of the reporting and reviewing officers on the copy in the file (online PARs: submission dates)
         const sg = (v) => [Y, N, C, NA].includes(v) ? v : "";
         const repS = sg(a.rep_sign), revS = sg(a.rev_sign) || (isCert && a.rep_sign ? NA : "");
@@ -905,12 +910,12 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
       const sr = r, okr = r + 1;
       const sigTxt = !sigSeen ? "" : sigBad[0] + sigBad[1] ? `; સહી ખૂટે/ચકાસવી: અહેવાલ લખનાર ${sigBad[0]}, સમીક્ષક ${sigBad[1]}` : "; દરેક અહેવાલ પર અહેવાલ લખનાર અને સમીક્ષકની સહી";
       const pgTxt = !pgSeen ? "" : pgBad ? `; ${pgBad} ફોર્મમાં પાન ખૂટે/ચકાસવા` : "; દરેક ફોર્મના બધા પાન છે";
-      const okv = rows.length ? (covOk && bad === 0 ? (sigBad[0] + sigBad[1] + pgBad ? C : Y) : N) : C;
+      const okv = rows.length ? (covOk ? (bad + sigBad[0] + sigBad[1] + pgBad ? C : Y) : N) : C; // a certificate over 3 months needs its reason: check, not a bar
       const summ = rows.length ? `${yrs}; સરેરાશ ${avg || "—"}, ગુણ ${lohi || "—"}; ${adv}${sigTxt}${pgTxt}` : "ખાનગી અહેવાલની વિગત મળી નથી – ચકાસો";
       ws.set({ r: sr, c: 1 }, "સારાંશ", st({ bold: true, fill: SUB })); ws.merge(`A${sr}:B${sr}`);
       ws.set({ r: sr, c: 3 }, rows.length && marks.length ? { f: `="${qt(yrs)}; સરેરાશ "&E${R0.avg}&", ગુણ "&E${R0.lohi}&"; ${qt(adv)}${qt(sigTxt)}${qt(pgTxt)}"`, v: summ } : summ, st({ align: "center" })); ws.merge(`C${sr}:H${sr}`);
       ws.set({ r: okr, c: 1 }, "ખાનગી અહેવાલ 'સિદ્ધ ગુણવત્તા અને કાર્યક્ષમતા' દર્શાવે છે?", st({ bold: true, fill: SUB })); ws.merge(`A${okr}:B${okr}`);
-      ws.set({ r: okr, c: 3 }, rows.length ? { f: sigSeen || pgSeen ? `=IF(AND(E${R0.cov}="${Y}",E${R0.gap}=0,E${R0.bad}=0),IF(COUNTIF(K${a1}:M${a2},"${N}")+COUNTIF(K${a1}:M${a2},"${C}")>0,"${C}","${Y}"),"${N}")` : `=IF(AND(E${R0.cov}="${Y}",E${R0.gap}=0,E${R0.bad}=0),"${Y}","${N}")`, v: okv } : C, st({ bold: true, align: "center" }));
+      ws.set({ r: okr, c: 3 }, rows.length ? { f: sigSeen || pgSeen ? `=IF(AND(E${R0.cov}="${Y}",E${R0.gap}=0),IF(E${R0.bad}+COUNTIF(K${a1}:M${a2},"${N}")+COUNTIF(K${a1}:M${a2},"${C}")>0,"${C}","${Y}"),"${N}")` : `=IF(AND(E${R0.cov}="${Y}",E${R0.gap}=0),IF(E${R0.bad}>0,"${C}","${Y}"),"${N}")`, v: okv } : C, st({ bold: true, align: "center" }));
       ws.merge(`C${okr}:H${okr}`); statusCF(ws, `C${okr}`);
       if (c.apar_note) { ws.set({ r: okr + 1, c: 1 }, c.apar_note, st({ size: 9 })); ws.merge(`A${okr + 1}:O${okr + 1}`); ws.height(okr + 1, Math.max(30, 13 * lines(c.apar_note, 170))); }
       ws.freeze = "A5";
@@ -1306,14 +1311,15 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     linkify(wsRes, [[LR, false]], lastRC);
 
     // ---------- Front page (fixed rows, as in the approved format; candidates in C:F)
-    const fp = wsFP; fp.landscape = false;
+    const buildFP = (fp, g) => { // g = 0 for the Summary Sheet, 1, 2 … for its copies (candidates 4g+1 … 4g+4)
+    fp.landscape = false;
     fp.width(1, 5); fp.width(2, 34); [3, 4, 5, 6].forEach((c) => fp.width(c, 17)); fp.width(7, 20);
     const S9 = (o) => st({ size: 9, valign: "center", ...o });
     const fset = (ref, v, o) => fp.set(ref, v, S9(o));
     const sec = (r, t) => { fset(`A${r}`, t, { bold: true, size: 10, color: WHITE, fill: FPG }); fp.merge(`A${r}:G${r}`); fp.height(r, 19.5); };
     fset("A1", "ગુજરાત પંચાયત સેવા પસંદગી મંડળ, ગાંધીનગર", { bold: true, size: 14, color: FPG, align: "center" }); fp.merge("A1:G1"); fp.height(1, 24);
     fp.merge("A2:G2");
-    fset("A3", "બઢતી દરખાસ્ત – ચકાસણી પત્રક (Summary Sheet)", { bold: true, size: 10, fill: FPH, align: "center" }); fp.merge("A3:G3"); fp.height(3, 21.75);
+    fset("A3", g ? `બઢતી દરખાસ્ત – ચકાસણી પત્રક (Summary Sheet – નકલ ${g + 1}: ઉમેદવાર ${4 * g + 1} થી ${Math.min(cands.length, 4 * g + 4)})` : "બઢતી દરખાસ્ત – ચકાસણી પત્રક (Summary Sheet)", { bold: true, size: 10, fill: FPH, align: "center" }); fp.merge("A3:G3"); fp.height(3, 21.75);
     fset("A4", "પીળા ખાનામાં વિગત ભરવી; રાખોડી ખાના આપોઆપ ગણાય છે. પરિણામ: હા / ના / ચકાસો / લાગુ નથી.", { size: 8, color: FPMUTED }); fp.merge("A4:G4");
     sec(6, "(ક) ફાઈલની વિગત");
     const lab = (r, t, col = "A") => { fset(`${col}${r}`, t, { bold: true }); if (col === "A") fp.merge(`A${r}:B${r}`); };
@@ -1357,8 +1363,8 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
       v: `${dcnt(Y)} મળેલ, ${dcnt(PART)} અંશતઃ, ${dcnt(N)} ખૂટતા, ${dcnt(NA)} લાગુ નથી, ${dblank} ચકાસવાના બાકી` }, { bold: true }); fp.merge("D38:G38"); fp.height(38, 19.5);
     fp.breaks.push(39);
     sec(40, "(ગ) ઉમેદવારવાર લાયકાતની ચકાસણી");
-    th("A41", "#"); th("B41", "વિગત / માપદંડ"); ["C", "D", "E", "F"].forEach((col, i) => th(`${col}41`, `ઉમેદવાર ${i + 1}`)); th("G41", "આધાર પાન"); fp.height(41, 25.5);
-    const FC = ["C", "D", "E", "F"], c4 = cands.slice(0, 4);
+    th("A41", "#"); th("B41", "વિગત / માપદંડ"); ["C", "D", "E", "F"].forEach((col, i) => th(`${col}41`, `ઉમેદવાર ${4 * g + i + 1}`)); th("G41", "આધાર પાન"); fp.height(41, 25.5);
+    const FC = ["C", "D", "E", "F"], c4 = cands.slice(4 * g, 4 * g + 4);
     const rowLab = (r, t, k) => { fset(`A${r}`, k ?? "", { align: "center" }); fset(`B${r}`, t, { bold: k == null }); };
     const srcG = (r, txt) => fset(`G${r}`, String(txt || "").split(", ").filter(Boolean).slice(0, 4).join(", "), { align: "center" }); // at most 4 page groups, so the cell stays one line
     rowLab(42, "નામ"); FC.forEach((col, i) => inp(`${col}42`, c4[i] ? (c4[i].fp_name || c4[i].name || c4[i].short) : "", { align: "center" })); srcG(42, paP); fp.height(42, 39.75);
@@ -1367,9 +1373,9 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     rowLab(45, "જન્મ તારીખ"); FC.forEach((col, i) => inp(`${col}45`, c4[i] ? D(c4[i].dob) || "" : "", { align: "center" })); srcG(45, paP || pagesOf(c4.map((c) => c.dob_source)));
     rowLab(46, "ફીડર સંવર્ગમાં નિમણૂક"); FC.forEach((col, i) => inp(`${col}46`, c4[i] ? D(c4[i].join) || "" : "", { align: "center" })); srcG(46, pagesOf(c4.map((c) => c.join_source)));
     rowLab(47, "અનુભવ (સમિતિની તારીખે)");
-    FC.forEach((col, i) => { const e = c4[i] ? EL_[i] : null; calc(`${col}47`, { f: `=IF(OR(${col}46="",$C$15=""),"",DATEDIF(${col}46,$C$15,"y")&" વર્ષ "&DATEDIF(${col}46,$C$15,"ym")&" માસ")`, v: e?.sv ? `${e.sv.y} વર્ષ ${e.sv.m} માસ` : "" }, { align: "center" }); });
+    FC.forEach((col, i) => { const e = c4[i] ? EL_[4 * g + i] : null; calc(`${col}47`, { f: `=IF(OR(${col}46="",$C$15=""),"",DATEDIF(${col}46,$C$15,"y")&" વર્ષ "&DATEDIF(${col}46,$C$15,"ym")&" માસ")`, v: e?.sv ? `${e.sv.y} વર્ષ ${e.sv.m} માસ` : "" }, { align: "center" }); });
     rowLab(48, "ઉંમર (સમિતિની તારીખે)");
-    FC.forEach((col, i) => { const e = c4[i] ? EL_[i] : null; calc(`${col}48`, { f: `=IF(OR(${col}45="",$C$15=""),"",DATEDIF(${col}45,$C$15,"y")&" વર્ષ")`, v: e?.ag ? `${e.ag.y} વર્ષ` : "" }, { align: "center" }); });
+    FC.forEach((col, i) => { const e = c4[i] ? EL_[4 * g + i] : null; calc(`${col}48`, { f: `=IF(OR(${col}45="",$C$15=""),"",DATEDIF(${col}45,$C$15,"y")&" વર્ષ")`, v: e?.ag ? `${e.ag.y} વર્ષ` : "" }, { align: "center" }); });
     // retirement date: last day of the birth month in the year of turning 58; green when on or after the DPC date (= criterion 12)
     rowLab(49, "વયનિવૃત્તિ તારીખ");
     FC.forEach((col, i) => { const c = c4[i]; calc(`${col}49`, { f: `=IF(OR(${col}45="",$E$17=""),"",EOMONTH(DATE(YEAR(${col}45)+$E$17,MONTH(${col}45),1),0))`, v: (c && retireDate(D(c.dob), retAge)) || "" }, { align: "center", date: true }); });
@@ -1403,7 +1409,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
       const r = k === 0 ? 50 : 51 + k, kk = k + 1;
       rowLab(r, name, kk);
       FC.forEach((col, i) => {
-        const c = c4[i], e = c ? EL_[i] : null;
+        const c = c4[i], e = c ? EL_[4 * g + i] : null;
         if (fpf[kk]) {
           const o = fpf[kk](col, e, c), s0 = num(c?.seniority);
           const d = kk === 2 ? [`${col}47`, e?.sv ? `${e.sv.y} વર્ષ ${e.sv.m} માસ` : ""]
@@ -1433,9 +1439,9 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     rowLab(51, "બઢતીનો સંવર્ગ");
     FC.forEach((col, i) => inp(`${col}51`, c4[i] ? cadreOf(c4[i], 1) : "", { align: "center", size: 8 })); srcG(51, pagesOf(c4.map((c) => (c.criteria || [])[0]?.pages || ""))); fp.height(51, 32);
     rowLab(62, "મળેલ માપદંડ (વયનિવૃત્તિ તારીખ સહિત)");
-    FC.forEach((col, i) => { const e = c4[i] ? EL_[i] : null; calc(`${col}62`, { f: `=IF(${col}42="","",((${FILLED(col)})-(${CNTX(col, N)})-(${CNTX(col, C)})-(${CNTX(col, NA)})+IF(AND(ISNUMBER(${col}49),ISNUMBER($C$15)),IF(${col}49>=$C$15,1,0),0))&" / "&(12-(${CNTX(col, NA)})))`, v: e ? e.met : "" }, { align: "center" }); });
+    FC.forEach((col, i) => { const e = c4[i] ? EL_[4 * g + i] : null; calc(`${col}62`, { f: `=IF(${col}42="","",((${FILLED(col)})-(${CNTX(col, N)})-(${CNTX(col, C)})-(${CNTX(col, NA)})+IF(AND(ISNUMBER(${col}49),ISNUMBER($C$15)),IF(${col}49>=$C$15,1,0),0))&" / "&(12-(${CNTX(col, NA)})))`, v: e ? e.met : "" }, { align: "center" }); });
     rowLab(63, "પરિણામ");
-    FC.forEach((col, i) => { const e = c4[i] ? EL_[i] : null; calc(`${col}63`, { f: `=IF(${col}42="","",IF(OR((${CNTX(col, N)})>0,AND(ISNUMBER(${col}49),ISNUMBER($C$15),${col}49<$C$15)),"${NEL}",IF((${CNTX(col, C)})+COUNTBLANK(${col}49:${col}50)+COUNTBLANK(${col}52:${col}61)>0,"${NRV}","${EL}")))`, v: e ? e.verdict : "" }, { align: "center", bold: true }); });
+    FC.forEach((col, i) => { const e = c4[i] ? EL_[4 * g + i] : null; calc(`${col}63`, { f: `=IF(${col}42="","",IF(OR((${CNTX(col, N)})>0,AND(ISNUMBER(${col}49),ISNUMBER($C$15),${col}49<$C$15)),"${NEL}",IF((${CNTX(col, C)})+COUNTBLANK(${col}49:${col}50)+COUNTBLANK(${col}52:${col}61)>0,"${NRV}","${EL}")))`, v: e ? e.verdict : "" }, { align: "center", bold: true }); });
     fp.height(63, 25.5);
     rowLab(64, "સમિતિનો નિર્ણય"); FC.forEach((col, i) => inp(`${col}64`, c4[i]?.dpc_decision || "", { align: "center" })); srcG(64, pagesOf(F.decision_source || F.dpc_source)); fp.height(64, 21);
     fp.dropdown("C64:F64", ["યોગ્ય", "અયોગ્ય"]); // criteria cells carry details, so no હા/ના dropdown there
@@ -1443,7 +1449,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     fp.cf("C50:F50", crCF("C50")); fp.cf("C52:F61", crCF("C52"));
     fp.cf("C49:F49", [{ expr: "AND(ISNUMBER(C49),ISNUMBER($C$15),C49>=$C$15)", style: { fill: GREEN, color: "FF006100" } }, { expr: "AND(ISNUMBER(C49),ISNUMBER($C$15),C49<$C$15)", style: { fill: RED, color: "FF9C0006" } }]);
     verdictCF(fp, "C63:F63");
-    fset("A65", "4 થી વધુ ઉમેદવાર હોય તો આ પત્રકની વધારાની નકલ જોડવી.", { size: 8, color: FPMUTED }); fp.merge("A65:G65"); fp.height(65, 15);
+    fset("A65", nFP > 1 ? `કુલ ${cands.length} ઉમેદવાર: આ પત્રક ${g + 1} / ${nFP} (ઉમેદવાર ${4 * g + 1} થી ${Math.min(cands.length, 4 * g + 4)}); બાકીના ઉમેદવાર ${[SN.fp, ...SN.fpx].filter((_, j) => j !== g).join(", ")} પત્રકમાં.` : "4 થી વધુ ઉમેદવાર હોય તો આ પત્રકની વધારાની નકલ જોડવી.", { size: 8, color: FPMUTED }); fp.merge("A65:G65"); fp.height(65, 15);
     sec(66, "(ઘ) ક્ષતિઓ / મુદ્દાઓ");
     th("A67", "#"); th("B67", "મુદ્દો"); fp.merge("B67:E67"); th("F67", "આધાર પાન"); th("G67", "પ્રકાર"); fp.height(67, 15);
     const top = [...acts, ...OBS.filter((o) => !isQ(o) && !/સ્થિતિ/.test(o.type || ""))].slice(0, 8);
@@ -1480,6 +1486,8 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
       fp.breaks.push(hs(40, 76) > PAGE && hs(66, fp.maxR) <= PAGE ? 65 : 76);
     }
     linkify(fp, [["E", "auto"], ["F", true, 68, 75], ["G", "auto"]], 7);
+    };
+    [wsFP, ...wsFPx].forEach((ws, g) => buildFP(ws, g));
 
     // ---------- Promotion register: one row for this proposal
     title(wsReg, "બઢતી રજીસ્ટર", "આ દરખાસ્તની રજીસ્ટર માટેની હાર.");
@@ -1501,7 +1509,8 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     ["જુનિયર ક્લાર્ક (વહીવટ)", "સીનીયર ક્લાર્ક (વહીવટ)"], ["જુનિયર ક્લાર્ક (હિસાબી)", "સીનીયર ક્લાર્ક (હિસાબી)"],
     ["સીનીયર ક્લાર્ક (વહીવટ)", "નાયબ ચીટનીશ"], ["સીનીયર ક્લાર્ક (હિસાબી)", "નાયબ હિસાબનીશ"],
     ["ફીમેલ હેલ્થ વર્કર", "ફીમેલ હેલ્થ સુપરવાઈઝર"], ["મલ્ટી પર્પઝ હેલ્થ વર્કર (પુરુષ)", "મલ્ટી પર્પઝ હેલ્થ સુપરવાઈઝર (પુરુષ)"],
-    ["આંકડા મદદનીશ", "સંશોધન મદદનીશ"], ["સમાજ કલ્યાણ નિરીક્ષક (જુનિયર)", "સમાજ કલ્યાણ નિરીક્ષક (સીનીયર)"]];
+    ["આંકડા મદદનીશ", "સંશોધન મદદનીશ"], ["સમાજ કલ્યાણ નિરીક્ષક (જુનિયર)", "સમાજ કલ્યાણ નિરીક્ષક (સીનીયર)"],
+    ["ગ્રામસેવક", "વિસ્તરણ અધિકારી (ખેતી)"], ["ગ્રામસેવક", "વિસ્તરણ અધિકારી (સહકાર)"]];
   // spelling-proof key: drop "જિલ્લા પંચાયત", spaces, punctuation, vowel signs, anusvara and virama
   const skel = (s) => String(s || "").replace(/જિલ્લા\s*પંચાયત|District\s*Panchayat/gi, "").replace(/[\s\-–.,()/]/g, "").replace(/[ઁ-ઃ઼ા-્]/g, "");
   const D_ALIAS = { "અરવલ્લી": ["અરવલી"], "દેવભૂમિ દ્વારકા": ["દ્વારકા"], "ગીર સોમનાથ": ["સોમનાથ"], "છોટાઉદેપુર": ["છોટાઉદયપુર"] };
@@ -1513,8 +1522,20 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     });
     return best;
   }
+  // all CADRES_GU indexes a file covers (a Gram Sevak file can be for both Extension Officer cadres); [] if none
+  function canonCadres(feeder, promo) {
+    const f = skel(feeder), p = skel(promo), fl = String(feeder || "").toLowerCase(), pl = String(promo || "").toLowerCase();
+    if (f.includes("ગરમસવક") || /gram\s*sevak/.test(fl) || p.includes("વસતરણ") || /extension\s*officer/.test(pl)) {
+      const out = [];
+      if (p.includes("ખત") || /agri/.test(pl)) out.push(8);
+      if (p.includes("સહકર") || /co-?op/.test(pl)) out.push(9);
+      return out;
+    }
+    const i = canonCadre(feeder, promo); return i >= 0 ? [i] : [];
+  }
   function canonCadre(feeder, promo) { // index into CADRES_GU, or -1
     const f = skel(feeder), p = skel(promo), fl = String(feeder || "").toLowerCase(), pl = String(promo || "").toLowerCase();
+    if (f.includes("ગરમસવક") || /gram\s*sevak/.test(fl)) return p.includes("સહકર") && !p.includes("ખત") ? 9 : (p.includes("ખત") || /agri/.test(pl) ? 8 : (/co-?op/.test(pl) ? 9 : -1));
     const clerk = (x, xl) => x.includes("કલરક") || xl.includes("clerk");
     const acc = (x, xl) => /હસબ|એકઉનટ/.test(x) || /account/.test(xl);
     if (p.includes("ચટન") || pl.includes("chitnis")) return 2;
@@ -1633,7 +1654,7 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     for (const [k, v] of Object.entries(files)) z.file(k, v, { createFolders: false }); // no folder entries: Word online refuses them
     return z.generateAsync({ type, mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", compression: "DEFLATE" });
   }
-  return { fixPageWord, build, refGroups, datedif, toDate, fmt, CRIT, DOCS, TYPE_GU, viewerHtml, CKN, checkVals, fileIds, ESK, adviceParts, adviceDocx, rosterSjed, DISTRICTS_GU, CADRES_GU, canonDistrict, canonCadre };
+  return { fixPageWord, build, refGroups, datedif, toDate, fmt, CRIT, DOCS, TYPE_GU, viewerHtml, CKN, checkVals, fileIds, ESK, adviceParts, adviceDocx, rosterSjed, DISTRICTS_GU, CADRES_GU, canonDistrict, canonCadre, canonCadres };
 })();
 
 
@@ -2350,8 +2371,8 @@ async function exportRegister() {
   let r = 5, k = 1;
   for (const row of REG.rows) {
     const d = row.updated ? new Date(row.updated) : null;
-    const dc = BUILD.canonDistrict(row.district), ci = BUILD.canonCadre(row.feeder, row.promotion); // canonical names so the count sheet can match them
-    [k++, row.file_no, dc || row.district, ci >= 0 ? BUILD.CADRES_GU[ci][0] : row.feeder, ci >= 0 ? BUILD.CADRES_GU[ci][1] : row.promotion, (row.cands || []).length, BUILD.toDate(row.dpc_date) || row.dpc_date, row.letter, row.inward_no,
+    const dc = BUILD.canonDistrict(row.district), cs = BUILD.canonCadres(row.feeder, row.promotion); // canonical names so the count sheet can match them
+    [k++, row.file_no, dc || row.district, cs.length ? BUILD.CADRES_GU[cs[0]][0] : row.feeder, cs.length ? cs.map((i) => BUILD.CADRES_GU[i][1]).join(" / ") : row.promotion, (row.cands || []).length, BUILD.toDate(row.dpc_date) || row.dpc_date, row.letter, row.inward_no,
       row.inward_no === BUILD.ESK ? (row.dispatch_date ? `${row.dispatch_date} (${BUILD.ESK})` : BUILD.ESK) : BUILD.toDate(row.inward_date) || row.inward_date,
       row.status || STATUSES[0], d ? new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())) : "", row.remarks, row.file_name]
       .forEach((v, j) => ws.set({ r, c: j + 1 }, v ?? "", { size: 9, border: true, align: [0, 5, 6, 8, 9, 11].includes(j) ? "center" : "left" }));
@@ -2362,7 +2383,7 @@ async function exportRegister() {
   {
     const mx = wb.add("જિલ્લાવાર સંવર્ગવાર ફાઈલ"), last = Math.max(r - 1, 5), C = BUILD.CADRES_GU, nc = C.length;
     const RG = (col) => `'બઢતી રજીસ્ટર'!$${col}$5:$${col}$${last}`, cl = XW.colName;
-    const cnt = {}; REG.rows.forEach((row) => { const d = BUILD.canonDistrict(row.district), ci = BUILD.canonCadre(row.feeder, row.promotion); const key = `${d}|${ci}`; cnt[key] = (cnt[key] || 0) + 1; cnt[`${d}|T`] = (cnt[`${d}|T`] || 0) + 1; });
+    const cnt = {}; REG.rows.forEach((row) => { const d = BUILD.canonDistrict(row.district); BUILD.canonCadres(row.feeder, row.promotion).forEach((ci) => { const key = `${d}|${ci}`; cnt[key] = (cnt[key] || 0) + 1; }); cnt[`${d}|T`] = (cnt[`${d}|T`] || 0) + 1; });
     mx.set("A1", "જિલ્લાવાર સંવર્ગવાર બઢતી ફાઈલ", { bold: true, size: 14, color: "FF1F3864", wrap: false });
     mx.set("A2", "રજીસ્ટરની દરેક ફાઈલ તેના જિલ્લા અને તેના ફીડર → બઢતીના સંવર્ગમાં 1 ગણાય છે (ફોર્મ્યુલા).", { size: 9, color: "FF595959", wrap: false });
     const H = { bold: true, color: "FFFFFFFF", fill: "FF1F3864", align: "center", valign: "center", border: true }, H2 = { bold: true, fill: "FFDDEBF7", align: "center", valign: "center", border: true };
@@ -2377,9 +2398,10 @@ async function exportRegister() {
       const rr = 6 + i;
       mx.set({ r: rr, c: 1 }, i + 1, B); mx.set({ r: rr, c: 2 }, dn, { ...B, bold: true, align: "left" });
       C.forEach((_, j) => { const L = cl(3 + j), v = cnt[`${dn}|${j}`] || 0;
-        mx.set({ r: rr, c: 3 + j }, { f: `IF(COUNTIFS(${RG("C")},$B${rr},${RG("D")},${L}$4,${RG("E")},${L}$5)=0,"",COUNTIFS(${RG("C")},$B${rr},${RG("D")},${L}$4,${RG("E")},${L}$5))`, v: v || "" }, B); });
-      const tot = cnt[`${dn}|T`] || 0, oth = tot - C.reduce((a, _, j) => a + (cnt[`${dn}|${j}`] || 0), 0);
-      mx.set({ r: rr, c: cO }, { f: `IF(${cl(cT)}${rr}-SUM(C${rr}:${cl(2 + nc)}${rr})=0,"",${cl(cT)}${rr}-SUM(C${rr}:${cl(2 + nc)}${rr}))`, v: oth || "" }, B);
+        const ct = `COUNTIFS(${RG("C")},$B${rr},${RG("D")},"*"&${L}$4&"*",${RG("E")},"*"&${L}$5&"*")`; // wildcards: a file for two cadres counts under each
+        mx.set({ r: rr, c: 3 + j }, { f: `IF(${ct}=0,"",${ct})`, v: v || "" }, B); });
+      const tot = cnt[`${dn}|T`] || 0, oth = Math.max(0, tot - C.reduce((a, _, j) => a + (cnt[`${dn}|${j}`] || 0), 0));
+      mx.set({ r: rr, c: cO }, { f: `IF(MAX(0,${cl(cT)}${rr}-SUM(C${rr}:${cl(2 + nc)}${rr}))=0,"",MAX(0,${cl(cT)}${rr}-SUM(C${rr}:${cl(2 + nc)}${rr})))`, v: oth || "" }, B);
       mx.set({ r: rr, c: cT }, { f: `COUNTIF(${RG("C")},$B${rr})`, v: tot }, { ...B, bold: true });
     });
     const rt = 6 + BUILD.DISTRICTS_GU.length, mlast = rt - 1;
