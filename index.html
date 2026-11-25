@@ -962,7 +962,9 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
         10: [{ f: `="ક્રમ "&$C$11&", વિચારેલ ક્રમ "&$C$12&"-"&$C$13`, v: `ક્રમ ${sen ?? ""}, વિચારેલ ક્રમ ${zf ?? ""}-${zt ?? ""}` },
           { f: `=IF(OR($C$11="",$C$12="",$C$13=""),"${C}",IF(AND($C$11>=$C$12,$C$11<=$C$13),"${Y}","${N}"))`, v: sen == null || zf == null || zt == null ? C : (sen >= zf && sen <= zt ? Y : N) }],
         11: [{ f: `=IF(${VAC}="","વિગત નથી",${VAC}&" ખાલી"&IF(${VCON}="","","; "&${VCON}&" વિચારણામાં"))`, v: vacN == null ? "વિગત નથી" : `${vacN} ખાલી${conN != null ? `; ${conN} વિચારણામાં` : ""}` },
-          { f: `=IF(${VAC}="","${met(crit[10]?.met)}",IF(${VAC}>=MAX(1,N(${VCON})),"${Y}","${N}"))`, v: vacN == null ? met(crit[10]?.met) : (vacN >= Math.max(1, conN || 0) ? Y : N) }],
+          // a candidate-level "ચકાસો" / "ના" (e.g. no vacant point of the candidate's roster category) overrides the count
+          [C, N].includes(crit[10]?.met) ? { f: `="${crit[10].met}"`, v: crit[10].met }
+            : { f: `=IF(${VAC}="","${met(crit[10]?.met)}",IF(${VAC}>=MAX(1,N(${VCON})),"${Y}","${N}"))`, v: vacN == null ? met(crit[10]?.met) : (vacN >= Math.max(1, conN || 0) ? Y : N) }],
         12: [{ f: `=IF(OR($C$6="",$C$7=""),"","ઉંમર "&DATEDIF($C$6,$C$7,"y")&" વર્ષ")`, v: ag ? `ઉંમર ${ag.y} વર્ષ` : "" },
           { f: `=IF(OR($C$6="",$C$7=""),"${C}",IF(DATEDIF($C$6,$C$7,"y")<$C$10,"${Y}","${N}"))`, v: !ag ? C : (ag.y < retAge ? Y : N) }],
       };
@@ -1403,7 +1405,8 @@ main{max-width:1000px;margin:0 auto;padding:12px 16px 40px}section{background:va
     const fpf = {
       2: (col, e) => ({ f: `=IF(OR(${col}46="",$C$15="",$C$17=""),"",IF(DATEDIF(${col}46,$C$15,"y")>=$C$17,"${Y}","${N}"))`, v: e?.sv ? (e.sv.y >= miny ? Y : N) : "" }),
       10: (col, e, c) => { const s = num(c?.seniority); return { f: `=IF(OR(${col}43="",$C$16="",$E$16=""),"",IF(AND(${col}43>=$C$16,${col}43<=$E$16),"${Y}","${N}"))`, v: s == null || zf == null || zt == null ? "" : (s >= zf && s <= zt ? Y : N) }; },
-      11: (col, e, c) => ({ f: `=IF(OR(${col}42="",$E$15=""),"",IF($E$15>0,"${Y}","${N}"))`, v: !c || vv[12] == null ? "" : (vv[12] > 0 ? Y : N) }),
+      11: (col, e, c) => { const ov = (c?.criteria || [])[10]?.met; return [C, N].includes(ov) ? { f: `="${ov}"`, v: ov }
+        : { f: `=IF(OR(${col}42="",$E$15=""),"",IF($E$15>0,"${Y}","${N}"))`, v: !c || vv[12] == null ? "" : (vv[12] > 0 ? Y : N) }; },
     };
     FP_CRIT.forEach((name, k) => {
       const r = k === 0 ? 50 : 51 + k, kk = k + 1;
